@@ -281,7 +281,7 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
   <div class="help print-hide"><strong>Conversão:</strong> 12 pentes = 1 caixa. O preço automático por pente mantém precisão suficiente para que 12 pentes fechem corretamente o valor da caixa.</div>
   <div class="table-wrap">
     <table class="tabela-nota">
-      <thead><tr><th style="width:75px">Quantidade</th><th style="width:90px">Unidade</th><th>Produto / Classificação</th><th style="width:125px">Valor unit.</th><th style="width:125px">Custo unit.</th><th style="width:135px">Valor total</th><th class="print-hide" style="width:48px"></th></tr></thead>
+      <thead><tr><th style="width:75px">Quantidade</th><th style="width:90px">Unidade</th><th>Produto / Classificação</th><th style="width:125px">Preço da caixa</th><th style="width:125px">Custo unit.</th><th style="width:135px">Valor total</th><th class="print-hide" style="width:48px"></th></tr></thead>
       <tbody id="produtos"></tbody>
     </table>
   </div>
@@ -492,7 +492,7 @@ const precoPorUnidade=(p,unidade)=>unidade==='Pente'?Number(p?.preco||0)/PENTES_
 
 function snapshotDados(){
   const dados = {
-    versao: 11,
+    versao: 12,
     gerado_em: new Date().toISOString(),
     vendas: JSON.parse(localStorage.getItem('granja_vendas') || '[]'),
     clientes: JSON.parse(localStorage.getItem('granja_clientes') || '[]'),
@@ -621,11 +621,11 @@ function adicionarProduto(produto='',qtd='',valor='',custo='',unidade='Caixa'){
     else{
       inp.style.display='none';inp.value='';
       const p=produtoAtivo(sel.value);
-      if(p){const u=tr.querySelector('.p-unidade').value;tr.querySelector('.p-valor').value=precoPorUnidade(p,u).toFixed(u==='Pente'?4:2);tr.querySelector('.p-custo').value=p.custo||''}
+      if(p){const u=tr.querySelector('.p-unidade').value;tr.querySelector('.p-valor').value=Number(p.preco||0).toFixed(2);tr.querySelector('.p-custo').value=p.custo||''}
     }
     calcularTotais();
   };
-  tr.querySelectorAll('input').forEach(i=>i.addEventListener('input',calcularTotais)); tr.querySelector('.p-unidade').addEventListener('change',()=>{const p=produtoAtivo(sel.value);if(p){tr.querySelector('.p-valor').value=precoPorUnidade(p,tr.querySelector('.p-unidade').value).toFixed(tr.querySelector('.p-unidade').value==='Pente'?4:2)}calcularTotais()});
+  tr.querySelectorAll('input').forEach(i=>i.addEventListener('input',calcularTotais)); tr.querySelector('.p-unidade').addEventListener('change',()=>{const p=produtoAtivo(sel.value);if(p){tr.querySelector('.p-valor').value=Number(p.preco||0).toFixed(2)}calcularTotais()});
   document.getElementById('produtos').appendChild(tr);
   calcularTotais();
 }
@@ -639,7 +639,7 @@ function calcularTotais(){
   let subtotal=0,custoTotal=0;
   document.querySelectorAll('#produtos tr').forEach(tr=>{
     const q=Number(tr.querySelector('.p-qtd').value||0),v=Number(tr.querySelector('.p-valor').value||0),c=Number(tr.querySelector('.p-custo').value||0),u=tr.querySelector('.p-unidade').value;
-    const t=arred2(q*v); tr.querySelector('.p-total').value=moeda(t);subtotal+=t;custoTotal+=q*(u==='Pente'?c/PENTES_POR_CAIXA:c);
+    const t=arred2(q*(u==='Pente'?v/PENTES_POR_CAIXA:v)); tr.querySelector('.p-total').value=moeda(t);subtotal+=t;custoTotal+=q*(u==='Pente'?c/PENTES_POR_CAIXA:c);
   });
   const desc=Number(document.getElementById('desconto').value||0),total=Math.max(0,subtotal-desc);
   document.getElementById('subtotal').textContent=moeda(subtotal);
@@ -700,7 +700,7 @@ function salvarVenda(){
   if(!cliente){alert('Informe o cliente.');return}
   const produtos=[...document.querySelectorAll('#produtos tr')].map(tr=>{
     const produto=nomeProdutoLinha(tr),quantidade=Number(tr.querySelector('.p-qtd').value||0),valorUnit=Number(tr.querySelector('.p-valor').value||0),custoUnit=Number(tr.querySelector('.p-custo').value||0),unidade=tr.querySelector('.p-unidade').value||'Caixa';
-    return {produto,quantidade,unidade,valorUnit,custoUnit,total:arred2(quantidade*valorUnit),custoTotal:quantidade*(unidade==='Pente'?custoUnit/PENTES_POR_CAIXA:custoUnit)};
+    return {produto,quantidade,unidade,valorUnit,custoUnit,total:arred2(quantidade*(unidade==='Pente'?valorUnit/PENTES_POR_CAIXA:valorUnit)),custoTotal:quantidade*(unidade==='Pente'?custoUnit/PENTES_POR_CAIXA:custoUnit)};
   }).filter(p=>p.produto&&p.quantidade>0);
   if(!produtos.length){alert('Adicione pelo menos um produto.');return}
   const subtotal=produtos.reduce((s,p)=>s+p.total,0),desconto=Number(document.getElementById('desconto').value||0),total=Math.max(0,subtotal-desconto);
