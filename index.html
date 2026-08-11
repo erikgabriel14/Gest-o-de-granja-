@@ -144,12 +144,71 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
  body.print-nota-cliente .nota-cliente-doc{box-shadow:none;border-radius:0;max-width:none;padding:6mm}
  body.print-nota-cliente .nc-actions{display:none!important}
 }
+
+/* ===== V10 ONLINE ===== */
+.online-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;background:#fff1d6;color:#8a5a00;margin-left:8px}
+.online-pill.ok{background:#e4f5eb;color:#1f7a45}.online-pill.err{background:#fde8e8;color:#a12a2a}
+#onlineModal{display:none;position:fixed;inset:0;background:rgba(16,31,38,.72);z-index:9999;padding:18px;overflow:auto}
+#onlineModal.aberto{display:flex;align-items:center;justify-content:center}
+.online-box{width:min(520px,100%);background:#fff;border-radius:16px;padding:22px;box-shadow:0 18px 60px rgba(0,0,0,.28)}
+.online-box h2{margin:0 0 6px;color:var(--azul)}.online-box p{font-size:13px;color:#5f7077;margin:0 0 14px}
+.online-box label{display:block;font-size:12px;font-weight:800;margin:10px 0 5px}
+.online-box input{width:100%;box-sizing:border-box}
+.online-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.online-msg{margin-top:10px;font-size:12px;min-height:18px}.online-msg.erro{color:#a12a2a}.online-msg.ok{color:#1f7a45}
+.online-sep{border:0;border-top:1px solid #dbe3e6;margin:18px 0}
+@media(max-width:600px){.online-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <body>
+
+<div id="onlineModal">
+  <div class="online-box">
+    <h2>Granja São José — Online</h2>
+    <p id="onlineTextoTopo">Conecte o painel ao Supabase para usar os mesmos dados no celular e no tablet.</p>
+
+    <div id="onlineConfigBloco">
+      <label>Project URL do Supabase</label>
+      <input id="onlineUrl" placeholder="https://xxxx.supabase.co" autocomplete="off">
+      <label>Publishable key</label>
+      <input id="onlineKey" placeholder="sb_publishable_..." autocomplete="off">
+      <div class="actions" style="margin-top:12px">
+        <button class="btn primary" onclick="salvarConfiguracaoOnline()">Salvar conexão</button>
+      </div>
+      <hr class="online-sep">
+    </div>
+
+    <div id="onlineLoginBloco">
+      <label>E-mail</label>
+      <input id="onlineEmail" type="email" autocomplete="email" placeholder="seu@email.com">
+      <label>Senha</label>
+      <input id="onlineSenha" type="password" autocomplete="current-password" placeholder="Sua senha">
+      <div class="online-grid" style="margin-top:12px">
+        <button class="btn primary" onclick="entrarOnline()">Entrar</button>
+        <button class="btn secondary" onclick="criarContaOnline()">Criar conta</button>
+      </div>
+    </div>
+
+    <div id="onlineConectadoBloco" style="display:none">
+      <p><strong id="onlineUsuario"></strong></p>
+      <div class="online-grid">
+        <button class="btn primary" onclick="sincronizarOnline(true)">Sincronizar agora</button>
+        <button class="btn secondary" onclick="sairOnline()">Sair</button>
+      </div>
+    </div>
+
+    <div id="onlineMsg" class="online-msg"></div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn secondary" onclick="fecharOnlineModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <header>
   <div><h1>GRANJA SÃO JOSÉ</h1><small>Painel comercial e financeiro</small></div>
-  <div id="dataHoje"></div>
+  <div><span id="dataHoje"></span><span id="onlineStatus" class="online-pill" onclick="abrirOnlineModal()" style="cursor:pointer">Online: não conectado</span></div>
 </header>
 
 <nav>
@@ -438,6 +497,7 @@ function snapshotDados(){
   localStorage.setItem('granja_snapshot_interno', JSON.stringify(dados));
   localStorage.setItem('granja_ultimo_salvamento', new Date().toISOString());
   atualizarStatusBackup();
+  if(window.onlineAgendarSync) window.onlineAgendarSync();
 }
 
 function baixarBackup(){
@@ -988,6 +1048,208 @@ function abrirNotaCliente(id){
 function fecharNotaCliente(){document.getElementById('notaClienteModal').classList.remove('aberto')}
 function imprimirNotaCliente(){document.body.classList.add('print-nota-cliente');window.print();setTimeout(()=>document.body.classList.remove('print-nota-cliente'),400)}
 
+
+/* ===== SINCRONIZAÇÃO ONLINE V10 ===== */
+let supabaseOnline=null;
+let onlinePronto=false;
+let onlineCarregando=false;
+let onlineTimer=null;
+let onlineIgnorarSync=false;
+
+function onlineStatus(texto,tipo=''){
+  const el=document.getElementById('onlineStatus');
+  if(!el)return;
+  el.textContent=texto;
+  el.className='online-pill'+(tipo?' '+tipo:'');
+}
+function onlineMensagem(texto,tipo=''){
+  const el=document.getElementById('onlineMsg');
+  if(!el)return;
+  el.textContent=texto||'';
+  el.className='online-msg'+(tipo?' '+tipo:'');
+}
+function abrirOnlineModal(){
+  document.getElementById('onlineModal').classList.add('aberto');
+  const url=localStorage.getItem('granja_supabase_url')||'';
+  const key=localStorage.getItem('granja_supabase_key')||'';
+  document.getElementById('onlineUrl').value=url;
+  document.getElementById('onlineKey').value=key;
+}
+function fecharOnlineModal(){document.getElementById('onlineModal').classList.remove('aberto')}
+
+function criarClienteSupabase(){
+  const url=(localStorage.getItem('granja_supabase_url')||'').trim();
+  const key=(localStorage.getItem('granja_supabase_key')||'').trim();
+  if(!url||!key||!window.supabase)return false;
+  try{
+    supabaseOnline=window.supabase.createClient(url,key,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+    });
+    return true;
+  }catch(e){
+    supabaseOnline=null; return false;
+  }
+}
+async function salvarConfiguracaoOnline(){
+  const url=document.getElementById('onlineUrl').value.trim().replace(/\/$/,'');
+  const key=document.getElementById('onlineKey').value.trim();
+  if(!/^https:\/\/.+\.supabase\.co$/i.test(url)){onlineMensagem('Confira o Project URL.','erro');return}
+  if(!key){onlineMensagem('Cole a Publishable key.','erro');return}
+  localStorage.setItem('granja_supabase_url',url);
+  localStorage.setItem('granja_supabase_key',key);
+  onlineMensagem('Conexão salva. Agora entre com seu e-mail e senha.','ok');
+  criarClienteSupabase();
+  await atualizarEstadoOnline();
+}
+async function atualizarEstadoOnline(){
+  if(!supabaseOnline && !criarClienteSupabase()){
+    onlinePronto=false;
+    onlineStatus('Online: configurar');
+    document.getElementById('onlineConfigBloco').style.display='';
+    document.getElementById('onlineLoginBloco').style.display='';
+    document.getElementById('onlineConectadoBloco').style.display='none';
+    return;
+  }
+  const {data,error}=await supabaseOnline.auth.getSession();
+  const session=data&&data.session;
+  if(error||!session){
+    onlinePronto=false;
+    onlineStatus('Online: entrar');
+    document.getElementById('onlineLoginBloco').style.display='';
+    document.getElementById('onlineConectadoBloco').style.display='none';
+    return;
+  }
+  document.getElementById('onlineLoginBloco').style.display='none';
+  document.getElementById('onlineConectadoBloco').style.display='';
+  document.getElementById('onlineUsuario').textContent=session.user.email||'Usuário conectado';
+  await carregarDadosOnline();
+}
+async function entrarOnline(){
+  if(!supabaseOnline && !criarClienteSupabase()){onlineMensagem('Primeiro salve a conexão do Supabase.','erro');return}
+  const email=document.getElementById('onlineEmail').value.trim();
+  const password=document.getElementById('onlineSenha').value;
+  onlineMensagem('Entrando...');
+  const {error}=await supabaseOnline.auth.signInWithPassword({email,password});
+  if(error){onlineMensagem('Não foi possível entrar: '+error.message,'erro');return}
+  onlineMensagem('Conectado. Carregando seus dados...','ok');
+  await atualizarEstadoOnline();
+}
+async function criarContaOnline(){
+  if(!supabaseOnline && !criarClienteSupabase()){onlineMensagem('Primeiro salve a conexão do Supabase.','erro');return}
+  const email=document.getElementById('onlineEmail').value.trim();
+  const password=document.getElementById('onlineSenha').value;
+  if(password.length<6){onlineMensagem('Use uma senha com pelo menos 6 caracteres.','erro');return}
+  onlineMensagem('Criando conta...');
+  const {data,error}=await supabaseOnline.auth.signUp({email,password});
+  if(error){onlineMensagem('Não foi possível criar: '+error.message,'erro');return}
+  if(data&&data.session){
+    onlineMensagem('Conta criada e conectada.','ok');
+    await atualizarEstadoOnline();
+  }else{
+    onlineMensagem('Conta criada. Se o Supabase pedir confirmação, confirme o e-mail e depois toque em Entrar.','ok');
+  }
+}
+async function sairOnline(){
+  if(supabaseOnline)await supabaseOnline.auth.signOut();
+  onlinePronto=false;
+  onlineStatus('Online: desconectado');
+  document.getElementById('onlineLoginBloco').style.display='';
+  document.getElementById('onlineConectadoBloco').style.display='none';
+  onlineMensagem('Você saiu da conta.','ok');
+}
+function pacoteDadosAtual(){
+  return {
+    versao:10,
+    vendas,
+    clientes:clientesCad,
+    produtos:produtosCad,
+    producoes
+  };
+}
+function aplicarPacoteOnline(d){
+  if(!d)return;
+  onlineIgnorarSync=true;
+  try{
+    vendas=Array.isArray(d.vendas)?d.vendas:[];
+    clientesCad=Array.isArray(d.clientes)?d.clientes:[];
+    produtosCad=Array.isArray(d.produtos)?d.produtos:[];
+    producoes=Array.isArray(d.producoes)?d.producoes:[];
+    localStorage.setItem('granja_vendas',JSON.stringify(vendas));
+    localStorage.setItem('granja_clientes',JSON.stringify(clientesCad));
+    localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));
+    localStorage.setItem('granja_producoes',JSON.stringify(producoes));
+  }finally{onlineIgnorarSync=false}
+  renderTudo();
+}
+async function carregarDadosOnline(){
+  if(!supabaseOnline||onlineCarregando)return;
+  onlineCarregando=true;
+  onlineStatus('Online: sincronizando');
+  try{
+    const {data:{user},error:uerr}=await supabaseOnline.auth.getUser();
+    if(uerr||!user)throw uerr||new Error('Usuário não conectado');
+    const {data,error}=await supabaseOnline.from('painel_dados').select('dados,updated_at').eq('user_id',user.id).maybeSingle();
+    if(error)throw error;
+    if(data&&data.dados){
+      aplicarPacoteOnline(data.dados);
+    }else{
+      const {error:upErr}=await supabaseOnline.from('painel_dados').upsert({
+        user_id:user.id,dados:pacoteDadosAtual(),updated_at:new Date().toISOString()
+      },{onConflict:'user_id'});
+      if(upErr)throw upErr;
+    }
+    onlinePronto=true;
+    onlineStatus('Online: sincronizado','ok');
+    onlineMensagem('Celular e tablet podem usar estes mesmos dados.','ok');
+  }catch(e){
+    onlinePronto=false;
+    onlineStatus('Online: erro','err');
+    onlineMensagem('Erro de sincronização: '+(e&&e.message?e.message:e),'erro');
+  }finally{onlineCarregando=false}
+}
+async function salvarDadosOnline(){
+  if(!onlinePronto||onlineIgnorarSync||!supabaseOnline)return;
+  try{
+    const {data:{user}}=await supabaseOnline.auth.getUser();
+    if(!user)return;
+    onlineStatus('Online: salvando');
+    const {error}=await supabaseOnline.from('painel_dados').upsert({
+      user_id:user.id,dados:pacoteDadosAtual(),updated_at:new Date().toISOString()
+    },{onConflict:'user_id'});
+    if(error)throw error;
+    onlineStatus('Online: sincronizado','ok');
+  }catch(e){
+    onlineStatus('Online: erro','err');
+    onlineMensagem('Não foi possível salvar online: '+(e&&e.message?e.message:e),'erro');
+  }
+}
+window.onlineAgendarSync=function(){
+  if(!onlinePronto||onlineIgnorarSync)return;
+  clearTimeout(onlineTimer);
+  onlineTimer=setTimeout(salvarDadosOnline,650);
+};
+async function sincronizarOnline(mostrar=false){
+  if(!supabaseOnline){if(mostrar)abrirOnlineModal();return}
+  await salvarDadosOnline();
+  if(mostrar)onlineMensagem('Sincronização concluída.','ok');
+}
+async function iniciarOnline(){
+  const temConfig=localStorage.getItem('granja_supabase_url')&&localStorage.getItem('granja_supabase_key');
+  if(!temConfig){
+    onlineStatus('Online: configurar');
+    abrirOnlineModal();
+    return;
+  }
+  criarClienteSupabase();
+  await atualizarEstadoOnline();
+  if(supabaseOnline){
+    supabaseOnline.auth.onAuthStateChange((event,session)=>{
+      if(event==='SIGNED_IN'&&session)setTimeout(()=>atualizarEstadoOnline(),0);
+      if(event==='SIGNED_OUT'){onlinePronto=false;onlineStatus('Online: desconectado')}
+    });
+  }
+}
+
 function renderTudo(){
   renderInicio();renderVendas();renderReceber();renderClientes();renderEstoque();renderProdutosCad();renderComparativo();renderFechamento();renderRelatorios();atualizarAgendaDashboard();
 }
@@ -996,6 +1258,7 @@ limparFormulario();
 renderTudo();
 snapshotDados();
 atualizarStatusBackup();
+setTimeout(iniciarOnline,50);
 </script>
 
 <div id="notaClienteModal">
