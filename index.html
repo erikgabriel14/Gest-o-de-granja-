@@ -117,6 +117,22 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
 .linha-destaque{background:#fff9e8}
 .linha-vencida{background:#fff0f0}
 
+
+#notaClienteModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;padding:18px;overflow:auto}
+#notaClienteModal.aberto{display:block}
+.nota-cliente-doc{background:#fff;max-width:820px;margin:auto;border-radius:12px;padding:28px;box-shadow:0 15px 50px rgba(0,0,0,.2)}
+.nc-topo{display:flex;justify-content:space-between;gap:18px;border-bottom:3px solid var(--azul);padding-bottom:14px;margin-bottom:16px}
+.nc-marca{font-size:23px;font-weight:900;color:var(--azul)}.nc-titulo{text-align:right}.nc-titulo strong{font-size:19px;color:var(--azul);display:block}
+.nc-info{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin:14px 0}.nc-info div{border-bottom:1px solid #d5dde0;padding:6px 0;font-size:13px}
+.nc-table{width:100%;border-collapse:collapse;margin:16px 0}.nc-table th,.nc-table td{border:1px solid #aab5b9;padding:8px;font-size:13px}.nc-table th{background:#eef3f5;color:#22343c}
+.nc-total{max-width:330px;margin-left:auto}.nc-total div{display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid #d5dde0}.nc-total .grand{font-size:18px;font-weight:900;border-bottom:2px solid var(--azul)}
+.nc-rodape{text-align:center;border-top:1px solid #d5dde0;margin-top:28px;padding-top:12px;color:var(--azul);font-weight:700;font-size:12px}
+@media print{
+ body.print-nota-cliente > *:not(#notaClienteModal){display:none!important}
+ body.print-nota-cliente #notaClienteModal{display:block!important;position:static;background:#fff;padding:0}
+ body.print-nota-cliente .nota-cliente-doc{box-shadow:none;border-radius:0;max-width:none;padding:6mm}
+ body.print-nota-cliente .nc-actions{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -194,7 +210,7 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
   <div id="avisoPrecoMinimo" class="help print-hide" style="font-weight:700"></div>
   <div class="table-wrap">
     <table class="tabela-nota">
-      <thead><tr><th style="width:90px">Quantidade</th><th>Produto / Classificação</th><th style="width:125px">Valor unit.</th><th style="width:125px">Custo unit.</th><th style="width:135px">Valor total</th><th class="print-hide" style="width:48px"></th></tr></thead>
+      <thead><tr><th style="width:75px">Quantidade</th><th style="width:90px">Unidade</th><th>Produto / Classificação</th><th style="width:125px">Valor unit.</th><th style="width:125px">Custo unit.</th><th style="width:135px">Valor total</th><th class="print-hide" style="width:48px"></th></tr></thead>
       <tbody id="produtos"></tbody>
     </table>
   </div>
@@ -503,10 +519,11 @@ function optionsProdutos(sel=''){
   return `<option value="">Selecione...</option>${opts}<option value="__outro__">Outro / digitar</option>`;
 }
 
-function adicionarProduto(produto='',qtd='',valor='',custo=''){
+function adicionarProduto(produto='',qtd='',valor='',custo='',unidade='Caixa'){
   const tr=document.createElement('tr');
   tr.innerHTML=`
     <td><input class="p-qtd" type="number" min="0" step="1" value="${qtd}"></td>
+    <td><select class="p-unidade"><option>Caixa</option><option>Pente</option></select></td>
     <td>
       <select class="p-select">${optionsProdutos(produto)}</select>
       <input class="p-produto" placeholder="Digite a classificação" value="${produto && !produtosCad.some(p=>p.nome===produto)?produto:''}" style="display:${produto && !produtosCad.some(p=>p.nome===produto)?'block':'none'};margin-top:4px">
@@ -515,18 +532,18 @@ function adicionarProduto(produto='',qtd='',valor='',custo=''){
     <td><input class="p-custo" type="number" min="0" step="0.01" value="${custo}"></td>
     <td><input class="p-total" disabled></td>
     <td class="print-hide"><button class="btn danger" style="padding:6px 9px" onclick="this.closest('tr').remove();calcularTotais()">×</button></td>`;
-  const sel=tr.querySelector('.p-select'), inp=tr.querySelector('.p-produto');
+  const sel=tr.querySelector('.p-select'), inp=tr.querySelector('.p-produto'); tr.querySelector('.p-unidade').value=unidade||'Caixa';
   if(produto && !produtosCad.some(p=>p.nome===produto)) sel.value='__outro__';
   sel.onchange=()=>{
     if(sel.value==='__outro__'){inp.style.display='block';inp.focus()}
     else{
       inp.style.display='none';inp.value='';
       const p=produtoAtivo(sel.value);
-      if(p){tr.querySelector('.p-valor').value=p.preco||'';tr.querySelector('.p-custo').value=p.custo||''}
+      if(p){const u=tr.querySelector('.p-unidade').value;tr.querySelector('.p-valor').value=u==='Pente'?(Number(p.preco||0)/12).toFixed(2):(p.preco||'');tr.querySelector('.p-custo').value=p.custo||''}
     }
     calcularTotais();
   };
-  tr.querySelectorAll('input').forEach(i=>i.addEventListener('input',calcularTotais));
+  tr.querySelectorAll('input').forEach(i=>i.addEventListener('input',calcularTotais)); tr.querySelector('.p-unidade').addEventListener('change',()=>{const p=produtoAtivo(sel.value);if(p){tr.querySelector('.p-valor').value=tr.querySelector('.p-unidade').value==='Pente'?(Number(p.preco||0)/12).toFixed(2):(p.preco||'')}calcularTotais()});
   document.getElementById('produtos').appendChild(tr);
   calcularTotais();
 }
@@ -539,8 +556,8 @@ function nomeProdutoLinha(tr){
 function calcularTotais(){
   let subtotal=0,custoTotal=0;
   document.querySelectorAll('#produtos tr').forEach(tr=>{
-    const q=Number(tr.querySelector('.p-qtd').value||0),v=Number(tr.querySelector('.p-valor').value||0),c=Number(tr.querySelector('.p-custo').value||0);
-    const t=q*v; tr.querySelector('.p-total').value=moeda(t);subtotal+=t;custoTotal+=q*c;
+    const q=Number(tr.querySelector('.p-qtd').value||0),v=Number(tr.querySelector('.p-valor').value||0),c=Number(tr.querySelector('.p-custo').value||0),u=tr.querySelector('.p-unidade').value;
+    const t=q*v; tr.querySelector('.p-total').value=moeda(t);subtotal+=t;custoTotal+=q*(u==='Pente'?c/12:c);
   });
   const desc=Number(document.getElementById('desconto').value||0),total=Math.max(0,subtotal-desc);
   document.getElementById('subtotal').textContent=moeda(subtotal);
@@ -579,8 +596,8 @@ function salvarVenda(){
   const cliente=document.getElementById('cliente').value.trim();
   if(!cliente){alert('Informe o cliente.');return}
   const produtos=[...document.querySelectorAll('#produtos tr')].map(tr=>{
-    const produto=nomeProdutoLinha(tr),quantidade=Number(tr.querySelector('.p-qtd').value||0),valorUnit=Number(tr.querySelector('.p-valor').value||0),custoUnit=Number(tr.querySelector('.p-custo').value||0);
-    return {produto,quantidade,valorUnit,custoUnit,total:quantidade*valorUnit,custoTotal:quantidade*custoUnit};
+    const produto=nomeProdutoLinha(tr),quantidade=Number(tr.querySelector('.p-qtd').value||0),valorUnit=Number(tr.querySelector('.p-valor').value||0),custoUnit=Number(tr.querySelector('.p-custo').value||0),unidade=tr.querySelector('.p-unidade').value||'Caixa';
+    return {produto,quantidade,unidade,valorUnit,custoUnit,total:quantidade*valorUnit,custoTotal:quantidade*(unidade==='Pente'?custoUnit/12:custoUnit)};
   }).filter(p=>p.produto&&p.quantidade>0);
   if(!produtos.length){alert('Adicione pelo menos um produto.');return}
   const subtotal=produtos.reduce((s,p)=>s+p.total,0),desconto=Number(document.getElementById('desconto').value||0),total=Math.max(0,subtotal-desconto);
@@ -622,7 +639,7 @@ function editarVenda(id){
   const pr=document.querySelector(`input[name="pagamentoRadio"][value="${v.pagamento}"]`);if(pr)pr.checked=true;
   const sr=document.querySelector(`input[name="situacaoRadio"][value="${v.situacao}"]`);if(sr)sr.checked=true;
   document.getElementById('produtos').innerHTML='';
-  (v.produtos||[]).forEach(p=>adicionarProduto(p.produto,p.quantidade,p.valorUnit,p.custoUnit||0));
+  (v.produtos||[]).forEach(p=>adicionarProduto(p.produto,p.quantidade,p.valorUnit,p.custoUnit||0,p.unidade||'Caixa'));
   adicionarProduto();
   document.getElementById('btnSalvarVenda').textContent='Atualizar venda';
   calcularTotais();
@@ -649,10 +666,10 @@ function tabelaVendas(lista,modo='vendas'){
   if(!lista.length)return '<div class="empty">Nenhum registro encontrado.</div>';
   return `<div class="table-wrap"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Data</th><th>Caixas</th><th>Total</th><th>Venc.</th><th>Status</th><th>Dias</th><th>Ações</th></tr></thead><tbody>${
     lista.map(v=>{
-      const caixas=(v.produtos||[]).reduce((s,p)=>s+Number(p.quantidade||0),0),st=statusReceber(v);
+      const caixas=(v.produtos||[]).reduce((s,p)=>s+Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1),0),st=statusReceber(v);
       let acoes=modo==='receber'
         ? `<button class="btn success" onclick="marcarPago(${v.id})">Marcar pago</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Abrir</button>`
-        : `<button class="btn secondary" onclick="editarVenda(${v.id})">Editar</button> <button class="btn danger" onclick="excluirVenda(${v.id})">Excluir</button>`;
+        : `<button class="btn primary" onclick="abrirNotaCliente(${v.id})">Enviar nota</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Editar</button> <button class="btn danger" onclick="excluirVenda(${v.id})">Excluir</button>`;
       return `<tr><td>${v.numero||'—'}</td><td>${v.cliente}</td><td>${dataBR(v.data)}</td><td>${caixas}</td><td>${moeda(v.total)}</td><td>${dataBR(v.vencimento)}</td><td><span class="badge ${st}">${st==='vencido'?'Vencido':v.situacao}</span></td><td>${st==='vencido'?diasEntre(v.vencimento,hojeISO())+' d':'—'}</td><td>${acoes}</td></tr>`;
     }).join('')
   }</tbody></table></div>`;
@@ -674,14 +691,14 @@ function renderReceber(){
 }
 
 function resumo(lista){
-  const faturamento=lista.reduce((s,v)=>s+Number(v.total||0),0),caixas=lista.reduce((s,v)=>s+(v.produtos||[]).reduce((z,p)=>z+Number(p.quantidade||0),0),0);
+  const faturamento=lista.reduce((s,v)=>s+Number(v.total||0),0),caixas=lista.reduce((s,v)=>s+(v.produtos||[]).reduce((z,p)=>z+Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1),0),0);
   const recebido=lista.filter(v=>v.situacao==='Pago').reduce((s,v)=>s+Number(v.total||0),0),pendente=lista.filter(v=>v.situacao==='Pendente').reduce((s,v)=>s+Number(v.total||0),0);
   const custo=lista.reduce((s,v)=>s+Number(v.custoTotal||0),0),clientes={},produtos={};
   lista.forEach(v=>{
     clientes[v.cliente]=(clientes[v.cliente]||0)+Number(v.total||0);
     (v.produtos||[]).forEach(p=>{
       if(!produtos[p.produto])produtos[p.produto]={qtd:0,total:0};
-      produtos[p.produto].qtd+=Number(p.quantidade||0);produtos[p.produto].total+=Number(p.total||0);
+      produtos[p.produto].qtd+=Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1);produtos[p.produto].total+=Number(p.total||0);
     });
   });
   return {faturamento,caixas,recebido,pendente,custo,margem:faturamento-custo,qtd:lista.length,ticket:lista.length?faturamento/lista.length:0,clientes,produtos};
@@ -790,7 +807,7 @@ function saldoEstoque(){
   });
   vendas.forEach(v=>(v.produtos||[]).forEach(p=>{
     if(!mapa[p.produto])mapa[p.produto]={produzido:0,vendido:0,saldo:0};
-    mapa[p.produto].vendido+=Number(p.quantidade||0);
+    mapa[p.produto].vendido+=Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1);
   }));
   Object.values(mapa).forEach(x=>x.saldo=x.produzido-x.vendido);
   return mapa;
@@ -878,6 +895,28 @@ function atualizarAgendaDashboard(){
 }
 
 
+
+const classificacoesPadraoV9=['Caixa de Ovos Jumbo Branco','Caixa de Ovos Extra Branco','Caixa de Ovos A Branco','Caixa de Ovos Jumbo Vermelho','Caixa de Ovos Extra Vermelho','Caixa de Ovos A Vermelho','Ovos Caipiras'];
+let mudouV9=false;
+classificacoesPadraoV9.forEach(nome=>{if(!produtosCad.some(p=>p.nome===nome)){produtosCad.push({id:gerarId(),nome,preco:0,custo:0,margemMin:10,ativo:'sim'});mudouV9=true}});
+if(mudouV9)localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));
+
+function abrirNotaCliente(id){
+ const v=vendas.find(x=>x.id===id);if(!v)return;
+ const linhas=(v.produtos||[]).map(p=>`<tr><td>${p.quantidade||0}</td><td>${p.unidade||'Caixa'}</td><td>${p.produto||''}</td><td style="text-align:right">${moeda(p.valorUnit||0)}</td><td style="text-align:right">${moeda(p.total||0)}</td></tr>`).join('');
+ document.getElementById('notaClienteConteudo').innerHTML=`
+ <div class="nc-topo"><div><div class="nc-marca">GRANJA SÃO JOSÉ</div><div style="font-size:12px;margin-top:4px">Seguimos produzindo o melhor alimento depois do leite materno.</div></div><div class="nc-titulo"><strong>NOTA DE VENDA</strong><span>Nº ${v.numero||'—'}</span></div></div>
+ <div class="nc-info"><div><strong>Cliente:</strong> ${v.cliente||'—'}</div><div><strong>Data:</strong> ${dataBR(v.data)}</div><div><strong>Forma de pagamento:</strong> ${v.pagamento||'—'}</div><div><strong>Vencimento:</strong> ${dataBR(v.vencimento)}</div></div>
+ <table class="nc-table"><thead><tr><th>Qtd.</th><th>Unidade</th><th>Classificação / Produto</th><th>Valor unit.</th><th>Total</th></tr></thead><tbody>${linhas}</tbody></table>
+ <div class="nc-total"><div><span>Subtotal</span><strong>${moeda(v.subtotal||0)}</strong></div>${Number(v.desconto||0)>0?`<div><span>Desconto</span><strong>${moeda(v.desconto)}</strong></div>`:''}<div class="grand"><span>TOTAL</span><strong>${moeda(v.total||0)}</strong></div></div>
+ ${v.observacoes?`<div style="margin-top:18px;font-size:13px"><strong>Observações:</strong> ${v.observacoes}</div>`:''}
+ <div style="margin-top:28px;text-align:center"><div style="border-top:1px solid #777;max-width:380px;margin:auto;padding-top:5px">${v.assinatura||v.responsavel||'Granja São José'}</div><small>Responsável pela venda</small></div>
+ <div class="nc-rodape">GRANJA SÃO JOSÉ</div>`;
+ document.getElementById('notaClienteModal').classList.add('aberto');
+}
+function fecharNotaCliente(){document.getElementById('notaClienteModal').classList.remove('aberto')}
+function imprimirNotaCliente(){document.body.classList.add('print-nota-cliente');window.print();setTimeout(()=>document.body.classList.remove('print-nota-cliente'),400)}
+
 function renderTudo(){
   renderInicio();renderVendas();renderReceber();renderClientes();renderEstoque();renderProdutosCad();renderComparativo();renderFechamento();renderRelatorios();atualizarAgendaDashboard();
 }
@@ -887,5 +926,13 @@ renderTudo();
 snapshotDados();
 atualizarStatusBackup();
 </script>
+
+<div id="notaClienteModal">
+ <div class="nota-cliente-doc">
+  <div class="nc-actions actions" style="justify-content:flex-end;margin-top:0"><button class="btn primary" onclick="imprimirNotaCliente()">Gerar PDF / Imprimir</button><button class="btn secondary" onclick="fecharNotaCliente()">Fechar</button></div>
+  <div id="notaClienteConteudo"></div>
+ </div>
+</div>
+
 </body>
 </html>
