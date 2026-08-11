@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Granja São José - Painel Comercial</title>
+<style>
+:root{
+  --azul:#123f52;--azul2:#1b5a72;--claro:#eef4f6;--cinza:#66757b;
+  --branco:#fff;--verde:#1f7a4d;--vermelho:#b23b3b;--amarelo:#9a6a00;
+  --sombra:0 8px 24px rgba(0,0,0,.08)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f6f8f9;color:#1d2a30}
+header{background:var(--azul);color:#fff;padding:17px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:22px} header small{opacity:.86}
+nav{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;gap:8px;padding:10px;overflow:auto;position:sticky;top:0;z-index:20}
+nav button{border:0;background:var(--claro);padding:10px 14px;border-radius:10px;cursor:pointer;white-space:nowrap;font-weight:700;color:var(--azul)}
+nav button.active{background:var(--azul);color:#fff}
+main{max-width:1180px;margin:22px auto;padding:0 14px 44px}
+.section{display:none}.section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:14px}
+.card,.mini-card{background:#fff;padding:18px;border-radius:16px;box-shadow:var(--sombra)}
+.card h2{margin-top:0;color:var(--azul)}
+.card h3,.mini-card h3{margin:0 0 8px;font-size:14px;color:var(--cinza)}
+.valor{font-size:27px;font-weight:800;color:var(--azul)}
+.sub{margin-top:6px;font-size:12px;color:var(--cinza)}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.full{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}
+input,select,textarea{width:100%;border:1px solid #ccd6da;border-radius:10px;padding:10px;font-size:14px;background:#fff}
+textarea{min-height:78px;resize:vertical}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+.primary{background:var(--azul);color:#fff}.secondary{background:var(--claro);color:var(--azul)}
+.danger{background:#f8e9e9;color:var(--vermelho)}.success{background:#e4f5eb;color:var(--verde)}
+.warning{background:#fff1d6;color:#7f5600}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden}
+th,td{padding:10px;border-bottom:1px solid #e7ecee;text-align:left;font-size:13px;vertical-align:middle}
+th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.pago{background:#e4f5eb;color:var(--verde)}.parcial{background:#e8f0fa;color:#315d8a}.pendente{background:#fff1d6;color:#8a5a00}
+.vencido{background:#f9dddd;color:var(--vermelho)}
+.empty{color:var(--cinza);text-align:center;padding:22px}
+.kpi-alerta{border-left:5px solid var(--vermelho)}
+.filtros{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end;margin-bottom:14px}
+.help{font-size:12px;color:var(--cinza);margin:5px 0 10px}
+
+/* Nota de venda */
+.nota-venda{background:#fff;border:1px solid #c8d2d6;border-radius:8px;padding:22px;max-width:940px;margin:0 auto;box-shadow:var(--sombra)}
+.nota-cabecalho{text-align:center;margin-bottom:18px}.nota-cabecalho .marca{font-size:22px;font-weight:800;letter-spacing:.4px;color:var(--azul)}
+.nota-cabecalho .titulo{margin-top:4px;font-size:18px;font-weight:800}
+.linha-nota{display:grid;grid-template-columns:1fr 180px;gap:12px;margin-bottom:10px}.linha-nota.dupla{grid-template-columns:1fr 1fr}
+.campo-nota{display:flex;align-items:center;gap:8px;border-bottom:1px solid #7c8a90;padding:5px 2px;min-height:38px}
+.campo-nota label{margin:0;white-space:nowrap}.campo-nota input,.campo-nota select{border:0;outline:0;padding:4px 2px;border-radius:0;background:transparent;flex:1;min-width:0}
+.tabela-nota{width:100%;border-collapse:collapse;margin-top:14px;box-shadow:none;border-radius:0}
+.tabela-nota th,.tabela-nota td{border:1px solid #89969b;padding:6px;font-size:13px}
+.tabela-nota th{background:#eef3f5;color:#233138;text-align:center}.tabela-nota input,.tabela-nota select{border:0;outline:0;background:transparent;padding:3px;border-radius:0}
+.nota-resumo{width:330px;margin-left:auto;margin-top:10px;font-size:14px}.nota-resumo .r{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid #aab5b9}.nota-resumo .r.total{font-weight:800;font-size:16px;border-bottom:2px solid var(--azul)}
+.bloco-opcoes{margin-top:18px;display:grid;grid-template-columns:1.5fr 1fr;gap:20px}.bloco-opcoes h4,.obs-nota h4{margin:0 0 8px;font-size:13px}
+.opcoes-linha{display:flex;flex-wrap:wrap;gap:12px 16px;font-size:13px}.opcoes-linha label{display:flex;align-items:center;gap:5px;margin:0;font-weight:500}.opcoes-linha input{width:auto}
+.obs-nota{margin-top:18px}.obs-nota textarea{border:0;border-bottom:1px solid #7c8a90;border-radius:0}
+.assinatura-nota{margin-top:28px;text-align:center}.assinatura-nota input{max-width:420px;border:0;border-bottom:1px solid #7c8a90;border-radius:0;text-align:center;font-weight:700}
+.assinatura-nota small{display:block;margin-top:5px;color:var(--cinza)}.rodape-nota{margin-top:22px;text-align:center;color:var(--azul);font-weight:700;line-height:1.45}
+
+/* Comparativo */
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.barra-linha{display:grid;grid-template-columns:minmax(110px,1.4fr) 2.5fr auto;gap:8px;align-items:center;margin:9px 0;font-size:12px}
+.barra-fundo{background:#e8eef0;border-radius:999px;height:12px;overflow:hidden}.barra{background:var(--azul2);height:100%;border-radius:999px}
+.pos{color:var(--verde)}.neg{color:var(--vermelho)}.neu{color:var(--cinza)}
+.client-report{margin-top:16px;border-top:1px solid #e0e7e9;padding-top:16px}
+.print-only{display:none}
+
+@media(max-width:720px){
+  .form-grid,.linha-nota,.linha-nota.dupla,.bloco-opcoes{grid-template-columns:1fr}
+  .nota-venda{padding:13px}.nota-resumo{width:100%}.tabela-nota{min-width:730px}
+  .barra-linha{grid-template-columns:1fr 1.6fr auto}
+}
+@media print{
+  body{background:#fff}
+  header,nav,#inicio,#vendas,#comparativo,#receber,#clientes,#produtosCad,#relatorios,.actions,.print-hide{display:none!important}
+  main{max-width:none;margin:0;padding:0}#novaVenda{display:block!important}
+  .nota-venda{box-shadow:none;border:0;border-radius:0;max-width:none;width:100%;padding:7mm 9mm}
+  .tabela-nota th{background:#f3f3f3!important;color:#000!important}
+  .nota-venda *{color:#000!important}.print-only{display:block}
+  @page{size:A4 portrait;margin:9mm}
+}
+
+.backup-box{
+  background:#fff;
+  border:1px solid #dbe4e7;
+  border-radius:16px;
+  box-shadow:var(--sombra);
+  padding:18px;
+  margin-top:16px;
+}
+.backup-status{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:8px;
+  font-size:13px;
+  color:var(--cinza);
+}
+.backup-dot{
+  width:10px;height:10px;border-radius:50%;background:var(--verde);display:inline-block;
+}
+
+
+.alerta-box{border-left:5px solid var(--vermelho)}
+.aviso-box{border-left:5px solid #d79a00}
+.ok-box{border-left:5px solid var(--verde)}
+.estoque-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.estoque-card{background:#fff;border:1px solid #e0e7e9;border-radius:14px;padding:14px}
+.estoque-card .nome{font-weight:800;color:var(--azul);margin-bottom:6px}
+.estoque-card .saldo{font-size:25px;font-weight:800}
+.estoque-card .meta{font-size:12px;color:var(--cinza);margin-top:4px}
+.linha-destaque{background:#fff9e8}
+.linha-vencida{background:#fff0f0}
+
+
+#notaClienteModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;padding:18px;overflow:auto}
+#notaClienteModal.aberto{display:block}
+.nota-cliente-doc{background:#fff;max-width:790px;margin:auto;border-radius:12px;padding:24px;box-shadow:0 15px 50px rgba(0,0,0,.2)}
+.nc-topo{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:2px solid var(--azul);padding-bottom:12px;margin-bottom:12px}
+.nc-marca{font-size:25px;font-weight:900;letter-spacing:.5px;color:var(--azul)}
+.nc-slogan{font-size:10px;color:#52656d;margin-top:4px;letter-spacing:.2px}
+.nc-titulo{text-align:right}.nc-titulo strong{font-size:18px;color:var(--azul);display:block}.nc-titulo span{font-size:12px;color:#66757b}
+.nc-cliente{background:#f2f5f6;border-left:4px solid var(--azul);padding:9px 12px;margin:12px 0;font-size:13px}
+.nc-table{width:100%;border-collapse:collapse;margin:13px 0}.nc-table th,.nc-table td{border-bottom:1px solid #d6dfe2;padding:8px 7px;font-size:12px}
+.nc-table th{background:var(--azul);color:#fff;text-transform:uppercase;font-size:10px;letter-spacing:.4px}
+.nc-financeiro{display:grid;grid-template-columns:1fr 310px;gap:22px;margin-top:15px;align-items:start}
+.nc-info-venda{font-size:12px}.nc-info-venda h4,.nc-total h4{margin:0 0 8px;color:var(--azul);font-size:11px;letter-spacing:.5px}
+.nc-info-venda div{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid #e1e7e9}
+.nc-total{max-width:none;margin:0}.nc-total div{display:flex;justify-content:space-between;padding:5px 7px;border-bottom:1px solid #d5dde0;font-size:12px}
+.nc-total .grand{background:var(--azul);color:#fff;font-size:16px;font-weight:900;border:0;margin-top:5px;padding:9px}
+.nc-total .saldo{font-weight:900;color:var(--vermelho)}
+.nc-status{display:inline-block;border-radius:999px;padding:4px 9px;font-weight:900;font-size:10px}
+.nc-status.pago{background:#e4f5eb;color:var(--verde)}.nc-status.parcial{background:#e8f0fa;color:#315d8a}.nc-status.pendente{background:#fff1d6;color:#8a5a00}
+.nc-rodape{text-align:center;border-top:1px solid #cbd6da;margin-top:22px;padding-top:12px;color:var(--azul);font-weight:900;font-size:12px;letter-spacing:.3px}
+@media(max-width:650px){.nc-financeiro{grid-template-columns:1fr}.nota-cliente-doc{padding:16px}.nc-topo{gap:10px}.nc-marca{font-size:20px}}
+@media print{
+ body.print-nota-cliente > *:not(#notaClienteModal){display:none!important}
+ body.print-nota-cliente #notaClienteModal{display:block!important;position:static;background:#fff;padding:0}
+ body.print-nota-cliente .nota-cliente-doc{box-shadow:none;border-radius:0;max-width:none;padding:6mm}
+ body.print-nota-cliente .nc-actions{display:none!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>GRANJA SÃO JOSÉ</h1><small>Painel comercial e financeiro</small></div>
+  <div id="dataHoje"></div>
+</header>
+
+<nav>
+  <button class="active" data-section="inicio">Visão Geral</button>
+  <button data-section="novaVenda">Nova Venda</button>
+  <button data-section="vendas">Vendas</button>
+  <button data-section="comparativo">Comparativo</button>
+  <button data-section="receber">Contas a Receber</button>
+  <button data-section="clientes">Clientes</button>
+  <button data-section="estoque">Produção e Estoque</button>
+  <button data-section="produtosCad">Produtos e Preços</button>
+  <button data-section="fechamento">Fechamento Diário</button>
+  <button data-section="relatorios">Relatórios</button>
+</nav>
+
+<main>
+<section id="inicio" class="section active">
+  <div class="grid">
+    <div class="mini-card"><h3>Faturamento do mês</h3><div class="valor" id="kpiMes">R$ 0,00</div><div class="sub" id="kpiVariacao">—</div></div>
+    <div class="mini-card"><h3>Caixas vendidas no mês</h3><div class="valor" id="kpiCaixas">0</div></div>
+    <div class="mini-card"><h3>Recebido</h3><div class="valor" id="kpiRecebido">R$ 0,00</div></div>
+    <div class="mini-card"><h3>A receber</h3><div class="valor" id="kpiReceber">R$ 0,00</div></div>
+    <div class="mini-card kpi-alerta"><h3>Contas vencidas</h3><div class="valor" id="kpiVencido">R$ 0,00</div><div class="sub" id="kpiVencidoQtd">0 títulos</div></div>
+    <div class="mini-card"><h3>Margem estimada do mês</h3><div class="valor" id="kpiMargem">R$ 0,00</div><div class="sub">Com base nos custos cadastrados</div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h2>Últimas vendas</h2><div id="ultimasVendas"></div></div>
+  <div class="grid" style="margin-top:16px">
+    <div class="mini-card alerta-box"><h3>Clientes inadimplentes</h3><div class="valor" id="kpiInadimplentes">0</div><div class="sub" id="kpiInadimplentesValor">R$ 0,00 vencidos</div></div>
+    <div class="mini-card aviso-box"><h3>Vence hoje</h3><div class="valor" id="kpiVenceHoje">R$ 0,00</div></div>
+    <div class="mini-card"><h3>Próximos 7 dias</h3><div class="valor" id="kpiProx7">R$ 0,00</div></div>
+    <div class="mini-card"><h3>Dias desde o último backup</h3><div class="valor" id="kpiBackupDias">—</div><div class="sub" id="kpiBackupAviso">Faça backups regularmente</div></div>
+  </div>
+
+  <div class="backup-box">
+    <h2 style="margin:0 0 8px;color:var(--azul)">Segurança dos registros</h2>
+    <div class="help">O painel salva automaticamente neste aparelho. Para não correr risco de perder tudo ao trocar de aparelho ou limpar o navegador, faça um backup completo de tempos em tempos.</div>
+    <div class="actions">
+      <button class="btn primary" onclick="baixarBackup()">Fazer backup agora</button>
+      <button class="btn secondary" onclick="document.getElementById('arquivoBackup').click()">Restaurar backup</button>
+      <input id="arquivoBackup" type="file" accept=".json,application/json" style="display:none" onchange="restaurarBackup(event)">
+    </div>
+    <div class="backup-status">
+      <span class="backup-dot"></span>
+      <span id="statusSalvamento">Salvamento automático ativo</span>
+      <span id="ultimoBackupTexto"></span>
+    </div>
+  </div>
+
+</section>
+
+<section id="novaVenda" class="section">
+<div class="nota-venda">
+  <div class="nota-cabecalho"><div class="marca">GRANJA SÃO JOSÉ</div><div class="titulo">NOTA / REGISTRO DE VENDA</div></div>
+  <input type="hidden" id="editId">
+  <div class="linha-nota">
+    <div class="campo-nota"><label>Cliente:</label><input id="cliente" list="listaClientesVenda" placeholder="Nome do cliente"><datalist id="listaClientesVenda"></datalist></div>
+    <div class="campo-nota"><label>Venda nº:</label><input id="numeroVenda" type="number" min="1"></div>
+  </div>
+  <div class="linha-nota dupla">
+    <div class="campo-nota"><label>Data:</label><input id="dataVenda" type="date"></div>
+    <div class="campo-nota"><label>Vendedor:</label><input id="vendedor" value="Granja São José"></div>
+  </div>
+  <div class="linha-nota dupla">
+    <div class="campo-nota"><label>Vencimento:</label><input id="vencimentoVenda" type="date"></div>
+    <div class="campo-nota"><label>Responsável:</label><input id="responsavelVenda" value="Erik Gabriel"></div>
+  </div>
+
+  <div class="help print-hide">Uma única venda pode conter várias classificações. Use “+ Adicionar linha” para cada tipo de ovo comprado pelo cliente.</div>
+  <div id="avisoPrecoMinimo" class="help print-hide" style="font-weight:700"></div>
+  <div class="table-wrap">
+    <table class="tabela-nota">
+      <thead><tr><th style="width:75px">Quantidade</th><th style="width:90px">Unidade</th><th>Produto / Classificação</th><th style="width:125px">Valor unit.</th><th style="width:125px">Custo unit.</th><th style="width:135px">Valor total</th><th class="print-hide" style="width:48px"></th></tr></thead>
+      <tbody id="produtos"></tbody>
+    </table>
+  </div>
+  <div class="actions print-hide"><button class="btn secondary" onclick="adicionarProduto()">+ Adicionar linha</button></div>
+
+  <div class="nota-resumo">
+    <div class="r"><span>Subtotal:</span><strong id="subtotal">R$ 0,00</strong></div>
+    <div class="r"><span>Desconto:</span><input id="desconto" type="number" step="0.01" value="0" style="width:120px;text-align:right"></div>
+    <div class="r total"><span>TOTAL DA VENDA:</span><strong id="totalVenda">R$ 0,00</strong></div>
+    <div class="r print-hide"><span>Margem estimada:</span><strong id="margemVenda">R$ 0,00</strong></div>
+  </div>
+
+  <div class="bloco-opcoes">
+    <div><h4>FORMA DE PAGAMENTO</h4><div class="opcoes-linha">
+      <label><input type="radio" name="pagamentoRadio" value="PIX"> PIX</label>
+      <label><input type="radio" name="pagamentoRadio" value="Dinheiro"> Dinheiro</label>
+      <label><input type="radio" name="pagamentoRadio" value="Cartão"> Cartão</label>
+      <label><input type="radio" name="pagamentoRadio" value="A prazo" checked> A prazo</label>
+      <label><input type="radio" name="pagamentoRadio" value="Outro"> Outro</label>
+    </div></div>
+    <div><h4>SITUAÇÃO</h4><div class="opcoes-linha">
+      <label><input type="radio" name="situacaoRadio" value="Pago"> Pago</label>
+      <label><input type="radio" name="situacaoRadio" value="Parcial"> Parcial</label>
+      <label><input type="radio" name="situacaoRadio" value="Pendente" checked> Pendente</label>
+    </div></div>
+  </div>
+
+  <div class="form-grid print-hide" style="margin-top:14px">
+    <div><label>Valor já recebido (R$)</label><input id="valorPagoVenda" type="number" min="0" step="0.01" value="0" oninput="atualizarSituacaoPeloPagamento()"></div>
+    <div><label>Saldo a receber</label><input id="saldoVendaExibido" disabled value="R$ 0,00"></div>
+  </div>
+
+  <div class="obs-nota"><h4>OBSERVAÇÕES</h4><textarea id="observacoes"></textarea></div>
+  <div class="assinatura-nota"><input id="assinaturaExibida" value="Erik Gabriel"><small>Assinatura / responsável pela venda</small></div>
+  <div class="rodape-nota"><div>Granja São José</div><div>Seguimos produzindo o melhor alimento depois do leite materno.</div></div>
+  <div class="print-only" style="text-align:center;margin-top:8px;font-size:10px">Documento gerado pelo Painel Comercial da Granja São José.</div>
+  <div class="actions print-hide" style="justify-content:center">
+    <button class="btn primary" id="btnSalvarVenda" onclick="salvarVenda()">Salvar venda</button>
+    <button class="btn secondary" onclick="imprimirNota()">Imprimir / Gerar PDF</button>
+    <button class="btn secondary" onclick="limparFormulario()">Nova / Limpar</button>
+  </div>
+</div>
+</section>
+
+<section id="vendas" class="section">
+<div class="card">
+  <h2>Histórico de Vendas</h2>
+  <div class="filtros">
+    <div><label>De</label><input id="fVendaDe" type="date" onchange="renderVendas()"></div>
+    <div><label>Até</label><input id="fVendaAte" type="date" onchange="renderVendas()"></div>
+    <div><label>Cliente</label><input id="fVendaCliente" placeholder="Buscar cliente" oninput="renderVendas()"></div>
+    <div><label>Situação</label><select id="fVendaSituacao" onchange="renderVendas()"><option value="">Todas</option><option>Pago</option><option>Parcial</option><option>Pendente</option></select></div>
+  </div>
+  <div id="listaVendas"></div>
+</div>
+</section>
+
+<section id="comparativo" class="section">
+<div class="card">
+  <h2>Painel Comparativo</h2>
+  <div class="filtros"><div><label>Comparar</label><select id="periodoComparativo" onchange="renderComparativo()"><option value="mes">Mês atual x mês anterior</option><option value="dia">Hoje x ontem</option></select></div></div>
+  <div class="grid" style="margin-bottom:16px">
+    <div class="mini-card"><h3>Faturamento atual</h3><div class="valor" id="compAtual">R$ 0,00</div><div class="sub" id="compVariacao">—</div></div>
+    <div class="mini-card"><h3>Faturamento anterior</h3><div class="valor" id="compAnterior">R$ 0,00</div></div>
+    <div class="mini-card"><h3>Quantidade de vendas</h3><div class="valor" id="compQtd">0</div></div>
+    <div class="mini-card"><h3>Ticket médio</h3><div class="valor" id="compTicket">R$ 0,00</div></div>
+  </div>
+  <div class="comp-grid">
+    <div class="mini-card"><h2 style="font-size:17px">Classificações mais vendidas</h2><div id="compProdutos"></div></div>
+    <div class="mini-card"><h2 style="font-size:17px">Clientes que mais compraram</h2><div id="compClientes"></div></div>
+    <div class="mini-card"><h2 style="font-size:17px">Recebido x Pendente</h2><div id="compRecebimento"></div></div>
+    <div class="mini-card"><h2 style="font-size:17px">Preço médio por classificação</h2><div id="compPrecoMedio"></div></div>
+  </div>
+</div>
+</section>
+
+<section id="receber" class="section">
+<div class="card">
+  <h2>Contas a Receber</h2>
+  <div class="filtros">
+    <div><label>Cliente</label><input id="fReceberCliente" placeholder="Buscar cliente" oninput="renderReceber()"></div>
+    <div><label>Status</label><select id="fReceberStatus" onchange="renderReceber()"><option value="">Pendentes + vencidas</option><option value="vencido">Somente vencidas</option><option value="avencer">Somente a vencer</option></select></div>
+  </div>
+  <div id="listaReceber"></div>
+</div>
+</section>
+
+<section id="clientes" class="section">
+<div class="card">
+  <h2>Clientes</h2>
+  <div class="form-grid">
+    <div><label>Nome / Razão social</label><input id="cadClienteNome"></div>
+    <div><label>Telefone</label><input id="cadClienteTelefone"></div>
+    <div><label>Documento</label><input id="cadClienteDocumento"></div>
+    <div><label>Prazo padrão (dias)</label><input id="cadClientePrazo" type="number" min="0" value="0"></div>
+    <div class="full"><label>Observações</label><input id="cadClienteObs"></div>
+  </div>
+  <div class="actions"><button class="btn primary" onclick="salvarCliente()">Cadastrar cliente</button></div>
+  <div style="margin-top:18px" id="listaClientes"></div>
+  <div id="relatorioCliente" class="client-report"></div>
+</div>
+</section>
+
+
+<section id="estoque" class="section">
+<div class="card">
+  <h2>Produção e Estoque</h2>
+  <div class="help">Registre a produção diária. As vendas já lançadas são descontadas automaticamente do estoque.</div>
+
+  <div class="form-grid">
+    <div><label>Data da produção</label><input id="prodData" type="date"></div>
+    <div><label>Classificação</label><select id="prodClassificacao"></select></div>
+    <div><label>Quantidade produzida (caixas)</label><input id="prodQtd" type="number" min="0" step="1"></div>
+    <div><label>Observação</label><input id="prodObs" placeholder="Opcional"></div>
+  </div>
+  <div class="actions">
+    <button class="btn primary" onclick="salvarProducao()">Registrar produção</button>
+  </div>
+
+  <div style="margin-top:18px">
+    <h3 style="color:var(--azul)">Saldo atual por classificação</h3>
+    <div id="cardsEstoque" class="estoque-grid"></div>
+  </div>
+
+  <div style="margin-top:18px">
+    <h3 style="color:var(--azul)">Últimos lançamentos de produção</h3>
+    <div id="listaProducao"></div>
+  </div>
+</div>
+</section>
+
+<section id="produtosCad" class="section">
+<div class="card">
+  <h2>Produtos, Classificações, Preços e Custos</h2>
+  <div class="help">Cadastre as classificações uma vez. Ao lançar uma venda, o preço e o custo podem ser preenchidos automaticamente.</div>
+  <input id="produtoEditId" type="hidden">
+  <div class="form-grid">
+    <div><label>Classificação / Produto</label><input id="cadProdutoNome" placeholder="Ex.: Jumbo Branco"></div>
+    <div><label>Preço padrão por caixa (R$)</label><input id="cadProdutoPreco" type="number" step="0.01"></div>
+    <div><label>Custo estimado por caixa (R$)</label><input id="cadProdutoCusto" type="number" step="0.01"></div>
+    <div><label>Margem mínima desejada (%)</label><input id="cadProdutoMargem" type="number" step="0.1" value="10"></div>
+    <div><label>Ativo</label><select id="cadProdutoAtivo"><option value="sim">Sim</option><option value="nao">Não</option></select></div>
+  </div>
+  <div class="actions"><button class="btn primary" onclick="salvarProdutoCad()">Salvar produto</button><button class="btn secondary" onclick="limparProdutoCad()">Limpar</button></div>
+  <div style="margin-top:18px" id="listaProdutosCad"></div>
+</div>
+</section>
+
+
+<section id="fechamento" class="section">
+<div class="card">
+  <h2>Fechamento Diário</h2>
+  <div class="filtros">
+    <div><label>Data</label><input id="fechData" type="date" onchange="renderFechamento()"></div>
+  </div>
+  <div class="grid">
+    <div class="mini-card"><h3>Produção do dia</h3><div class="valor" id="fechProducao">0 cx</div></div>
+    <div class="mini-card"><h3>Caixas vendidas</h3><div class="valor" id="fechVendidas">0 cx</div></div>
+    <div class="mini-card"><h3>Faturamento</h3><div class="valor" id="fechFat">R$ 0,00</div></div>
+    <div class="mini-card"><h3>Recebido</h3><div class="valor" id="fechRecebido">R$ 0,00</div></div>
+    <div class="mini-card"><h3>A receber</h3><div class="valor" id="fechReceber">R$ 0,00</div></div>
+    <div class="mini-card"><h3>Margem estimada</h3><div class="valor" id="fechMargem">R$ 0,00</div></div>
+  </div>
+
+  <div class="comp-grid" style="margin-top:16px">
+    <div class="mini-card"><h2 style="font-size:17px">Produção por classificação</h2><div id="fechProdClass"></div></div>
+    <div class="mini-card"><h2 style="font-size:17px">Vendas por classificação</h2><div id="fechVendaClass"></div></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn secondary" onclick="imprimirFechamento()">Imprimir fechamento</button>
+  </div>
+</div>
+</section>
+
+<section id="relatorios" class="section">
+<div class="card">
+  <h2>Relatórios</h2>
+  <div class="filtros">
+    <div><label>De</label><input id="relDe" type="date" onchange="renderRelatorios()"></div>
+    <div><label>Até</label><input id="relAte" type="date" onchange="renderRelatorios()"></div>
+  </div>
+  <div class="grid">
+    <div class="mini-card"><h3>Faturamento</h3><div class="valor" id="relFat">R$ 0,00</div></div>
+    <div class="mini-card"><h3>Caixas vendidas</h3><div class="valor" id="relCaixas">0</div></div>
+    <div class="mini-card"><h3>Margem estimada</h3><div class="valor" id="relMargem">R$ 0,00</div></div>
+    <div class="mini-card"><h3>Preço médio por caixa</h3><div class="valor" id="relPrecoMedio">R$ 0,00</div></div>
+  </div>
+  <div class="comp-grid" style="margin-top:16px">
+    <div class="mini-card"><h2 style="font-size:17px">Ranking de clientes</h2><div id="relRankClientes"></div></div>
+    <div class="mini-card"><h2 style="font-size:17px">Ranking de classificações</h2><div id="relRankProdutos"></div></div>
+  </div>
+</div>
+</section>
+</main>
+
+<script>
+const moeda=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const hojeISO=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+const dataBR=s=>s?s.split('-').reverse().join('/'):'—';
+const addDias=(iso,dias)=>{if(!iso)return '';const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+Number(dias||0));return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+const gerarId=()=>Date.now()+Math.floor(Math.random()*1000);
+
+
+function snapshotDados(){
+  const dados = {
+    versao: 10,
+    gerado_em: new Date().toISOString(),
+    vendas: JSON.parse(localStorage.getItem('granja_vendas') || '[]'),
+    clientes: JSON.parse(localStorage.getItem('granja_clientes') || '[]'),
+    produtos: JSON.parse(localStorage.getItem('granja_produtos') || '[]'),
+    producoes: JSON.parse(localStorage.getItem('granja_producoes') || '[]')
+  };
+  localStorage.setItem('granja_snapshot_interno', JSON.stringify(dados));
+  localStorage.setItem('granja_ultimo_salvamento', new Date().toISOString());
+  atualizarStatusBackup();
+}
+
+function baixarBackup(){
+  snapshotDados();
+  const dados = JSON.parse(localStorage.getItem('granja_snapshot_interno') || '{}');
+  const data = new Date();
+  const nome = `backup_granja_sao_jose_${data.getFullYear()}-${String(data.getMonth()+1).padStart(2,'0')}-${String(data.getDate()).padStart(2,'0')}.json`;
+  const blob = new Blob([JSON.stringify(dados,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  localStorage.setItem('granja_ultimo_backup_arquivo', new Date().toISOString());
+  atualizarStatusBackup();
+}
+
+function restaurarBackup(event){
+  const arquivo = event.target.files && event.target.files[0];
+  if(!arquivo) return;
+  const leitor = new FileReader();
+  leitor.onload = e => {
+    try{
+      const dados = JSON.parse(e.target.result);
+      if(!Array.isArray(dados.vendas) || !Array.isArray(dados.clientes) || !Array.isArray(dados.produtos)){
+        throw new Error('Backup inválido');
+      }
+      if(!confirm('Restaurar este backup? Os registros atuais serão substituídos pelos dados do arquivo.')) return;
+      vendas = dados.vendas;
+      clientesCad = dados.clientes;
+      produtosCad = dados.produtos;
+      producoes = Array.isArray(dados.producoes) ? dados.producoes : [];
+      localStorage.setItem('granja_vendas', JSON.stringify(vendas));
+      localStorage.setItem('granja_clientes', JSON.stringify(clientesCad));
+      localStorage.setItem('granja_produtos', JSON.stringify(produtosCad));
+      localStorage.setItem('granja_producoes', JSON.stringify(producoes));
+      snapshotDados();
+      limparFormulario();
+      renderTudo();
+      alert('Backup restaurado com sucesso!');
+    }catch(err){
+      alert('Não foi possível restaurar este arquivo. Verifique se ele é um backup válido do painel.');
+    }finally{
+      event.target.value='';
+    }
+  };
+  leitor.readAsText(arquivo);
+}
+
+function atualizarStatusBackup(){
+  const el = document.getElementById('ultimoBackupTexto');
+  if(!el) return;
+  const ultimo = localStorage.getItem('granja_ultimo_backup_arquivo');
+  if(ultimo){
+    const d = new Date(ultimo);
+    el.textContent = `• Último backup em arquivo: ${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+  }else{
+    el.textContent = '• Ainda não foi feito backup em arquivo';
+  }
+}
+
+let vendas=JSON.parse(localStorage.getItem('granja_vendas')||'[]');
+let clientesCad=JSON.parse(localStorage.getItem('granja_clientes')||'[]');
+let produtosCad=JSON.parse(localStorage.getItem('granja_produtos')||'[]');
+let producoes=JSON.parse(localStorage.getItem('granja_producoes')||'[]');
+
+if(!produtosCad.length){
+  produtosCad=[
+    {id:1,nome:'Caixa de Ovos Jumbo Branco',preco:138,custo:0,margemMin:10,ativo:'sim'},
+    {id:2,nome:'Caixa de Ovos Extra Branco',preco:135,custo:0,margemMin:10,ativo:'sim'},
+    {id:3,nome:'Caixa de Ovos A Branco',preco:132,custo:0,margemMin:10,ativo:'sim'}
+  ];
+  localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));
+}
+
+document.getElementById('dataHoje').textContent=new Date().toLocaleDateString('pt-BR');
+setTimeout(()=>{if(document.getElementById('prodData'))document.getElementById('prodData').value=hojeISO();if(document.getElementById('fechData'))document.getElementById('fechData').value=hojeISO();},0);
+
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.section).classList.add('active');
+    renderTudo();
+  }
+});
+
+function proximoNumero(){return Math.max(0,...vendas.map(v=>Number(v.numero)||0))+1}
+function produtoAtivo(nome){return produtosCad.find(p=>p.nome===nome)}
+function optionsProdutos(sel=''){
+  const opts=produtosCad.filter(p=>p.ativo==='sim').map(p=>`<option value="${p.nome.replaceAll('"','&quot;')}" ${p.nome===sel?'selected':''}>${p.nome}</option>`).join('');
+  return `<option value="">Selecione...</option>${opts}<option value="__outro__">Outro / digitar</option>`;
+}
+
+function adicionarProduto(produto='',qtd='',valor='',custo='',unidade='Caixa'){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input class="p-qtd" type="number" min="0" step="1" value="${qtd}"></td>
+    <td><select class="p-unidade"><option>Caixa</option><option>Pente</option></select></td>
+    <td>
+      <select class="p-select">${optionsProdutos(produto)}</select>
+      <input class="p-produto" placeholder="Digite a classificação" value="${produto && !produtosCad.some(p=>p.nome===produto)?produto:''}" style="display:${produto && !produtosCad.some(p=>p.nome===produto)?'block':'none'};margin-top:4px">
+    </td>
+    <td><input class="p-valor" type="number" min="0" step="0.01" value="${valor}"></td>
+    <td><input class="p-custo" type="number" min="0" step="0.01" value="${custo}"></td>
+    <td><input class="p-total" disabled></td>
+    <td class="print-hide"><button class="btn danger" style="padding:6px 9px" onclick="this.closest('tr').remove();calcularTotais()">×</button></td>`;
+  const sel=tr.querySelector('.p-select'), inp=tr.querySelector('.p-produto'); tr.querySelector('.p-unidade').value=unidade||'Caixa';
+  if(produto && !produtosCad.some(p=>p.nome===produto)) sel.value='__outro__';
+  sel.onchange=()=>{
+    if(sel.value==='__outro__'){inp.style.display='block';inp.focus()}
+    else{
+      inp.style.display='none';inp.value='';
+      const p=produtoAtivo(sel.value);
+      if(p){const u=tr.querySelector('.p-unidade').value;tr.querySelector('.p-valor').value=u==='Pente'?(Number(p.preco||0)/12).toFixed(2):(p.preco||'');tr.querySelector('.p-custo').value=p.custo||''}
+    }
+    calcularTotais();
+  };
+  tr.querySelectorAll('input').forEach(i=>i.addEventListener('input',calcularTotais)); tr.querySelector('.p-unidade').addEventListener('change',()=>{const p=produtoAtivo(sel.value);if(p){tr.querySelector('.p-valor').value=tr.querySelector('.p-unidade').value==='Pente'?(Number(p.preco||0)/12).toFixed(2):(p.preco||'')}calcularTotais()});
+  document.getElementById('produtos').appendChild(tr);
+  calcularTotais();
+}
+
+function nomeProdutoLinha(tr){
+  const sel=tr.querySelector('.p-select').value;
+  return sel==='__outro__'?tr.querySelector('.p-produto').value.trim():sel;
+}
+
+function calcularTotais(){
+  let subtotal=0,custoTotal=0;
+  document.querySelectorAll('#produtos tr').forEach(tr=>{
+    const q=Number(tr.querySelector('.p-qtd').value||0),v=Number(tr.querySelector('.p-valor').value||0),c=Number(tr.querySelector('.p-custo').value||0),u=tr.querySelector('.p-unidade').value;
+    const t=q*v; tr.querySelector('.p-total').value=moeda(t);subtotal+=t;custoTotal+=q*(u==='Pente'?c/12:c);
+  });
+  const desc=Number(document.getElementById('desconto').value||0),total=Math.max(0,subtotal-desc);
+  document.getElementById('subtotal').textContent=moeda(subtotal);
+  document.getElementById('totalVenda').textContent=moeda(total);
+  document.getElementById('margemVenda').textContent=moeda(total-custoTotal); if(document.getElementById('valorPagoVenda')) atualizarSituacaoPeloPagamento();
+}
+document.getElementById('desconto').addEventListener('input',calcularTotais);
+
+
+function valorPagoVenda(v){
+  if(v && v.valorPago!==undefined) return Math.max(0,Math.min(Number(v.total||0),Number(v.valorPago||0)));
+  return v && v.situacao==='Pago' ? Number(v.total||0) : 0;
+}
+function saldoVenda(v){return Math.max(0,Number(v.total||0)-valorPagoVenda(v))}
+function situacaoFinanceira(v){
+  const pago=valorPagoVenda(v), total=Number(v.total||0);
+  if(total>0 && pago>=total-0.005)return 'Pago';
+  if(pago>0)return 'Parcial';
+  return 'Pendente';
+}
+function atualizarSituacaoPeloPagamento(){
+  const total=Number((document.getElementById('totalVenda').textContent||'').replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'))||0;
+  const pago=Math.max(0,Number(document.getElementById('valorPagoVenda').value||0));
+  document.getElementById('saldoVendaExibido').value=moeda(Math.max(0,total-pago));
+  const sit=pago>=total && total>0?'Pago':pago>0?'Parcial':'Pendente';
+  const r=document.querySelector(`input[name="situacaoRadio"][value="${sit}"]`);if(r)r.checked=true;
+}
+
+function limparFormulario(){
+  document.getElementById('editId').value='';
+  document.getElementById('cliente').value='';
+  document.getElementById('numeroVenda').value=proximoNumero();
+  document.getElementById('dataVenda').value=hojeISO();
+  document.getElementById('vencimentoVenda').value='';
+  document.getElementById('vendedor').value='Granja São José';
+  document.getElementById('responsavelVenda').value='Erik Gabriel';
+  document.getElementById('assinaturaExibida').value='Erik Gabriel';
+  document.getElementById('desconto').value=0;
+  document.getElementById('observacoes').value='';
+  if(document.getElementById('valorPagoVenda')) document.getElementById('valorPagoVenda').value=0;
+  document.querySelector('input[name="pagamentoRadio"][value="A prazo"]').checked=true;
+  document.querySelector('input[name="situacaoRadio"][value="Pendente"]').checked=true;
+  document.getElementById('produtos').innerHTML='';
+  for(let i=0;i<5;i++)adicionarProduto();
+  document.getElementById('btnSalvarVenda').textContent='Salvar venda';
+  calcularTotais();
+}
+
+document.getElementById('cliente').addEventListener('change',()=>{
+  const c=clientesCad.find(x=>x.nome.toLowerCase()===document.getElementById('cliente').value.trim().toLowerCase());
+  if(c && Number(c.prazo)>0 && document.getElementById('dataVenda').value){
+    document.getElementById('vencimentoVenda').value=addDias(document.getElementById('dataVenda').value,c.prazo);
+  }
+});
+
+function salvarVenda(){
+  const cliente=document.getElementById('cliente').value.trim();
+  if(!cliente){alert('Informe o cliente.');return}
+  const produtos=[...document.querySelectorAll('#produtos tr')].map(tr=>{
+    const produto=nomeProdutoLinha(tr),quantidade=Number(tr.querySelector('.p-qtd').value||0),valorUnit=Number(tr.querySelector('.p-valor').value||0),custoUnit=Number(tr.querySelector('.p-custo').value||0),unidade=tr.querySelector('.p-unidade').value||'Caixa';
+    return {produto,quantidade,unidade,valorUnit,custoUnit,total:quantidade*valorUnit,custoTotal:quantidade*(unidade==='Pente'?custoUnit/12:custoUnit)};
+  }).filter(p=>p.produto&&p.quantidade>0);
+  if(!produtos.length){alert('Adicione pelo menos um produto.');return}
+  const subtotal=produtos.reduce((s,p)=>s+p.total,0),desconto=Number(document.getElementById('desconto').value||0),total=Math.max(0,subtotal-desconto);
+  const editId=Number(document.getElementById('editId').value||0);
+  const venda={
+    id:editId||gerarId(),numero:Number(document.getElementById('numeroVenda').value||proximoNumero()),cliente,
+    data:document.getElementById('dataVenda').value,vencimento:document.getElementById('vencimentoVenda').value,
+    vendedor:document.getElementById('vendedor').value.trim(),responsavel:document.getElementById('responsavelVenda').value.trim(),
+    assinatura:document.getElementById('assinaturaExibida').value.trim(),produtos,subtotal,desconto,total,
+    custoTotal:produtos.reduce((s,p)=>s+p.custoTotal,0),
+    pagamento:(document.querySelector('input[name="pagamentoRadio"]:checked')||{}).value||'A prazo',
+    valorPago:Math.min(total,Math.max(0,Number(document.getElementById('valorPagoVenda').value||0))),
+    situacao:'Pendente',
+    observacoes:document.getElementById('observacoes').value.trim()
+  };
+  venda.situacao=situacaoFinanceira(venda);
+  if(editId){vendas=vendas.map(v=>v.id===editId?venda:v)}
+  else vendas.unshift(venda);
+  localStorage.setItem('granja_vendas',JSON.stringify(vendas));
+  snapshotDados();
+  if(!clientesCad.some(c=>c.nome.toLowerCase()===cliente.toLowerCase())){
+    clientesCad.push({id:gerarId(),nome:cliente,telefone:'',documento:'',prazo:0,obs:''});
+    localStorage.setItem('granja_clientes',JSON.stringify(clientesCad));
+    snapshotDados();
+  }
+  alert(editId?'Venda atualizada com sucesso!':'Venda salva com sucesso!');
+  limparFormulario();renderTudo();
+}
+
+function editarVenda(id){
+  const v=vendas.find(x=>x.id===id);if(!v)return;
+  document.getElementById('editId').value=v.id;
+  document.getElementById('cliente').value=v.cliente;
+  document.getElementById('numeroVenda').value=v.numero;
+  document.getElementById('dataVenda').value=v.data||'';
+  document.getElementById('vencimentoVenda').value=v.vencimento||'';
+  document.getElementById('vendedor').value=v.vendedor||'Granja São José';
+  document.getElementById('responsavelVenda').value=v.responsavel||'Erik Gabriel';
+  document.getElementById('assinaturaExibida').value=v.assinatura||v.responsavel||'Erik Gabriel';
+  document.getElementById('desconto').value=v.desconto||0;document.getElementById('observacoes').value=v.observacoes||'';if(document.getElementById('valorPagoVenda')) document.getElementById('valorPagoVenda').value=valorPagoVenda(v);
+  const pr=document.querySelector(`input[name="pagamentoRadio"][value="${v.pagamento}"]`);if(pr)pr.checked=true;
+  const sr=document.querySelector(`input[name="situacaoRadio"][value="${v.situacao}"]`);if(sr)sr.checked=true;
+  document.getElementById('produtos').innerHTML='';
+  (v.produtos||[]).forEach(p=>adicionarProduto(p.produto,p.quantidade,p.valorUnit,p.custoUnit||0,p.unidade||'Caixa'));
+  adicionarProduto();
+  document.getElementById('btnSalvarVenda').textContent='Atualizar venda';
+  calcularTotais();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.section==='novaVenda'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id==='novaVenda'));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function excluirVenda(id){
+  if(confirm('Excluir esta venda?')){vendas=vendas.filter(v=>v.id!==id);localStorage.setItem('granja_vendas',JSON.stringify(vendas));snapshotDados();renderTudo()}
+}
+function marcarPago(id){const v=vendas.find(x=>x.id===id);if(v){v.valorPago=Number(v.total||0);v.situacao='Pago';localStorage.setItem('granja_vendas',JSON.stringify(vendas));snapshotDados();renderTudo()}}
+function statusReceber(v){
+  const sit=situacaoFinanceira(v);
+  if(sit==='Pago')return 'pago';
+  if(v.vencimento && v.vencimento<hojeISO())return 'vencido';
+  return sit==='Parcial'?'parcial':'pendente';
+}
+function imprimirNota(){
+  if(!document.getElementById('cliente').value.trim()){alert('Preencha o cliente antes de imprimir.');return}
+  calcularTotais();window.print();
+}
+
+function tabelaVendas(lista,modo='vendas'){
+  if(!lista.length)return '<div class="empty">Nenhum registro encontrado.</div>';
+  return `<div class="table-wrap"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Data</th><th>Caixas</th><th>Total</th><th>Saldo</th><th>Venc.</th><th>Status</th><th>Dias</th><th>Ações</th></tr></thead><tbody>${
+    lista.map(v=>{
+      const caixas=(v.produtos||[]).reduce((s,p)=>s+Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1),0),st=statusReceber(v);
+      let acoes=modo==='receber'
+        ? `<button class="btn success" onclick="marcarPago(${v.id})">Marcar pago</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Abrir</button>`
+        : `<button class="btn primary" onclick="abrirNotaCliente(${v.id})">Enviar nota</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Editar</button> <button class="btn danger" onclick="excluirVenda(${v.id})">Excluir</button>`;
+      return `<tr><td>${v.numero||'—'}</td><td>${v.cliente}</td><td>${dataBR(v.data)}</td><td>${caixas}</td><td>${moeda(v.total)}</td><td>${moeda(saldoVenda(v))}</td><td>${dataBR(v.vencimento)}</td><td><span class="badge ${st}">${st==='vencido'?'Vencido':situacaoFinanceira(v)}</span></td><td>${st==='vencido'?diasEntre(v.vencimento,hojeISO())+' d':'—'}</td><td>${acoes}</td></tr>`;
+    }).join('')
+  }</tbody></table></div>`;
+}
+
+function renderVendas(){
+  let l=[...vendas];const de=document.getElementById('fVendaDe').value,ate=document.getElementById('fVendaAte').value,cli=document.getElementById('fVendaCliente').value.toLowerCase(),sit=document.getElementById('fVendaSituacao').value;
+  if(de)l=l.filter(v=>v.data>=de);if(ate)l=l.filter(v=>v.data<=ate);if(cli)l=l.filter(v=>v.cliente.toLowerCase().includes(cli));if(sit)l=l.filter(v=>v.situacao===sit);
+  document.getElementById('listaVendas').innerHTML=tabelaVendas(l);
+}
+
+function renderReceber(){
+  let l=vendas.filter(v=>saldoVenda(v)>0),cli=document.getElementById('fReceberCliente').value.toLowerCase(),st=document.getElementById('fReceberStatus').value;
+  if(cli)l=l.filter(v=>v.cliente.toLowerCase().includes(cli));
+  if(st==='vencido')l=l.filter(v=>statusReceber(v)==='vencido');
+  if(st==='avencer')l=l.filter(v=>statusReceber(v)!=='vencido');
+  l.sort((a,b)=>(a.vencimento||'9999').localeCompare(b.vencimento||'9999'));
+  document.getElementById('listaReceber').innerHTML=tabelaVendas(l,'receber');
+}
+
+function resumo(lista){
+  const faturamento=lista.reduce((s,v)=>s+Number(v.total||0),0),caixas=lista.reduce((s,v)=>s+(v.produtos||[]).reduce((z,p)=>z+Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1),0),0);
+  const recebido=lista.reduce((s,v)=>s+valorPagoVenda(v),0),pendente=lista.reduce((s,v)=>s+saldoVenda(v),0);
+  const custo=lista.reduce((s,v)=>s+Number(v.custoTotal||0),0),clientes={},produtos={};
+  lista.forEach(v=>{
+    clientes[v.cliente]=(clientes[v.cliente]||0)+Number(v.total||0);
+    (v.produtos||[]).forEach(p=>{
+      if(!produtos[p.produto])produtos[p.produto]={qtd:0,total:0};
+      produtos[p.produto].qtd+=Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1);produtos[p.produto].total+=Number(p.total||0);
+    });
+  });
+  return {faturamento,caixas,recebido,pendente,custo,margem:faturamento-custo,qtd:lista.length,ticket:lista.length?faturamento/lista.length:0,clientes,produtos};
+}
+function barras(obj,tipo='valor'){
+  const e=Object.entries(obj);if(!e.length)return '<div class="empty">Sem dados.</div>';
+  const val=x=>typeof x==='number'?x:(tipo==='qtd'?x.qtd:x.total),max=Math.max(...e.map(x=>val(x[1])),1);
+  return e.sort((a,b)=>val(b[1])-val(a[1])).slice(0,8).map(([n,v])=>`<div class="barra-linha"><div>${n}</div><div class="barra-fundo"><div class="barra" style="width:${val(v)/max*100}%"></div></div><strong>${tipo==='qtd'?val(v)+' cx':moeda(val(v))}</strong></div>`).join('');
+}
+function intervaloComp(tipo){
+  const d=new Date(),h=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  if(tipo==='dia'){const a=hojeISO(),o=new Date(h);o.setDate(o.getDate()-1);const oi=new Date(o.getTime()-o.getTimezoneOffset()*60000).toISOString().slice(0,10);return {a:[a,a],b:[oi,oi]}}
+  const ai=`${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-01`,af=new Date(h.getFullYear(),h.getMonth()+1,0),afi=new Date(af.getTime()-af.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  const bi=new Date(h.getFullYear(),h.getMonth()-1,1),bf=new Date(h.getFullYear(),h.getMonth(),0);
+  return {a:[new Date(bi.getFullYear(),bi.getMonth()+1,1).toISOString().slice(0,10),afi],b:[new Date(bi.getTime()-bi.getTimezoneOffset()*60000).toISOString().slice(0,10),new Date(bf.getTime()-bf.getTimezoneOffset()*60000).toISOString().slice(0,10)]};
+}
+function renderComparativo(){
+  const it=intervaloComp(document.getElementById('periodoComparativo').value),fil=(r)=>vendas.filter(v=>v.data>=r[0]&&v.data<=r[1]),a=resumo(fil(it.a)),b=resumo(fil(it.b));
+  document.getElementById('compAtual').textContent=moeda(a.faturamento);document.getElementById('compAnterior').textContent=moeda(b.faturamento);document.getElementById('compQtd').textContent=a.qtd;document.getElementById('compTicket').textContent=moeda(a.ticket);
+  const ve=document.getElementById('compVariacao');
+  if(b.faturamento>0){const p=(a.faturamento-b.faturamento)/b.faturamento*100;ve.textContent=`${p>=0?'+':''}${p.toFixed(1).replace('.',',')}% em relação ao período anterior`;ve.className='sub '+(p>0?'pos':p<0?'neg':'neu')}
+  else ve.textContent=a.faturamento?'Sem faturamento no período anterior':'Sem vendas para comparar';
+  document.getElementById('compProdutos').innerHTML=barras(a.produtos,'qtd');document.getElementById('compClientes').innerHTML=barras(a.clientes);
+  document.getElementById('compRecebimento').innerHTML=`<div class="grid" style="grid-template-columns:1fr 1fr"><div><h3>Recebido</h3><div class="valor" style="font-size:21px">${moeda(a.recebido)}</div></div><div><h3>Pendente</h3><div class="valor" style="font-size:21px">${moeda(a.pendente)}</div></div></div>`;
+  const arr=Object.entries(a.produtos);
+  document.getElementById('compPrecoMedio').innerHTML=arr.length?`<div class="table-wrap"><table><thead><tr><th>Classificação</th><th>Preço médio</th></tr></thead><tbody>${arr.map(([n,p])=>`<tr><td>${n}</td><td>${moeda(p.qtd?p.total/p.qtd:0)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Sem dados.</div>';
+}
+
+function salvarCliente(){
+  const nome=document.getElementById('cadClienteNome').value.trim();if(!nome){alert('Informe o nome do cliente.');return}
+  const existente=clientesCad.find(c=>c.nome.toLowerCase()===nome.toLowerCase());
+  const dados={id:existente?existente.id:gerarId(),nome,telefone:document.getElementById('cadClienteTelefone').value.trim(),documento:document.getElementById('cadClienteDocumento').value.trim(),prazo:Number(document.getElementById('cadClientePrazo').value||0),obs:document.getElementById('cadClienteObs').value.trim()};
+  clientesCad=existente?clientesCad.map(c=>c.id===existente.id?dados:c):[...clientesCad,dados];
+  localStorage.setItem('granja_clientes',JSON.stringify(clientesCad));
+  snapshotDados();
+  ['cadClienteNome','cadClienteTelefone','cadClienteDocumento','cadClienteObs'].forEach(id=>document.getElementById(id).value='');document.getElementById('cadClientePrazo').value=0;renderTudo();
+}
+function excluirCliente(id){if(confirm('Excluir este cadastro de cliente?')){clientesCad=clientesCad.filter(c=>c.id!==id);localStorage.setItem('granja_clientes',JSON.stringify(clientesCad));snapshotDados();renderTudo()}}
+function verCliente(nome){
+  const l=vendas.filter(v=>v.cliente===nome),r=resumo(l),pend=l.reduce((s,v)=>s+saldoVenda(v),0);
+  document.getElementById('relatorioCliente').innerHTML=`<h2>Relatório do cliente: ${nome}</h2><div class="grid"><div class="mini-card"><h3>Total comprado</h3><div class="valor">${moeda(r.faturamento)}</div></div><div class="mini-card"><h3>Caixas compradas</h3><div class="valor">${r.caixas}</div></div><div class="mini-card"><h3>Em aberto</h3><div class="valor">${moeda(pend)}</div></div><div class="mini-card"><h3>Ticket médio</h3><div class="valor">${moeda(r.ticket)}</div></div></div><h3 style="margin-top:16px">Classificações compradas</h3>${barras(r.produtos,'qtd')}<h3 style="margin-top:16px">Histórico</h3>${tabelaVendas(l)}`;
+}
+function renderClientes(){
+  const nomes=new Map();clientesCad.forEach(c=>nomes.set(c.nome,c));vendas.forEach(v=>{if(!nomes.has(v.cliente))nomes.set(v.cliente,{id:0,nome:v.cliente,telefone:'',documento:'',prazo:0,obs:''})});
+  const arr=[...nomes.values()].sort((a,b)=>a.nome.localeCompare(b.nome));
+  document.getElementById('listaClientes').innerHTML=arr.length?`<div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Prazo</th><th>Total comprado</th><th>Em aberto</th><th>Ações</th></tr></thead><tbody>${arr.map(c=>{
+    const l=vendas.filter(v=>v.cliente===c.nome),tot=l.reduce((s,v)=>s+v.total,0),ab=l.reduce((s,v)=>s+saldoVenda(v),0);
+    return `<tr><td>${c.nome}</td><td>${c.telefone||'—'}</td><td>${c.prazo||0} dias</td><td>${moeda(tot)}</td><td>${moeda(ab)}</td><td><button class="btn secondary" onclick='verCliente(${JSON.stringify(c.nome)})'>Ver relatório</button>${c.id?` <button class="btn danger" onclick="excluirCliente(${c.id})">Excluir cadastro</button>`:''}</td></tr>`;
+  }).join('')}</tbody></table></div>`:'<div class="empty">Nenhum cliente cadastrado.</div>';
+  document.getElementById('listaClientesVenda').innerHTML=arr.map(c=>`<option value="${c.nome.replaceAll('"','&quot;')}"></option>`).join('');
+}
+
+function salvarProdutoCad(){
+  const nome=document.getElementById('cadProdutoNome').value.trim();if(!nome){alert('Informe a classificação/produto.');return}
+  const id=Number(document.getElementById('produtoEditId').value||0),p={id:id||gerarId(),nome,preco:Number(document.getElementById('cadProdutoPreco').value||0),custo:Number(document.getElementById('cadProdutoCusto').value||0),margemMin:Number(document.getElementById('cadProdutoMargem').value||0),ativo:document.getElementById('cadProdutoAtivo').value};
+  produtosCad=id?produtosCad.map(x=>x.id===id?p:x):[...produtosCad,p];localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));snapshotDados();limparProdutoCad();renderTudo();
+}
+function editarProdutoCad(id){const p=produtosCad.find(x=>x.id===id);if(!p)return;document.getElementById('produtoEditId').value=p.id;document.getElementById('cadProdutoNome').value=p.nome;document.getElementById('cadProdutoPreco').value=p.preco;document.getElementById('cadProdutoCusto').value=p.custo;document.getElementById('cadProdutoMargem').value=p.margemMin||0;document.getElementById('cadProdutoAtivo').value=p.ativo}
+function limparProdutoCad(){document.getElementById('produtoEditId').value='';document.getElementById('cadProdutoNome').value='';document.getElementById('cadProdutoPreco').value='';document.getElementById('cadProdutoCusto').value='';document.getElementById('cadProdutoMargem').value='10';document.getElementById('cadProdutoAtivo').value='sim'}
+function excluirProdutoCad(id){if(confirm('Excluir este produto?')){produtosCad=produtosCad.filter(p=>p.id!==id);localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));snapshotDados();renderTudo()}}
+function renderProdutosCad(){
+  document.getElementById('listaProdutosCad').innerHTML=produtosCad.length?`<div class="table-wrap"><table><thead><tr><th>Classificação</th><th>Preço padrão</th><th>Custo estimado</th><th>Preço mínimo</th><th>Margem unitária</th><th>Ativo</th><th>Ações</th></tr></thead><tbody>${produtosCad.map(p=>`<tr><td>${p.nome}</td><td>${moeda(p.preco)}</td><td>${moeda(p.custo)}</td><td>${moeda(p.custo*(1+(Number(p.margemMin||0)/100)))}</td><td>${moeda(p.preco-p.custo)}</td><td>${p.ativo==='sim'?'Sim':'Não'}</td><td><button class="btn secondary" onclick="editarProdutoCad(${p.id})">Editar</button> <button class="btn danger" onclick="excluirProdutoCad(${p.id})">Excluir</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhum produto cadastrado.</div>';
+}
+
+function renderRelatorios(){
+  const de=document.getElementById('relDe').value,ate=document.getElementById('relAte').value;let l=[...vendas];
+  if(de)l=l.filter(v=>v.data>=de);if(ate)l=l.filter(v=>v.data<=ate);const r=resumo(l);
+  document.getElementById('relFat').textContent=moeda(r.faturamento);document.getElementById('relCaixas').textContent=r.caixas;document.getElementById('relMargem').textContent=moeda(r.margem);document.getElementById('relPrecoMedio').textContent=moeda(r.caixas?r.faturamento/r.caixas:0);
+  document.getElementById('relRankClientes').innerHTML=barras(r.clientes);document.getElementById('relRankProdutos').innerHTML=barras(r.produtos,'qtd');
+}
+
+function renderInicio(){
+  const now=new Date(),ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`,prev=new Date(now.getFullYear(),now.getMonth()-1,1),pym=`${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`;
+  const mes=resumo(vendas.filter(v=>(v.data||'').startsWith(ym))),ant=resumo(vendas.filter(v=>(v.data||'').startsWith(pym)));
+  const receber=vendas.reduce((s,v)=>s+saldoVenda(v),0),recebido=vendas.reduce((s,v)=>s+valorPagoVenda(v),0),venc=vendas.filter(v=>statusReceber(v)==='vencido');
+  document.getElementById('kpiMes').textContent=moeda(mes.faturamento);document.getElementById('kpiCaixas').textContent=mes.caixas;document.getElementById('kpiRecebido').textContent=moeda(recebido);document.getElementById('kpiReceber').textContent=moeda(receber);document.getElementById('kpiVencido').textContent=moeda(venc.reduce((s,v)=>s+saldoVenda(v),0));document.getElementById('kpiVencidoQtd').textContent=`${venc.length} título(s)`;document.getElementById('kpiMargem').textContent=moeda(mes.margem);
+  const e=document.getElementById('kpiVariacao');if(ant.faturamento>0){const p=(mes.faturamento-ant.faturamento)/ant.faturamento*100;e.textContent=`${p>=0?'+':''}${p.toFixed(1).replace('.',',')}% vs. mês anterior`;e.className='sub '+(p>=0?'pos':'neg')}else e.textContent='Sem base no mês anterior';
+  document.getElementById('ultimasVendas').innerHTML=tabelaVendas(vendas.slice(0,5));
+}
+
+
+function salvarProducao(){
+  const data=document.getElementById('prodData').value,produto=document.getElementById('prodClassificacao').value,qtd=Number(document.getElementById('prodQtd').value||0),obs=document.getElementById('prodObs').value.trim();
+  if(!data||!produto||qtd<=0){alert('Informe data, classificação e quantidade produzida.');return}
+  producoes.unshift({id:gerarId(),data,produto,qtd,obs});
+  localStorage.setItem('granja_producoes',JSON.stringify(producoes));
+  snapshotDados();
+  document.getElementById('prodQtd').value='';document.getElementById('prodObs').value='';
+  renderTudo();
+}
+
+function excluirProducao(id){
+  if(confirm('Excluir este lançamento de produção?')){
+    producoes=producoes.filter(p=>p.id!==id);
+    localStorage.setItem('granja_producoes',JSON.stringify(producoes));
+    snapshotDados();renderTudo();
+  }
+}
+
+function saldoEstoque(){
+  const mapa={};
+  produtosCad.forEach(p=>mapa[p.nome]={produzido:0,vendido:0,saldo:0});
+  producoes.forEach(p=>{
+    if(!mapa[p.produto])mapa[p.produto]={produzido:0,vendido:0,saldo:0};
+    mapa[p.produto].produzido+=Number(p.qtd||0);
+  });
+  vendas.forEach(v=>(v.produtos||[]).forEach(p=>{
+    if(!mapa[p.produto])mapa[p.produto]={produzido:0,vendido:0,saldo:0};
+    mapa[p.produto].vendido+=Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1);
+  }));
+  Object.values(mapa).forEach(x=>x.saldo=x.produzido-x.vendido);
+  return mapa;
+}
+
+function renderEstoque(){
+  const sel=document.getElementById('prodClassificacao');
+  if(sel) sel.innerHTML=produtosCad.filter(p=>p.ativo==='sim').map(p=>`<option value="${p.nome.replaceAll('"','&quot;')}">${p.nome}</option>`).join('');
+  const mapa=saldoEstoque();
+  document.getElementById('cardsEstoque').innerHTML=Object.entries(mapa).map(([nome,x])=>`
+    <div class="estoque-card ${x.saldo<0?'alerta-box':x.saldo<5?'aviso-box':'ok-box'}">
+      <div class="nome">${nome}</div>
+      <div class="saldo">${x.saldo} cx</div>
+      <div class="meta">Produzido: ${x.produzido} • Vendido: ${x.vendido}</div>
+    </div>`).join('') || '<div class="empty">Sem classificações cadastradas.</div>';
+
+  document.getElementById('listaProducao').innerHTML=producoes.length?`<div class="table-wrap"><table><thead><tr><th>Data</th><th>Classificação</th><th>Quantidade</th><th>Observação</th><th>Ação</th></tr></thead><tbody>${producoes.slice(0,30).map(p=>`<tr><td>${dataBR(p.data)}</td><td>${p.produto}</td><td>${p.qtd} cx</td><td>${p.obs||'—'}</td><td><button class="btn danger" onclick="excluirProducao(${p.id})">Excluir</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma produção registrada.</div>';
+}
+
+function verificarPrecoMinimo(){
+  const avisos=[];
+  document.querySelectorAll('#produtos tr').forEach(tr=>{
+    const nome=nomeProdutoLinha(tr),preco=Number(tr.querySelector('.p-valor').value||0);
+    const p=produtosCad.find(x=>x.nome===nome);
+    if(p && Number(p.custo)>0){
+      const minimo=Number(p.custo)*(1+(Number(p.margemMin||0)/100));
+      if(preco>0 && preco<minimo) avisos.push(`${nome}: preço abaixo do mínimo (${moeda(minimo)})`);
+    }
+  });
+  const el=document.getElementById('avisoPrecoMinimo');
+  if(!el)return;
+  if(avisos.length){el.textContent='⚠ '+avisos.join(' | ');el.style.color='var(--vermelho)'}
+  else{el.textContent='';}
+}
+
+const calcOld = calcularTotais;
+calcularTotais = function(){
+  calcOld();
+  verificarPrecoMinimo();
+}
+
+function renderFechamento(){
+  const data=document.getElementById('fechData').value||hojeISO();
+  const vd=vendas.filter(v=>v.data===data),pd=producoes.filter(p=>p.data===data),r=resumo(vd);
+  const prodQtd=pd.reduce((s,p)=>s+Number(p.qtd||0),0);
+  document.getElementById('fechProducao').textContent=prodQtd+' cx';
+  document.getElementById('fechVendidas').textContent=r.caixas+' cx';
+  document.getElementById('fechFat').textContent=moeda(r.faturamento);
+  document.getElementById('fechRecebido').textContent=moeda(r.recebido);
+  document.getElementById('fechReceber').textContent=moeda(r.pendente);
+  document.getElementById('fechMargem').textContent=moeda(r.margem);
+  const pm={};pd.forEach(p=>pm[p.produto]=(pm[p.produto]||0)+Number(p.qtd||0));
+  document.getElementById('fechProdClass').innerHTML=barras(pm,'qtd');
+  document.getElementById('fechVendaClass').innerHTML=barras(r.produtos,'qtd');
+}
+
+function imprimirFechamento(){
+  window.print();
+}
+
+function diasEntre(a,b){
+  const da=new Date(a+'T12:00:00'),db=new Date(b+'T12:00:00');
+  return Math.floor((db-da)/86400000);
+}
+
+function atualizarAgendaDashboard(){
+  const hoje=hojeISO(),lim7=addDias(hoje,7);
+  const pend=vendas.filter(v=>saldoVenda(v)>0);
+  const venc=pend.filter(v=>v.vencimento&&v.vencimento<hoje);
+  const nomes=new Set(venc.map(v=>v.cliente));
+  document.getElementById('kpiInadimplentes').textContent=nomes.size;
+  document.getElementById('kpiInadimplentesValor').textContent=moeda(venc.reduce((s,v)=>s+saldoVenda(v),0))+' vencidos';
+  document.getElementById('kpiVenceHoje').textContent=moeda(pend.filter(v=>v.vencimento===hoje).reduce((s,v)=>s+saldoVenda(v),0));
+  document.getElementById('kpiProx7').textContent=moeda(pend.filter(v=>v.vencimento&&v.vencimento>hoje&&v.vencimento<=lim7).reduce((s,v)=>s+saldoVenda(v),0));
+
+  const ult=localStorage.getItem('granja_ultimo_backup_arquivo');
+  const kd=document.getElementById('kpiBackupDias'),ka=document.getElementById('kpiBackupAviso');
+  if(!ult){kd.textContent='—';ka.textContent='Nenhum backup em arquivo ainda';ka.className='sub neg'}
+  else{
+    const d=new Date(ult),diff=Math.floor((new Date()-d)/86400000);
+    kd.textContent=diff;
+    ka.textContent=diff>=7?'Recomendado fazer novo backup':'Backup recente';
+    ka.className='sub '+(diff>=7?'neg':'pos');
+  }
+}
+
+
+
+// Migração V10: preserva registros antigos e normaliza o financeiro.
+let migrouV10=false;
+vendas.forEach(v=>{
+  if(v.valorPago===undefined){v.valorPago=v.situacao==='Pago'?Number(v.total||0):0;migrouV10=true}
+  v.situacao=situacaoFinanceira(v);
+});
+if(migrouV10)localStorage.setItem('granja_vendas',JSON.stringify(vendas));
+
+const classificacoesPadraoV9=['Caixa de Ovos Jumbo Branco','Caixa de Ovos Extra Branco','Caixa de Ovos A Branco','Caixa de Ovos Jumbo Vermelho','Caixa de Ovos Extra Vermelho','Caixa de Ovos A Vermelho','Ovos Caipiras'];
+let mudouV9=false;
+classificacoesPadraoV9.forEach(nome=>{if(!produtosCad.some(p=>p.nome===nome)){produtosCad.push({id:gerarId(),nome,preco:0,custo:0,margemMin:10,ativo:'sim'});mudouV9=true}});
+if(mudouV9)localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));
+
+function abrirNotaCliente(id){
+ const v=vendas.find(x=>x.id===id);if(!v)return;
+ const pago=valorPagoVenda(v),saldo=saldoVenda(v),sit=situacaoFinanceira(v);
+ const classe=sit==='Pago'?'pago':sit==='Parcial'?'parcial':'pendente';
+ const linhas=(v.produtos||[]).map(p=>`<tr>
+   <td>${p.quantidade||0}</td><td>${p.unidade||'Caixa'}</td><td>${p.produto||''}</td>
+   <td style="text-align:right">${moeda(p.valorUnit||0)}</td><td style="text-align:right;font-weight:700">${moeda(p.total||0)}</td>
+ </tr>`).join('');
+ document.getElementById('notaClienteConteudo').innerHTML=`
+ <div class="nc-topo">
+   <div><div class="nc-marca">GRANJA SÃO JOSÉ</div><div class="nc-slogan">Qualidade, tradição e confiança em cada ovo.</div></div>
+   <div class="nc-titulo"><strong>NOTA DE VENDA</strong><span>Nº ${String(v.numero||'—').padStart(6,'0')} &nbsp; • &nbsp; ${dataBR(v.data)}</span></div>
+ </div>
+ <div class="nc-cliente"><strong>CLIENTE:</strong> ${v.cliente||'—'}</div>
+ <table class="nc-table"><thead><tr><th>Qtd.</th><th>Unidade</th><th>Classificação / Produto</th><th>Valor unit.</th><th>Total</th></tr></thead><tbody>${linhas}</tbody></table>
+ <div class="nc-financeiro">
+   <div class="nc-info-venda">
+     <h4>INFORMAÇÕES DA VENDA</h4>
+     <div><span>Forma de pagamento</span><strong>${v.pagamento||'—'}</strong></div>
+     <div><span>Vencimento</span><strong>${dataBR(v.vencimento)}</strong></div>
+     <div><span>Valor pago</span><strong>${moeda(pago)}</strong></div>
+     <div><span>Situação</span><span class="nc-status ${classe}">${sit.toUpperCase()}</span></div>
+   </div>
+   <div class="nc-total">
+     <h4>RESUMO FINANCEIRO</h4>
+     <div><span>Subtotal</span><strong>${moeda(v.subtotal||0)}</strong></div>
+     <div><span>Desconto</span><strong>${moeda(v.desconto||0)}</strong></div>
+     <div class="grand"><span>TOTAL DA VENDA</span><strong>${moeda(v.total||0)}</strong></div>
+     ${saldo>0?`<div class="saldo"><span>SALDO A RECEBER</span><strong>${moeda(saldo)}</strong></div>`:''}
+   </div>
+ </div>
+ ${v.observacoes?`<div style="margin-top:14px;font-size:11px;color:#52656d"><strong>Observações:</strong> ${v.observacoes}</div>`:''}
+ <div class="nc-rodape">OBRIGADO PELA PREFERÊNCIA!</div>`;
+ document.getElementById('notaClienteModal').classList.add('aberto');
+}
+function fecharNotaCliente(){document.getElementById('notaClienteModal').classList.remove('aberto')}
+function imprimirNotaCliente(){document.body.classList.add('print-nota-cliente');window.print();setTimeout(()=>document.body.classList.remove('print-nota-cliente'),400)}
+
+function renderTudo(){
+  renderInicio();renderVendas();renderReceber();renderClientes();renderEstoque();renderProdutosCad();renderComparativo();renderFechamento();renderRelatorios();atualizarAgendaDashboard();
+}
+
+limparFormulario();
+renderTudo();
+snapshotDados();
+atualizarStatusBackup();
+</script>
+
+<div id="notaClienteModal">
+ <div class="nota-cliente-doc">
+  <div class="nc-actions actions" style="justify-content:flex-end;margin-top:0"><button class="btn primary" onclick="imprimirNotaCliente()">Gerar PDF / Imprimir</button><button class="btn secondary" onclick="fecharNotaCliente()">Fechar</button></div>
+  <div id="notaClienteConteudo"></div>
+ </div>
+</div>
+
+</body>
+</html>
