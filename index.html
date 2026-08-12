@@ -145,7 +145,7 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
  body.print-nota-cliente .nc-actions{display:none!important}
 }
 
-/* ===== V11 ONLINE ===== */
+/* ===== V10 ONLINE ===== */
 .online-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;background:#fff1d6;color:#8a5a00;margin-left:8px}
 .online-pill.ok{background:#e4f5eb;color:#1f7a45}.online-pill.err{background:#fde8e8;color:#a12a2a}
 #onlineModal{display:none;position:fixed;inset:0;background:rgba(16,31,38,.72);z-index:9999;padding:18px;overflow:auto}
@@ -278,10 +278,9 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
 
   <div class="help print-hide">Uma única venda pode conter várias classificações. Use “+ Adicionar linha” para cada tipo de ovo comprado pelo cliente.</div>
   <div id="avisoPrecoMinimo" class="help print-hide" style="font-weight:700"></div>
-  <div class="help print-hide"><strong>Conversão:</strong> 12 pentes = 1 caixa. O preço automático por pente mantém precisão suficiente para que 12 pentes fechem corretamente o valor da caixa.</div>
   <div class="table-wrap">
     <table class="tabela-nota">
-      <thead><tr><th style="width:75px">Quantidade</th><th style="width:90px">Unidade</th><th>Produto / Classificação</th><th style="width:125px">Preço da caixa</th><th style="width:125px">Custo unit.</th><th style="width:135px">Valor total</th><th class="print-hide" style="width:48px"></th></tr></thead>
+      <thead><tr><th style="width:75px">Quantidade</th><th style="width:90px">Unidade</th><th>Produto / Classificação</th><th style="width:125px">Valor unit.</th><th style="width:125px">Custo unit.</th><th style="width:135px">Valor total</th><th class="print-hide" style="width:48px"></th></tr></thead>
       <tbody id="produtos"></tbody>
     </table>
   </div>
@@ -295,26 +294,36 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
   </div>
 
   <div class="bloco-opcoes">
-    <div><h4>FORMA DE PAGAMENTO</h4><div class="opcoes-linha">
-      <label><input type="radio" name="pagamentoRadio" value="PIX"> PIX</label>
-      <label><input type="radio" name="pagamentoRadio" value="Dinheiro"> Dinheiro</label>
-      <label><input type="radio" name="pagamentoRadio" value="Cartão"> Cartão</label>
-      <label><input type="radio" name="pagamentoRadio" value="A prazo" checked> A prazo</label>
-      <label><input type="radio" name="pagamentoRadio" value="Outro"> Outro</label>
-    </div></div>
-    <div><h4>SITUAÇÃO</h4><div class="opcoes-linha">
-      <label><input type="radio" name="situacaoRadio" value="Pago"> Pago</label>
-      <label><input type="radio" name="situacaoRadio" value="Parcial"> Parcial</label>
-      <label><input type="radio" name="situacaoRadio" value="Pendente" checked> Pendente</label>
-    </div></div>
-  </div>
+<div>
+<h4>PAGAMENTO DIVIDIDO</h4>
+<div class="help print-hide">Pode combinar PIX, dinheiro, cheque e outro na mesma venda.</div>
+<div class="form-grid">
+<div><label>PIX (R$)</label><input id="pagPix" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
+<div><label>Dinheiro (R$)</label><input id="pagDinheiro" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
+<div><label>Cheque (R$)</label><input id="pagCheque" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
+<div><label>Cartão / Outro (R$)</label><input id="pagOutro" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
+</div>
+</div>
+<div>
+<h4>SITUAÇÃO</h4>
+<div class="opcoes-linha">
+<label><input type="radio" name="situacaoRadio" value="Pago"> Pago</label>
+<label><input type="radio" name="situacaoRadio" value="Parcial"> Parcial</label>
+<label><input type="radio" name="situacaoRadio" value="Pendente" checked> Pendente</label>
+</div>
+<div style="margin-top:12px"><label>Total recebido</label><input id="valorPagoVenda" disabled value="R$ 0,00"></div>
+<div style="margin-top:8px"><label>Saldo a receber</label><input id="saldoVendaExibido" disabled value="R$ 0,00"></div>
+</div>
+</div>
 
-  <div class="form-grid print-hide" style="margin-top:14px">
-    <div><label>Valor já recebido (R$)</label><input id="valorPagoVenda" type="number" min="0" step="0.01" value="0" oninput="atualizarSituacaoPeloPagamento()"></div>
-    <div><label>Saldo a receber</label><input id="saldoVendaExibido" disabled value="R$ 0,00"></div>
-  </div>
+<div id="dadosChequeVenda" class="form-grid print-hide" style="margin-top:14px;display:none">
+<div><label>Banco do cheque</label><input id="chequeBancoVenda"></div>
+<div><label>Nº do cheque</label><input id="chequeNumeroVenda"></div>
+<div><label>Emitente</label><input id="chequeEmitenteVenda"></div>
+<div><label>Data para depósito / compensação</label><input id="chequeDataVenda" type="date"></div>
+</div>
 
-  <div class="obs-nota"><h4>OBSERVAÇÕES</h4><textarea id="observacoes"></textarea></div>
+<div class="obs-nota"><h4>OBSERVAÇÕES</h4><textarea id="observacoes"></textarea></div>
   <div class="assinatura-nota"><input id="assinaturaExibida" value="Erik Gabriel"><small>Assinatura / responsável pela venda</small></div>
   <div class="rodape-nota"><div>Granja São José</div><div>Seguimos produzindo o melhor alimento depois do leite materno.</div></div>
   <div class="print-only" style="text-align:center;margin-top:8px;font-size:10px">Documento gerado pelo Painel Comercial da Granja São José.</div>
@@ -484,15 +493,11 @@ const hojeISO=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneO
 const dataBR=s=>s?s.split('-').reverse().join('/'):'—';
 const addDias=(iso,dias)=>{if(!iso)return '';const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+Number(dias||0));return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
 const gerarId=()=>Date.now()+Math.floor(Math.random()*1000);
-const PENTES_POR_CAIXA=12;
-const arred2=n=>Math.round((Number(n||0)+Number.EPSILON)*100)/100;
-const caixasEquivalentes=p=>Number(p?.quantidade||0)*(p?.unidade==='Pente'?1/PENTES_POR_CAIXA:1);
-const precoPorUnidade=(p,unidade)=>unidade==='Pente'?Number(p?.preco||0)/PENTES_POR_CAIXA:Number(p?.preco||0);
 
 
 function snapshotDados(){
   const dados = {
-    versao: 12,
+    versao: 10,
     gerado_em: new Date().toISOString(),
     vendas: JSON.parse(localStorage.getItem('granja_vendas') || '[]'),
     clientes: JSON.parse(localStorage.getItem('granja_clientes') || '[]'),
@@ -610,7 +615,7 @@ function adicionarProduto(produto='',qtd='',valor='',custo='',unidade='Caixa'){
       <select class="p-select">${optionsProdutos(produto)}</select>
       <input class="p-produto" placeholder="Digite a classificação" value="${produto && !produtosCad.some(p=>p.nome===produto)?produto:''}" style="display:${produto && !produtosCad.some(p=>p.nome===produto)?'block':'none'};margin-top:4px">
     </td>
-    <td><input class="p-valor" type="number" min="0" step="0.0001" value="${valor}"></td>
+    <td><input class="p-valor" type="number" min="0" step="0.01" value="${valor}"></td>
     <td><input class="p-custo" type="number" min="0" step="0.01" value="${custo}"></td>
     <td><input class="p-total" disabled></td>
     <td class="print-hide"><button class="btn danger" style="padding:6px 9px" onclick="this.closest('tr').remove();calcularTotais()">×</button></td>`;
@@ -621,11 +626,11 @@ function adicionarProduto(produto='',qtd='',valor='',custo='',unidade='Caixa'){
     else{
       inp.style.display='none';inp.value='';
       const p=produtoAtivo(sel.value);
-      if(p){const u=tr.querySelector('.p-unidade').value;tr.querySelector('.p-valor').value=Number(p.preco||0).toFixed(2);tr.querySelector('.p-custo').value=p.custo||''}
+      if(p){const u=tr.querySelector('.p-unidade').value;tr.querySelector('.p-valor').value=u==='Pente'?(Number(p.preco||0)/12).toFixed(2):(p.preco||'');tr.querySelector('.p-custo').value=p.custo||''}
     }
     calcularTotais();
   };
-  tr.querySelectorAll('input').forEach(i=>i.addEventListener('input',calcularTotais)); tr.querySelector('.p-unidade').addEventListener('change',()=>{const p=produtoAtivo(sel.value);if(p){tr.querySelector('.p-valor').value=Number(p.preco||0).toFixed(2)}calcularTotais()});
+  tr.querySelectorAll('input').forEach(i=>i.addEventListener('input',calcularTotais)); tr.querySelector('.p-unidade').addEventListener('change',()=>{const p=produtoAtivo(sel.value);if(p){tr.querySelector('.p-valor').value=tr.querySelector('.p-unidade').value==='Pente'?(Number(p.preco||0)/12).toFixed(2):(p.preco||'')}calcularTotais()});
   document.getElementById('produtos').appendChild(tr);
   calcularTotais();
 }
@@ -639,12 +644,12 @@ function calcularTotais(){
   let subtotal=0,custoTotal=0;
   document.querySelectorAll('#produtos tr').forEach(tr=>{
     const q=Number(tr.querySelector('.p-qtd').value||0),v=Number(tr.querySelector('.p-valor').value||0),c=Number(tr.querySelector('.p-custo').value||0),u=tr.querySelector('.p-unidade').value;
-    const t=arred2(q*(u==='Pente'?v/PENTES_POR_CAIXA:v)); tr.querySelector('.p-total').value=moeda(t);subtotal+=t;custoTotal+=q*(u==='Pente'?c/PENTES_POR_CAIXA:c);
+    const t=q*v; tr.querySelector('.p-total').value=moeda(t);subtotal+=t;custoTotal+=q*(u==='Pente'?c/12:c);
   });
   const desc=Number(document.getElementById('desconto').value||0),total=Math.max(0,subtotal-desc);
   document.getElementById('subtotal').textContent=moeda(subtotal);
   document.getElementById('totalVenda').textContent=moeda(total);
-  document.getElementById('margemVenda').textContent=moeda(total-custoTotal); if(document.getElementById('valorPagoVenda')) atualizarSituacaoPeloPagamento();
+  document.getElementById('margemVenda').textContent=moeda(total-custoTotal); if(document.getElementById('valorPagoVenda')) atualizarPagamentoDividido();
 }
 document.getElementById('desconto').addEventListener('input',calcularTotais);
 
@@ -660,13 +665,27 @@ function situacaoFinanceira(v){
   if(pago>0)return 'Parcial';
   return 'Pendente';
 }
-function atualizarSituacaoPeloPagamento(){
-  const total=Number((document.getElementById('totalVenda').textContent||'').replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'))||0;
-  const pago=Math.max(0,Number(document.getElementById('valorPagoVenda').value||0));
-  document.getElementById('saldoVendaExibido').value=moeda(Math.max(0,total-pago));
-  const sit=pago>=total && total>0?'Pago':pago>0?'Parcial':'Pendente';
-  const r=document.querySelector(`input[name="situacaoRadio"][value="${sit}"]`);if(r)r.checked=true;
+function totalPagamentoDividido(){
+  return ['pagPix','pagDinheiro','pagCheque','pagOutro'].reduce((s,id)=>s+Math.max(0,Number(document.getElementById(id)?.value||0)),0);
 }
+function atualizarPagamentoDividido(){
+  const textoTotal=document.getElementById('totalVenda').textContent||'R$ 0,00';
+  const total=Number(textoTotal.replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'))||0;
+  const informado=totalPagamentoDividido();
+  const pago=Math.min(total,informado);
+  const saldo=Math.max(0,total-pago);
+
+  document.getElementById('valorPagoVenda').value=moeda(pago);
+  document.getElementById('saldoVendaExibido').value=moeda(saldo);
+
+  const sit=total>0 && saldo<=0.005 ? 'Pago' : pago>0 ? 'Parcial' : 'Pendente';
+  const r=document.querySelector(`input[name="situacaoRadio"][value="${sit}"]`);
+  if(r) r.checked=true;
+
+  const valorCheque=Number(document.getElementById('pagCheque').value||0);
+  document.getElementById('dadosChequeVenda').style.display=valorCheque>0?'grid':'none';
+}
+function atualizarSituacaoPeloPagamento(){atualizarPagamentoDividido();}
 
 function limparFormulario(){
   document.getElementById('editId').value='';
@@ -679,8 +698,11 @@ function limparFormulario(){
   document.getElementById('assinaturaExibida').value='Erik Gabriel';
   document.getElementById('desconto').value=0;
   document.getElementById('observacoes').value='';
-  if(document.getElementById('valorPagoVenda')) document.getElementById('valorPagoVenda').value=0;
-  document.querySelector('input[name="pagamentoRadio"][value="A prazo"]').checked=true;
+  ['pagPix','pagDinheiro','pagCheque','pagOutro'].forEach(id=>document.getElementById(id).value=0);
+  document.getElementById('valorPagoVenda').value=moeda(0);
+  ['chequeBancoVenda','chequeNumeroVenda','chequeEmitenteVenda','chequeDataVenda'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('dadosChequeVenda').style.display='none';
+  
   document.querySelector('input[name="situacaoRadio"][value="Pendente"]').checked=true;
   document.getElementById('produtos').innerHTML='';
   for(let i=0;i<5;i++)adicionarProduto();
@@ -700,7 +722,7 @@ function salvarVenda(){
   if(!cliente){alert('Informe o cliente.');return}
   const produtos=[...document.querySelectorAll('#produtos tr')].map(tr=>{
     const produto=nomeProdutoLinha(tr),quantidade=Number(tr.querySelector('.p-qtd').value||0),valorUnit=Number(tr.querySelector('.p-valor').value||0),custoUnit=Number(tr.querySelector('.p-custo').value||0),unidade=tr.querySelector('.p-unidade').value||'Caixa';
-    return {produto,quantidade,unidade,valorUnit,custoUnit,total:arred2(quantidade*(unidade==='Pente'?valorUnit/PENTES_POR_CAIXA:valorUnit)),custoTotal:quantidade*(unidade==='Pente'?custoUnit/PENTES_POR_CAIXA:custoUnit)};
+    return {produto,quantidade,unidade,valorUnit,custoUnit,total:quantidade*valorUnit,custoTotal:quantidade*(unidade==='Pente'?custoUnit/12:custoUnit)};
   }).filter(p=>p.produto&&p.quantidade>0);
   if(!produtos.length){alert('Adicione pelo menos um produto.');return}
   const subtotal=produtos.reduce((s,p)=>s+p.total,0),desconto=Number(document.getElementById('desconto').value||0),total=Math.max(0,subtotal-desconto);
@@ -711,8 +733,10 @@ function salvarVenda(){
     vendedor:document.getElementById('vendedor').value.trim(),responsavel:document.getElementById('responsavelVenda').value.trim(),
     assinatura:document.getElementById('assinaturaExibida').value.trim(),produtos,subtotal,desconto,total,
     custoTotal:produtos.reduce((s,p)=>s+p.custoTotal,0),
-    pagamento:(document.querySelector('input[name="pagamentoRadio"]:checked')||{}).value||'A prazo',
-    valorPago:Math.min(total,Math.max(0,Number(document.getElementById('valorPagoVenda').value||0))),
+    pagamento:'Dividido',
+    pagamentos:{pix:Math.max(0,Number(document.getElementById('pagPix').value||0)),dinheiro:Math.max(0,Number(document.getElementById('pagDinheiro').value||0)),cheque:Math.max(0,Number(document.getElementById('pagCheque').value||0)),outro:Math.max(0,Number(document.getElementById('pagOutro').value||0))},
+    valorPago:Math.min(total,totalPagamentoDividido()),
+    cheque:Number(document.getElementById('pagCheque').value||0)>0?{valor:Math.max(0,Number(document.getElementById('pagCheque').value||0)),banco:document.getElementById('chequeBancoVenda').value.trim(),numero:document.getElementById('chequeNumeroVenda').value.trim(),emitente:document.getElementById('chequeEmitenteVenda').value.trim(),data:document.getElementById('chequeDataVenda').value,status:'Em carteira'}:null,
     situacao:'Pendente',
     observacoes:document.getElementById('observacoes').value.trim()
   };
@@ -740,14 +764,15 @@ function editarVenda(id){
   document.getElementById('vendedor').value=v.vendedor||'Granja São José';
   document.getElementById('responsavelVenda').value=v.responsavel||'Erik Gabriel';
   document.getElementById('assinaturaExibida').value=v.assinatura||v.responsavel||'Erik Gabriel';
-  document.getElementById('desconto').value=v.desconto||0;document.getElementById('observacoes').value=v.observacoes||'';if(document.getElementById('valorPagoVenda')) document.getElementById('valorPagoVenda').value=valorPagoVenda(v);
-  const pr=document.querySelector(`input[name="pagamentoRadio"][value="${v.pagamento}"]`);if(pr)pr.checked=true;
+  document.getElementById('desconto').value=v.desconto||0;document.getElementById('observacoes').value=v.observacoes||'';
+  const pg=v.pagamentos||{};document.getElementById('pagPix').value=pg.pix||0;document.getElementById('pagDinheiro').value=pg.dinheiro||0;document.getElementById('pagCheque').value=pg.cheque||0;document.getElementById('pagOutro').value=pg.outro||0;
+  if(v.cheque){document.getElementById('chequeBancoVenda').value=v.cheque.banco||'';document.getElementById('chequeNumeroVenda').value=v.cheque.numero||'';document.getElementById('chequeEmitenteVenda').value=v.cheque.emitente||'';document.getElementById('chequeDataVenda').value=v.cheque.data||'';}
   const sr=document.querySelector(`input[name="situacaoRadio"][value="${v.situacao}"]`);if(sr)sr.checked=true;
   document.getElementById('produtos').innerHTML='';
   (v.produtos||[]).forEach(p=>adicionarProduto(p.produto,p.quantidade,p.valorUnit,p.custoUnit||0,p.unidade||'Caixa'));
   adicionarProduto();
   document.getElementById('btnSalvarVenda').textContent='Atualizar venda';
-  calcularTotais();
+  calcularTotais();atualizarPagamentoDividido();
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.section==='novaVenda'));
   document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id==='novaVenda'));
   window.scrollTo({top:0,behavior:'smooth'});
@@ -770,9 +795,9 @@ function imprimirNota(){
 
 function tabelaVendas(lista,modo='vendas'){
   if(!lista.length)return '<div class="empty">Nenhum registro encontrado.</div>';
-  return `<div class="table-wrap"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Data</th><th>Equiv. caixas</th><th>Total</th><th>Saldo</th><th>Venc.</th><th>Status</th><th>Dias</th><th>Ações</th></tr></thead><tbody>${
+  return `<div class="table-wrap"><table><thead><tr><th>Nº</th><th>Cliente</th><th>Data</th><th>Caixas</th><th>Total</th><th>Saldo</th><th>Venc.</th><th>Status</th><th>Dias</th><th>Ações</th></tr></thead><tbody>${
     lista.map(v=>{
-      const caixas=(v.produtos||[]).reduce((s,p)=>s+caixasEquivalentes(p),0),st=statusReceber(v);
+      const caixas=(v.produtos||[]).reduce((s,p)=>s+Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1),0),st=statusReceber(v);
       let acoes=modo==='receber'
         ? `<button class="btn success" onclick="marcarPago(${v.id})">Marcar pago</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Abrir</button>`
         : `<button class="btn primary" onclick="abrirNotaCliente(${v.id})">Enviar nota</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Editar</button> <button class="btn danger" onclick="excluirVenda(${v.id})">Excluir</button>`;
@@ -797,14 +822,14 @@ function renderReceber(){
 }
 
 function resumo(lista){
-  const faturamento=lista.reduce((s,v)=>s+Number(v.total||0),0),caixas=lista.reduce((s,v)=>s+(v.produtos||[]).reduce((z,p)=>z+caixasEquivalentes(p),0),0);
+  const faturamento=lista.reduce((s,v)=>s+Number(v.total||0),0),caixas=lista.reduce((s,v)=>s+(v.produtos||[]).reduce((z,p)=>z+Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1),0),0);
   const recebido=lista.reduce((s,v)=>s+valorPagoVenda(v),0),pendente=lista.reduce((s,v)=>s+saldoVenda(v),0);
   const custo=lista.reduce((s,v)=>s+Number(v.custoTotal||0),0),clientes={},produtos={};
   lista.forEach(v=>{
     clientes[v.cliente]=(clientes[v.cliente]||0)+Number(v.total||0);
     (v.produtos||[]).forEach(p=>{
       if(!produtos[p.produto])produtos[p.produto]={qtd:0,total:0};
-      produtos[p.produto].qtd+=caixasEquivalentes(p);produtos[p.produto].total+=Number(p.total||0);
+      produtos[p.produto].qtd+=Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1);produtos[p.produto].total+=Number(p.total||0);
     });
   });
   return {faturamento,caixas,recebido,pendente,custo,margem:faturamento-custo,qtd:lista.length,ticket:lista.length?faturamento/lista.length:0,clientes,produtos};
@@ -913,7 +938,7 @@ function saldoEstoque(){
   });
   vendas.forEach(v=>(v.produtos||[]).forEach(p=>{
     if(!mapa[p.produto])mapa[p.produto]={produzido:0,vendido:0,saldo:0};
-    mapa[p.produto].vendido+=caixasEquivalentes(p);
+    mapa[p.produto].vendido+=Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1);
   }));
   Object.values(mapa).forEach(x=>x.saldo=x.produzido-x.vendido);
   return mapa;
