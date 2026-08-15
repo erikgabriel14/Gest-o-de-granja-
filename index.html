@@ -2244,87 +2244,127 @@ function v11Table(el,heads,rows){const x=document.getElementById(el);if(!x)retur
 function v11SalvarCliente(){const nome=v11CliNome.value.trim();if(!nome)return alert('Informe o cliente.');v11Clientes.unshift({nome,limite:Number(v11CliLimite.value||0),obs:v11CliObs.value.trim()});v11Set('gsj_v11_clientes',v11Clientes);v11RenderExtras()}
 
 function v11FecharRelatorioCliente(){
- const modal=document.getElementById('v11RelatorioClienteModal');
- if(!modal)return;
- modal.classList.remove('aberto');
- modal.setAttribute('aria-hidden','true');
- document.body.style.overflow='';
+  var el=document.getElementById('v11CliRelatorio');
+  if(el){
+    el.innerHTML='';
+    el.style.display='none';
+  }
 }
 
 function v11VerRelatorioCliente(indice){
- try{
-  const c=v11Clientes[indice];
-  if(!c)return alert('Cliente não encontrado.');
+  try{
+    var c=(Array.isArray(v11Clientes)?v11Clientes:[])[indice];
+    if(!c){ alert('Cliente não encontrado.'); return; }
 
-  const nomeOriginal=String(c.nome||'').trim();
-  const nome=nomeOriginal.toLowerCase();
-  const esc=t=>String(t??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    var nomeOriginal=String(c.nome||'').trim();
+    var nome=nomeOriginal.toLowerCase();
 
-  const listaVendas=(typeof vendas!=='undefined'&&Array.isArray(vendas))?vendas:[];
-  const listaRacoes=(typeof v11Racoes!=='undefined'&&Array.isArray(v11Racoes))?v11Racoes:[];
-  const listaEmb=(typeof v11EmbHist!=='undefined'&&Array.isArray(v11EmbHist))?v11EmbHist:[];
+    var listaVendas=(typeof vendas!=='undefined' && Array.isArray(vendas))?vendas:[];
+    var listaRacoes=(typeof v11Racoes!=='undefined' && Array.isArray(v11Racoes))?v11Racoes:[];
+    var listaEmb=(typeof v11EmbHist!=='undefined' && Array.isArray(v11EmbHist))?v11EmbHist:[];
 
-  const vendasCliente=listaVendas.filter(v=>String(v?.cliente||'').trim().toLowerCase()===nome);
-  const vendasRacaoCliente=listaRacoes.filter(v=>String(v?.cliente||'').trim().toLowerCase()===nome);
-  const vendasEmbCliente=listaEmb.filter(v=>v?.mov==='venda'&&String(v?.pessoa||'').trim().toLowerCase()===nome);
+    var vendasCliente=listaVendas.filter(function(v){
+      return String((v&&v.cliente)||'').trim().toLowerCase()===nome;
+    });
+    var racoesCliente=listaRacoes.filter(function(v){
+      return String((v&&v.cliente)||'').trim().toLowerCase()===nome;
+    });
+    var embCliente=listaEmb.filter(function(v){
+      return v && v.mov==='venda' &&
+        String(v.pessoa||'').trim().toLowerCase()===nome;
+    });
 
-  const totalOvos=vendasCliente.reduce((s,v)=>s+Number(v?.total||0),0);
-  const recebidoOvos=vendasCliente.reduce((s,v)=>{
-    const pago=(typeof valorPagoVenda==='function')?valorPagoVenda(v):Number(v?.valorPago||0);
-    return s+Number(pago||0);
-  },0);
-  const saldoOvos=Math.max(0,totalOvos-recebidoOvos);
-  const totalRacao=vendasRacaoCliente.reduce((s,v)=>s+Number(v?.total||0),0);
-  const totalEmb=vendasEmbCliente.reduce((s,v)=>s+(Number(v?.q||0)*Number(v?.preco||0)),0);
-  const totalGeral=totalOvos+totalRacao+totalEmb;
-  const saldoTotal=saldoOvos;
-  const limite=Number(c?.limite||0);
-  const creditoLivre=Math.max(0,limite-saldoTotal);
+    var totalOvos=vendasCliente.reduce(function(s,v){
+      return s+Number((v&&v.total)||0);
+    },0);
 
-  const historicoOvos=vendasCliente.length?`<div class="table-wrap"><table>
-   <tr><th>Data</th><th>Nº</th><th>Total</th><th>Recebido</th><th>Saldo</th><th>Status</th></tr>
-   ${[...vendasCliente].sort((a,b)=>String(b?.data||'').localeCompare(String(a?.data||''))).map(v=>{
-      const pago=(typeof valorPagoVenda==='function')?valorPagoVenda(v):Number(v?.valorPago||0);
-      const saldo=(typeof saldoVenda==='function')?saldoVenda(v):Math.max(0,Number(v?.total||0)-Number(v?.valorPago||0));
-      const status=(typeof situacaoFinanceira==='function')?situacaoFinanceira(v):(v?.situacao||'—');
-      return `<tr><td>${typeof dataBR==='function'?dataBR(v?.data):(v?.data||'—')}</td><td>${esc(v?.numero||'—')}</td><td>${moeda(Number(v?.total||0))}</td><td>${moeda(Number(pago||0))}</td><td>${moeda(Number(saldo||0))}</td><td>${esc(status)}</td></tr>`;
-   }).join('')}
-  </table></div>`:'<div class="empty">Nenhuma venda de ovos encontrada para este cliente.</div>';
+    var recebidoOvos=vendasCliente.reduce(function(s,v){
+      var pago=(typeof valorPagoVenda==='function')
+        ? valorPagoVenda(v)
+        : Number((v&&v.valorPago)||0);
+      return s+Number(pago||0);
+    },0);
 
-  const conteudo=document.getElementById('v11RelatorioClienteModalConteudo');
-  const modal=document.getElementById('v11RelatorioClienteModal');
-  if(!conteudo||!modal)return alert('Não foi possível abrir o relatório.');
+    var saldoOvos=Math.max(0,totalOvos-recebidoOvos);
+    var totalRacao=racoesCliente.reduce(function(s,v){
+      return s+Number((v&&v.total)||0);
+    },0);
+    var totalEmb=embCliente.reduce(function(s,v){
+      return s+(Number((v&&v.q)||0)*Number((v&&v.preco)||0));
+    },0);
 
-  conteudo.innerHTML=`
-   <div style="padding-right:36px">
-    <h2 id="v11CliModalTitulo" style="margin:0;color:var(--azul)">Relatório do Cliente</h2>
-    <div class="help" style="margin-top:4px">${esc(nomeOriginal)}</div>
-   </div>
-   <div class="v2-kpi-grid" style="margin-top:16px">
-    <div class="v2-card"><h3>Total comprado</h3><div class="big">${moeda(totalGeral)}</div></div>
-    <div class="v2-card"><h3>Compras de ovos</h3><div class="big">${moeda(totalOvos)}</div></div>
-    <div class="v2-card"><h3>Rações</h3><div class="big">${moeda(totalRacao)}</div></div>
-    <div class="v2-card"><h3>Embalagens</h3><div class="big">${moeda(totalEmb)}</div></div>
-    <div class="v2-card"><h3>Recebido em ovos</h3><div class="big">${moeda(recebidoOvos)}</div></div>
-    <div class="v2-card"><h3>Saldo em aberto</h3><div class="big">${moeda(saldoTotal)}</div></div>
-    <div class="v2-card"><h3>Limite de crédito</h3><div class="big">${moeda(limite)}</div></div>
-    <div class="v2-card"><h3>Crédito disponível</h3><div class="big">${moeda(creditoLivre)}</div></div>
-   </div>
-   <h3 style="color:var(--azul);margin-top:18px">Histórico de vendas de ovos</h3>
-   ${historicoOvos}
-   <div class="actions" style="margin-top:18px">
-    <button type="button" class="btn secondary" onclick="v11FecharRelatorioCliente()">Fechar</button>
-   </div>`;
+    var totalGeral=totalOvos+totalRacao+totalEmb;
+    var limite=Number(c.limite||0);
+    var creditoLivre=Math.max(0,limite-saldoOvos);
 
-  modal.classList.add('aberto');
-  modal.setAttribute('aria-hidden','false');
-  document.body.style.overflow='hidden';
-  modal.scrollTop=0;
- }catch(e){
-  console.error('Erro ao abrir relatório do cliente:',e);
-  alert('Não foi possível abrir o relatório deste cliente. Atualize a página e tente novamente.');
- }
+    var linhas='';
+    vendasCliente.slice().sort(function(a,b){
+      return String((b&&b.data)||'').localeCompare(String((a&&a.data)||''));
+    }).forEach(function(v){
+      var pago=(typeof valorPagoVenda==='function')
+        ? valorPagoVenda(v)
+        : Number((v&&v.valorPago)||0);
+
+      var saldo=(typeof saldoVenda==='function')
+        ? saldoVenda(v)
+        : Math.max(0,Number((v&&v.total)||0)-Number((v&&v.valorPago)||0));
+
+      var status=(typeof situacaoFinanceira==='function')
+        ? situacaoFinanceira(v)
+        : ((v&&v.situacao)||'—');
+
+      linhas += '<tr>'+
+        '<td>'+((typeof dataBR==='function')?dataBR(v.data):(v.data||'—'))+'</td>'+
+        '<td>'+(v.numero||'—')+'</td>'+
+        '<td>'+moeda(Number(v.total||0))+'</td>'+
+        '<td>'+moeda(Number(pago||0))+'</td>'+
+        '<td>'+moeda(Number(saldo||0))+'</td>'+
+        '<td>'+status+'</td>'+
+      '</tr>';
+    });
+
+    var historico = vendasCliente.length
+      ? '<div class="table-wrap"><table>'+
+        '<tr><th>Data</th><th>Nº</th><th>Total</th><th>Recebido</th><th>Saldo</th><th>Status</th></tr>'+
+        linhas+
+        '</table></div>'
+      : '<div class="empty">Nenhuma venda de ovos encontrada para este cliente.</div>';
+
+    var el=document.getElementById('v11CliRelatorio');
+    if(!el){ alert('Área do relatório não encontrada.'); return; }
+
+    el.style.display='block';
+    el.innerHTML=
+      '<div class="card" style="margin-top:16px;border:2px solid #d7e1e5;box-shadow:none">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">'+
+          '<div><h2 style="margin:0;color:var(--azul)">Relatório do Cliente</h2>'+
+          '<div class="help">'+nomeOriginal+'</div></div>'+
+          '<button type="button" class="btn secondary" onclick="v11FecharRelatorioCliente()">Fechar</button>'+
+        '</div>'+
+        '<div class="v2-kpi-grid" style="margin-top:14px">'+
+          '<div class="v2-card"><h3>Total comprado</h3><div class="big">'+moeda(totalGeral)+'</div></div>'+
+          '<div class="v2-card"><h3>Compras de ovos</h3><div class="big">'+moeda(totalOvos)+'</div></div>'+
+          '<div class="v2-card"><h3>Rações</h3><div class="big">'+moeda(totalRacao)+'</div></div>'+
+          '<div class="v2-card"><h3>Embalagens</h3><div class="big">'+moeda(totalEmb)+'</div></div>'+
+          '<div class="v2-card"><h3>Recebido</h3><div class="big">'+moeda(recebidoOvos)+'</div></div>'+
+          '<div class="v2-card"><h3>Saldo em aberto</h3><div class="big">'+moeda(saldoOvos)+'</div></div>'+
+          '<div class="v2-card"><h3>Limite de crédito</h3><div class="big">'+moeda(limite)+'</div></div>'+
+          '<div class="v2-card"><h3>Crédito disponível</h3><div class="big">'+moeda(creditoLivre)+'</div></div>'+
+        '</div>'+
+        '<h3 style="color:var(--azul);margin-top:18px">Histórico de vendas de ovos</h3>'+
+        historico+
+      '</div>';
+
+    setTimeout(function(){
+      el.scrollIntoView({behavior:'smooth',block:'start'});
+    },50);
+
+  }catch(e){
+    console.error(e);
+    alert('Não foi possível abrir o relatório do cliente.');
+  }
 }
+
 window.v11VerRelatorioCliente=v11VerRelatorioCliente;
 window.v11FecharRelatorioCliente=v11FecharRelatorioCliente;
 
@@ -2409,7 +2449,7 @@ function v11SalvarTitulo(){const valor=Number(v11TitValor.value||0);if(valor<=0)
 function v11SalvarRacao(){const kg=Number(v11RacKg.value||0),preco=Number(v11RacPreco.value||0);if(kg<=0)return alert('Informe a quantidade.');v11Racoes.unshift({data:new Date().toISOString().slice(0,10),cliente:v11RacCli.value.trim(),tipo:v11RacTipo.value,kg,preco,total:kg*preco,obs:v11RacObs.value.trim()});v11Set('gsj_v11_racoes',v11Racoes);v11RenderExtras();v11AtualizarPainel()}
 function v11SalvarCusto(){const valor=Number(v11CustoValor.value||0);if(valor<=0)return alert('Informe o valor.');v11Custos.unshift({data:v11CustoData.value||new Date().toISOString().slice(0,10),centro:v11CustoCentro.value,desc:v11CustoDesc.value.trim(),valor});v11Set('gsj_v11_custos',v11Custos);v11RenderExtras();v11AtualizarPainel()}
 function v11RenderExtras(){
- v11Table('v11CliLista',['Cliente','Limite','Observação','Ações'],v11Clientes.map((x,i)=>`<tr><td>${x.nome}</td><td>${moeda(x.limite)}</td><td>${x.obs||'—'}</td><td><button type="button" class="btn secondary" onclick="window.v11VerRelatorioCliente(${i});return false;">Ver relatório</button></td></tr>`));
+ v11Table('v11CliLista',['Cliente','Limite','Observação','Ações'],v11Clientes.map((x,i)=>`<tr><td>${x.nome}</td><td>${moeda(x.limite)}</td><td>${x.obs||'—'}</td><td><button type="button" class="btn secondary" onclick="v11VerRelatorioCliente(${i});return false;">Ver relatório</button></td></tr>`));
  v11Table('v11FornLista',['Fornecedor','Produto','Observação'],v11Fornecedores.map(x=>`<tr><td>${x.nome}</td><td>${x.prod||'—'}</td><td>${x.obs||'—'}</td></tr>`));
  v11Table('v11FuncLista',['Data','Funcionário','Salário','Vales','Pago','Saldo'],v11Funcs.map(x=>`<tr><td>${dataBR(x.data)}</td><td>${x.nome}</td><td>${moeda(x.sal)}</td><td>${moeda(x.vale)}</td><td>${moeda(x.pago)}</td><td>${moeda(x.saldo)}</td></tr>`));
  v11Table('v11TitLista',['Tipo','Pessoa','Valor','Vencimento','Situação'],v11Titulos.map(x=>`<tr><td>${x.tipo}</td><td>${x.pessoa||'—'}</td><td>${moeda(x.valor)}</td><td>${x.venc?dataBR(x.venc):'—'}</td><td>${x.status}</td></tr>`));
@@ -2998,56 +3038,6 @@ window.addEventListener('load',()=>{
 </script>
 
 
-<!-- V11 FIX: modal robusto para Relatório do Cliente -->
-<div id="v11RelatorioClienteModal" class="v11-cli-modal" aria-hidden="true">
-  <div class="v11-cli-modal-box" role="dialog" aria-modal="true" aria-labelledby="v11CliModalTitulo">
-    <button type="button" class="v11-cli-modal-x" onclick="v11FecharRelatorioCliente()" aria-label="Fechar">×</button>
-    <div id="v11RelatorioClienteModalConteudo"></div>
-  </div>
-</div>
-
-<style>
-.v11-cli-modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:10050;
-  background:rgba(12,31,39,.68);
-  padding:16px;
-  overflow:auto;
-  align-items:flex-start;
-  justify-content:center;
-}
-.v11-cli-modal.aberto{display:flex}
-.v11-cli-modal-box{
-  position:relative;
-  width:min(1100px,100%);
-  margin:22px auto;
-  background:#fff;
-  border-radius:16px;
-  box-shadow:0 20px 60px rgba(0,0,0,.28);
-  padding:20px;
-}
-.v11-cli-modal-x{
-  position:absolute;
-  top:10px;
-  right:10px;
-  width:38px;
-  height:38px;
-  border:0;
-  border-radius:50%;
-  background:#eef3f5;
-  color:#123f50;
-  font-size:26px;
-  line-height:1;
-  cursor:pointer;
-  z-index:2;
-}
-@media(max-width:600px){
-  .v11-cli-modal{padding:8px}
-  .v11-cli-modal-box{margin:8px auto;padding:16px 12px;border-radius:12px}
-}
-</style>
 
 </body>
 </html>
