@@ -677,8 +677,12 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 
   <div class="bloco-opcoes">
 <div>
-<h4>PAGAMENTO DIVIDIDO</h4>
-<div class="help print-hide">Pode combinar PIX, dinheiro, cheque e outro na mesma venda.</div>
+<h4>FORMA DE PAGAMENTO / RECEBIMENTO</h4>
+<div class="form-grid">
+<div class="full"><label>Forma combinada com o cliente</label><select id="formaPagamentoVenda" onchange="atualizarPagamentoDividido()"><option value="PIX">PIX</option><option value="Dinheiro">Dinheiro</option><option value="Cheque">Cheque</option><option value="Cartão">Cartão</option><option value="Boleto / Transferência">Boleto / Transferência</option><option value="Dividido">Pagamento dividido</option><option value="A combinar">A combinar</option></select></div>
+</div>
+<div class="help print-hide" style="margin:8px 0 10px">A forma combinada pode ser PIX, por exemplo, mesmo que o cliente ainda não tenha pago. Preencha abaixo somente o valor que realmente foi recebido agora.</div>
+<h4 style="margin-top:10px">VALOR RECEBIDO AGORA</h4>
 <div class="form-grid">
 <div><label>PIX (R$)</label><input id="pagPix" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
 <div><label>Dinheiro (R$)</label><input id="pagDinheiro" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
@@ -1555,7 +1559,8 @@ function atualizarPagamentoDividido(){
   if(r) r.checked=true;
 
   const valorCheque=Number(document.getElementById('pagCheque').value||0);
-  document.getElementById('dadosChequeVenda').style.display=valorCheque>0?'grid':'none';
+  const forma=document.getElementById('formaPagamentoVenda')?.value||'';
+  document.getElementById('dadosChequeVenda').style.display=(valorCheque>0||forma==='Cheque')?'grid':'none';
 }
 function atualizarSituacaoPeloPagamento(){atualizarPagamentoDividido();}
 
@@ -1571,6 +1576,7 @@ function limparFormulario(){
   document.getElementById('assinaturaExibida').value='Erik Gabriel';
   document.getElementById('desconto').value=0;
   document.getElementById('observacoes').value='';
+  if(document.getElementById('formaPagamentoVenda'))document.getElementById('formaPagamentoVenda').value='PIX';
   ['pagPix','pagDinheiro','pagCheque','pagOutro'].forEach(id=>document.getElementById(id).value=0);
   document.getElementById('valorPagoVenda').value=moeda(0);
   ['chequeBancoVenda','chequeNumeroVenda','chequeEmitenteVenda','chequeDataVenda'].forEach(id=>document.getElementById(id).value='');
@@ -1607,7 +1613,7 @@ function salvarVenda(){
     vendedor:document.getElementById('vendedor').value.trim(),responsavel:document.getElementById('responsavelVenda').value.trim(),
     assinatura:document.getElementById('assinaturaExibida').value.trim(),produtos,subtotal,desconto,total,
     custoTotal:produtos.reduce((s,p)=>s+p.custoTotal,0),
-    pagamento:'Dividido',
+    pagamento:(document.getElementById('formaPagamentoVenda')?.value||'A combinar'),
     pagamentos:{pix:Math.max(0,Number(document.getElementById('pagPix').value||0)),dinheiro:Math.max(0,Number(document.getElementById('pagDinheiro').value||0)),cheque:Math.max(0,Number(document.getElementById('pagCheque').value||0)),outro:Math.max(0,Number(document.getElementById('pagOutro').value||0))},
     valorPago:Math.min(total,totalPagamentoDividido()),
     cheque:Number(document.getElementById('pagCheque').value||0)>0?{valor:Math.max(0,Number(document.getElementById('pagCheque').value||0)),banco:document.getElementById('chequeBancoVenda').value.trim(),numero:document.getElementById('chequeNumeroVenda').value.trim(),emitente:document.getElementById('chequeEmitenteVenda').value.trim(),data:document.getElementById('chequeDataVenda').value,status:'Em carteira'}:null,
@@ -1640,7 +1646,14 @@ function editarVenda(id){
   document.getElementById('responsavelVenda').value=v.responsavel||'Erik Gabriel';
   document.getElementById('assinaturaExibida').value=v.assinatura||v.responsavel||'Erik Gabriel';
   document.getElementById('desconto').value=v.desconto||0;document.getElementById('observacoes').value=v.observacoes||'';
-  const pg=v.pagamentos||{};document.getElementById('pagPix').value=pg.pix||0;document.getElementById('pagDinheiro').value=pg.dinheiro||0;document.getElementById('pagCheque').value=pg.cheque||0;document.getElementById('pagOutro').value=pg.outro||0;
+  const pg=v.pagamentos||{};
+  if(document.getElementById('formaPagamentoVenda')){
+    let forma=v.pagamento||'A combinar';
+    const opts=[...document.getElementById('formaPagamentoVenda').options].map(o=>o.value);
+    if(!opts.includes(forma))forma='A combinar';
+    document.getElementById('formaPagamentoVenda').value=forma;
+  }
+  document.getElementById('pagPix').value=pg.pix||0;document.getElementById('pagDinheiro').value=pg.dinheiro||0;document.getElementById('pagCheque').value=pg.cheque||0;document.getElementById('pagOutro').value=pg.outro||0;
   if(v.cheque){document.getElementById('chequeBancoVenda').value=v.cheque.banco||'';document.getElementById('chequeNumeroVenda').value=v.cheque.numero||'';document.getElementById('chequeEmitenteVenda').value=v.cheque.emitente||'';document.getElementById('chequeDataVenda').value=v.cheque.data||'';}
   const sr=document.querySelector(`input[name="situacaoRadio"][value="${v.situacao}"]`);if(sr)sr.checked=true;
   document.getElementById('produtos').innerHTML='';
@@ -1917,12 +1930,26 @@ let mudouV9=false;
 classificacoesPadraoV9.forEach(nome=>{if(!produtosCad.some(p=>p.nome===nome)){produtosCad.push({id:gerarId(),nome,preco:0,custo:0,margemMin:10,ativo:'sim'});mudouV9=true}});
 if(mudouV9)localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));
 
+function formaPagamentoExibida(v){
+ const forma=String(v?.pagamento||'').trim();
+ if(forma && forma!=='Dividido')return forma;
+ const pg=v?.pagamentos||{};
+ const usadas=[];
+ if(Number(pg.pix||0)>0)usadas.push('PIX');
+ if(Number(pg.dinheiro||0)>0)usadas.push('Dinheiro');
+ if(Number(pg.cheque||0)>0)usadas.push('Cheque');
+ if(Number(pg.outro||0)>0)usadas.push('Cartão / Outro');
+ if(usadas.length===1)return usadas[0];
+ if(usadas.length>1)return 'Pagamento dividido';
+ return forma==='Dividido'?'A combinar':(forma||'A combinar');
+}
+
 function abrirNotaCliente(id){
  const v=vendas.find(x=>x.id===id);if(!v)return;
  const linhas=(v.produtos||[]).map(p=>`<tr><td>${p.quantidade||0}</td><td>${p.unidade||'Caixa'}</td><td>${p.produto||''}</td><td style="text-align:right">${moeda(p.valorUnit||0)}</td><td style="text-align:right">${moeda(p.total||0)}</td></tr>`).join('');
  document.getElementById('notaClienteConteudo').innerHTML=`
  <div class="nc-topo"><div><div class="nc-marca">GRANJA SÃO JOSÉ</div><div style="font-size:12px;margin-top:4px">Seguimos produzindo o melhor alimento depois do leite materno.</div></div><div class="nc-titulo"><strong>NOTA DE VENDA</strong><span>Nº ${v.numero||'—'}</span></div></div>
- <div class="nc-info"><div><strong>Cliente:</strong> ${v.cliente||'—'}</div><div><strong>Data:</strong> ${dataBR(v.data)}</div><div><strong>Forma de pagamento:</strong> ${v.pagamento||'—'}</div><div><strong>Vencimento:</strong> ${dataBR(v.vencimento)}</div></div>
+ <div class="nc-info"><div><strong>Cliente:</strong> ${v.cliente||'—'}</div><div><strong>Data:</strong> ${dataBR(v.data)}</div><div><strong>Forma combinada:</strong> ${formaPagamentoExibida(v)}</div><div><strong>Situação:</strong> ${situacaoFinanceira(v)}</div><div><strong>Valor recebido:</strong> ${moeda(valorPagoVenda(v))}</div><div><strong>Saldo a receber:</strong> ${moeda(saldoVenda(v))}</div><div><strong>Vencimento:</strong> ${dataBR(v.vencimento)}</div></div>
  <table class="nc-table"><thead><tr><th>Qtd.</th><th>Unidade</th><th>Classificação / Produto</th><th>Valor unit.</th><th>Total</th></tr></thead><tbody>${linhas}</tbody></table>
  <div class="nc-total"><div><span>Subtotal</span><strong>${moeda(v.subtotal||0)}</strong></div>${Number(v.desconto||0)>0?`<div><span>Desconto</span><strong>${moeda(v.desconto)}</strong></div>`:''}<div class="grand"><span>TOTAL</span><strong>${moeda(v.total||0)}</strong></div></div>
  ${v.observacoes?`<div style="margin-top:18px;font-size:13px"><strong>Observações:</strong> ${v.observacoes}</div>`:''}
@@ -2216,51 +2243,98 @@ let v11Clientes=v11Get('gsj_v11_clientes',[]),v11Fornecedores=v11Get('gsj_v11_fo
 function v11Table(el,heads,rows){const x=document.getElementById(el);if(!x)return;x.innerHTML=rows.length?`<div class="table-wrap"><table><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.join('')}</table></div>`:'<div class="empty">Nenhum registro.</div>'}
 function v11SalvarCliente(){const nome=v11CliNome.value.trim();if(!nome)return alert('Informe o cliente.');v11Clientes.unshift({nome,limite:Number(v11CliLimite.value||0),obs:v11CliObs.value.trim()});v11Set('gsj_v11_clientes',v11Clientes);v11RenderExtras()}
 
+function v11FecharRelatorioCliente(){
+ const modal=document.getElementById('v11RelatorioClienteModal');
+ if(!modal)return;
+ modal.classList.remove('aberto');
+ modal.setAttribute('aria-hidden','true');
+ document.body.style.overflow='';
+}
+
 function v11VerRelatorioCliente(indice){
- const c=v11Clientes[indice];
- if(!c)return;
- const nome=(c.nome||'').trim().toLowerCase();
- const vendasCliente=(typeof vendas!=='undefined'?vendas:[]).filter(v=>(v.cliente||'').trim().toLowerCase()===nome);
- const vendasRacaoCliente=(typeof v11Racoes!=='undefined'?v11Racoes:[]).filter(v=>(v.cliente||'').trim().toLowerCase()===nome);
- const vendasEmbCliente=(typeof v11EmbHist!=='undefined'?v11EmbHist:[]).filter(v=>v.mov==='venda'&&(v.pessoa||'').trim().toLowerCase()===nome);
+ try{
+  const c=v11Clientes[indice];
+  if(!c)return alert('Cliente não encontrado.');
 
- const totalOvos=vendasCliente.reduce((s,v)=>s+Number(v.total||0),0);
- const recebidoOvos=vendasCliente.reduce((s,v)=>s+Number(typeof valorPagoVenda==='function'?valorPagoVenda(v):(v.valorPago||0)),0);
- const saldoOvos=Math.max(0,totalOvos-recebidoOvos);
- const totalRacao=vendasRacaoCliente.reduce((s,v)=>s+Number(v.total||0),0);
- const totalEmb=vendasEmbCliente.reduce((s,v)=>s+Number(v.q||0)*Number(v.preco||0),0);
- const totalGeral=totalOvos+totalRacao+totalEmb;
- const saldoTotal=saldoOvos;
- const limite=Number(c.limite||0);
- const creditoLivre=Math.max(0,limite-saldoTotal);
+  const nomeOriginal=String(c.nome||'').trim();
+  const nome=nomeOriginal.toLowerCase();
+  const esc=t=>String(t??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
- const historicoOvos=vendasCliente.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Nº</th><th>Total</th><th>Recebido</th><th>Saldo</th><th>Status</th></tr>${
-   [...vendasCliente].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(v=>`<tr><td>${dataBR(v.data)}</td><td>${v.numero||'—'}</td><td>${moeda(v.total)}</td><td>${moeda(typeof valorPagoVenda==='function'?valorPagoVenda(v):(v.valorPago||0))}</td><td>${moeda(typeof saldoVenda==='function'?saldoVenda(v):Math.max(0,Number(v.total||0)-Number(v.valorPago||0)))}</td><td>${typeof situacaoFinanceira==='function'?situacaoFinanceira(v):(v.situacao||'—')}</td></tr>`).join('')
- }</table></div>`:'<div class="empty">Nenhuma venda de ovos encontrada para este cliente.</div>';
+  const listaVendas=(typeof vendas!=='undefined'&&Array.isArray(vendas))?vendas:[];
+  const listaRacoes=(typeof v11Racoes!=='undefined'&&Array.isArray(v11Racoes))?v11Racoes:[];
+  const listaEmb=(typeof v11EmbHist!=='undefined'&&Array.isArray(v11EmbHist))?v11EmbHist:[];
 
- const el=document.getElementById('v11CliRelatorio');
- if(!el)return;
- el.innerHTML=`
- <div class="card" style="box-shadow:none;border:1px solid #dbe4e7">
-   <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
-     <div><h2 style="margin:0">Relatório do Cliente</h2><div class="help">${c.nome}</div></div>
-     <button class="btn secondary" onclick="document.getElementById('v11CliRelatorio').innerHTML=''">Fechar</button>
+  const vendasCliente=listaVendas.filter(v=>String(v?.cliente||'').trim().toLowerCase()===nome);
+  const vendasRacaoCliente=listaRacoes.filter(v=>String(v?.cliente||'').trim().toLowerCase()===nome);
+  const vendasEmbCliente=listaEmb.filter(v=>v?.mov==='venda'&&String(v?.pessoa||'').trim().toLowerCase()===nome);
+
+  const totalOvos=vendasCliente.reduce((s,v)=>s+Number(v?.total||0),0);
+  const recebidoOvos=vendasCliente.reduce((s,v)=>{
+    const pago=(typeof valorPagoVenda==='function')?valorPagoVenda(v):Number(v?.valorPago||0);
+    return s+Number(pago||0);
+  },0);
+  const saldoOvos=Math.max(0,totalOvos-recebidoOvos);
+  const totalRacao=vendasRacaoCliente.reduce((s,v)=>s+Number(v?.total||0),0);
+  const totalEmb=vendasEmbCliente.reduce((s,v)=>s+(Number(v?.q||0)*Number(v?.preco||0)),0);
+  const totalGeral=totalOvos+totalRacao+totalEmb;
+  const saldoTotal=saldoOvos;
+  const limite=Number(c?.limite||0);
+  const creditoLivre=Math.max(0,limite-saldoTotal);
+
+  const historicoOvos=vendasCliente.length?`<div class="table-wrap"><table>
+   <tr><th>Data</th><th>Nº</th><th>Total</th><th>Recebido</th><th>Saldo</th><th>Status</th></tr>
+   ${[...vendasCliente].sort((a,b)=>String(b?.data||'').localeCompare(String(a?.data||''))).map(v=>{
+      const pago=(typeof valorPagoVenda==='function')?valorPagoVenda(v):Number(v?.valorPago||0);
+      const saldo=(typeof saldoVenda==='function')?saldoVenda(v):Math.max(0,Number(v?.total||0)-Number(v?.valorPago||0));
+      const status=(typeof situacaoFinanceira==='function')?situacaoFinanceira(v):(v?.situacao||'—');
+      return `<tr><td>${typeof dataBR==='function'?dataBR(v?.data):(v?.data||'—')}</td><td>${esc(v?.numero||'—')}</td><td>${moeda(Number(v?.total||0))}</td><td>${moeda(Number(pago||0))}</td><td>${moeda(Number(saldo||0))}</td><td>${esc(status)}</td></tr>`;
+   }).join('')}
+  </table></div>`:'<div class="empty">Nenhuma venda de ovos encontrada para este cliente.</div>';
+
+  const conteudo=document.getElementById('v11RelatorioClienteModalConteudo');
+  const modal=document.getElementById('v11RelatorioClienteModal');
+  if(!conteudo||!modal)return alert('Não foi possível abrir o relatório.');
+
+  conteudo.innerHTML=`
+   <div style="padding-right:36px">
+    <h2 id="v11CliModalTitulo" style="margin:0;color:var(--azul)">Relatório do Cliente</h2>
+    <div class="help" style="margin-top:4px">${esc(nomeOriginal)}</div>
    </div>
-   <div class="v2-kpi-grid" style="margin-top:12px">
-     <div class="v2-card"><h3>Total comprado</h3><div class="big">${moeda(totalGeral)}</div></div>
-     <div class="v2-card"><h3>Compras de ovos</h3><div class="big">${moeda(totalOvos)}</div></div>
-     <div class="v2-card"><h3>Rações</h3><div class="big">${moeda(totalRacao)}</div></div>
-     <div class="v2-card"><h3>Embalagens</h3><div class="big">${moeda(totalEmb)}</div></div>
-     <div class="v2-card"><h3>Recebido em ovos</h3><div class="big">${moeda(recebidoOvos)}</div></div>
-     <div class="v2-card"><h3>Saldo em aberto</h3><div class="big">${moeda(saldoTotal)}</div></div>
-     <div class="v2-card"><h3>Limite de crédito</h3><div class="big">${moeda(limite)}</div></div>
-     <div class="v2-card"><h3>Crédito disponível</h3><div class="big">${moeda(creditoLivre)}</div></div>
+   <div class="v2-kpi-grid" style="margin-top:16px">
+    <div class="v2-card"><h3>Total comprado</h3><div class="big">${moeda(totalGeral)}</div></div>
+    <div class="v2-card"><h3>Compras de ovos</h3><div class="big">${moeda(totalOvos)}</div></div>
+    <div class="v2-card"><h3>Rações</h3><div class="big">${moeda(totalRacao)}</div></div>
+    <div class="v2-card"><h3>Embalagens</h3><div class="big">${moeda(totalEmb)}</div></div>
+    <div class="v2-card"><h3>Recebido em ovos</h3><div class="big">${moeda(recebidoOvos)}</div></div>
+    <div class="v2-card"><h3>Saldo em aberto</h3><div class="big">${moeda(saldoTotal)}</div></div>
+    <div class="v2-card"><h3>Limite de crédito</h3><div class="big">${moeda(limite)}</div></div>
+    <div class="v2-card"><h3>Crédito disponível</h3><div class="big">${moeda(creditoLivre)}</div></div>
    </div>
    <h3 style="color:var(--azul);margin-top:18px">Histórico de vendas de ovos</h3>
    ${historicoOvos}
- </div>`;
- el.scrollIntoView({behavior:'smooth',block:'start'});
+   <div class="actions" style="margin-top:18px">
+    <button type="button" class="btn secondary" onclick="v11FecharRelatorioCliente()">Fechar</button>
+   </div>`;
+
+  modal.classList.add('aberto');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  modal.scrollTop=0;
+ }catch(e){
+  console.error('Erro ao abrir relatório do cliente:',e);
+  alert('Não foi possível abrir o relatório deste cliente. Atualize a página e tente novamente.');
+ }
 }
+window.v11VerRelatorioCliente=v11VerRelatorioCliente;
+window.v11FecharRelatorioCliente=v11FecharRelatorioCliente;
+
+document.addEventListener('click',function(e){
+ const modal=document.getElementById('v11RelatorioClienteModal');
+ if(modal&&e.target===modal)v11FecharRelatorioCliente();
+});
+document.addEventListener('keydown',function(e){
+ if(e.key==='Escape')v11FecharRelatorioCliente();
+});
 
 function v11SalvarFornecedor(){const nome=v11FornNome.value.trim();if(!nome)return alert('Informe o fornecedor.');v11Fornecedores.unshift({nome,prod:v11FornProd.value.trim(),obs:v11FornObs.value.trim()});v11Set('gsj_v11_fornecedores',v11Fornecedores);v11RenderExtras()}
 function v11CalcFunc(){const sal=Number(v11FuncSal.value||0),vale=Number(v11FuncVale.value||0),pix=Number(v11FuncPix.value||0),din=Number(v11FuncDin.value||0),out=Number(v11FuncOut.value||0),pago=vale+pix+din+out,saldo=Math.max(0,sal-pago);v11FuncPago.value=moeda(pago);v11FuncSaldo.value=moeda(saldo);return{sal,vale,pix,din,out,pago,saldo}}
@@ -2335,7 +2409,7 @@ function v11SalvarTitulo(){const valor=Number(v11TitValor.value||0);if(valor<=0)
 function v11SalvarRacao(){const kg=Number(v11RacKg.value||0),preco=Number(v11RacPreco.value||0);if(kg<=0)return alert('Informe a quantidade.');v11Racoes.unshift({data:new Date().toISOString().slice(0,10),cliente:v11RacCli.value.trim(),tipo:v11RacTipo.value,kg,preco,total:kg*preco,obs:v11RacObs.value.trim()});v11Set('gsj_v11_racoes',v11Racoes);v11RenderExtras();v11AtualizarPainel()}
 function v11SalvarCusto(){const valor=Number(v11CustoValor.value||0);if(valor<=0)return alert('Informe o valor.');v11Custos.unshift({data:v11CustoData.value||new Date().toISOString().slice(0,10),centro:v11CustoCentro.value,desc:v11CustoDesc.value.trim(),valor});v11Set('gsj_v11_custos',v11Custos);v11RenderExtras();v11AtualizarPainel()}
 function v11RenderExtras(){
- v11Table('v11CliLista',['Cliente','Limite','Observação','Ações'],v11Clientes.map((x,i)=>`<tr><td>${x.nome}</td><td>${moeda(x.limite)}</td><td>${x.obs||'—'}</td><td><button class="btn secondary" onclick="v11VerRelatorioCliente(${i})">Ver relatório</button></td></tr>`));
+ v11Table('v11CliLista',['Cliente','Limite','Observação','Ações'],v11Clientes.map((x,i)=>`<tr><td>${x.nome}</td><td>${moeda(x.limite)}</td><td>${x.obs||'—'}</td><td><button type="button" class="btn secondary" onclick="window.v11VerRelatorioCliente(${i});return false;">Ver relatório</button></td></tr>`));
  v11Table('v11FornLista',['Fornecedor','Produto','Observação'],v11Fornecedores.map(x=>`<tr><td>${x.nome}</td><td>${x.prod||'—'}</td><td>${x.obs||'—'}</td></tr>`));
  v11Table('v11FuncLista',['Data','Funcionário','Salário','Vales','Pago','Saldo'],v11Funcs.map(x=>`<tr><td>${dataBR(x.data)}</td><td>${x.nome}</td><td>${moeda(x.sal)}</td><td>${moeda(x.vale)}</td><td>${moeda(x.pago)}</td><td>${moeda(x.saldo)}</td></tr>`));
  v11Table('v11TitLista',['Tipo','Pessoa','Valor','Vencimento','Situação'],v11Titulos.map(x=>`<tr><td>${x.tipo}</td><td>${x.pessoa||'—'}</td><td>${moeda(x.valor)}</td><td>${x.venc?dataBR(x.venc):'—'}</td><td>${x.status}</td></tr>`));
@@ -2922,6 +2996,58 @@ window.addEventListener('load',()=>{
  const mes=v11MesAtual();if(document.getElementById('v11CFMes'))v11CFMes.value=mes;v11RenderContasFixas();setTimeout(v11AtualizarContasNoPainel,900);
 });
 </script>
+
+
+<!-- V11 FIX: modal robusto para Relatório do Cliente -->
+<div id="v11RelatorioClienteModal" class="v11-cli-modal" aria-hidden="true">
+  <div class="v11-cli-modal-box" role="dialog" aria-modal="true" aria-labelledby="v11CliModalTitulo">
+    <button type="button" class="v11-cli-modal-x" onclick="v11FecharRelatorioCliente()" aria-label="Fechar">×</button>
+    <div id="v11RelatorioClienteModalConteudo"></div>
+  </div>
+</div>
+
+<style>
+.v11-cli-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10050;
+  background:rgba(12,31,39,.68);
+  padding:16px;
+  overflow:auto;
+  align-items:flex-start;
+  justify-content:center;
+}
+.v11-cli-modal.aberto{display:flex}
+.v11-cli-modal-box{
+  position:relative;
+  width:min(1100px,100%);
+  margin:22px auto;
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.28);
+  padding:20px;
+}
+.v11-cli-modal-x{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:50%;
+  background:#eef3f5;
+  color:#123f50;
+  font-size:26px;
+  line-height:1;
+  cursor:pointer;
+  z-index:2;
+}
+@media(max-width:600px){
+  .v11-cli-modal{padding:8px}
+  .v11-cli-modal-box{margin:8px auto;padding:16px 12px;border-radius:12px}
+}
+</style>
 
 </body>
 </html>
