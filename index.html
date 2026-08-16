@@ -535,7 +535,6 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 </style>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <body>
 
 <div id="onlineModal">
@@ -2014,48 +2013,90 @@ function notaClienteNomeArquivo(v){
  return `nota-venda-${numero}-${cliente||'cliente'}.png`;
 }
 
-function canvasParaBlob(canvas){return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Não foi possível gerar a imagem.')),'image/png',1));}
-
-async function enviarNotaCliente(){
- const btn=document.getElementById('btnEnviarNotaCliente');
- const textoOriginal=btn?btn.textContent:'';
- let copia=null;
- try{
-  if(typeof html2canvas!=='function')throw new Error('O gerador de imagem ainda não carregou. Verifique a internet e tente novamente.');
-  if(!notaClienteAtual)throw new Error('Abra uma nota de venda antes de enviar.');
-  const original=document.querySelector('#notaClienteModal .nota-cliente-doc');
-  if(!original)throw new Error('Nota de venda não encontrada.');
-  if(btn){btn.disabled=true;btn.textContent='Preparando imagem...';}
-
-  copia=original.cloneNode(true);
-  copia.querySelectorAll('.nc-actions').forEach(el=>el.remove());
-  copia.removeAttribute('id');
-  Object.assign(copia.style,{position:'fixed',left:'-10000px',top:'0',width:'790px',maxWidth:'790px',margin:'0',padding:'24px',boxShadow:'none',borderRadius:'0',background:'#fff',zIndex:'-9999'});
-  const fin=copia.querySelector('.nc-financeiro');if(fin)fin.style.gridTemplateColumns='1fr 310px';
-  const topo=copia.querySelector('.nc-topo');if(topo)topo.style.gap='18px';
-  const marca=copia.querySelector('.nc-marca');if(marca)marca.style.fontSize='25px';
-  document.body.appendChild(copia);
-  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-
-  const canvas=await html2canvas(copia,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:900,scrollX:0,scrollY:0});
-  const blob=await canvasParaBlob(canvas);
-  const arquivo=new File([blob],notaClienteNomeArquivo(notaClienteAtual),{type:'image/png'});
-  const numero=String(notaClienteAtual.numero||'—').padStart(6,'0');
-  const dados={files:[arquivo],title:`Nota de Venda Nº ${numero} - Granja São José`,text:`Granja São José — Nota de Venda Nº ${numero}`};
-
-  if(navigator.share && (!navigator.canShare || navigator.canShare({files:[arquivo]}))){
-   await navigator.share(dados);
-  }else{
-   const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=arquivo.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
-   alert('A imagem da nota foi salva. Agora você pode enviá-la pelo WhatsApp.');
-  }
- }catch(e){
-  if(e?.name!=='AbortError'){console.error(e);alert(e?.message||'Não foi possível preparar a imagem da nota.');}
- }finally{
-  if(copia&&copia.isConnected)copia.remove();
-  if(btn){btn.disabled=false;btn.textContent=textoOriginal||'Enviar para o cliente';}
+function notaCanvasTexto(ctx,text,x,y,maxWidth,lineHeight,fonte,cor='#1f3037'){
+ ctx.font=fonte;ctx.fillStyle=cor;ctx.textBaseline='top';
+ const palavras=String(text??'').split(/\s+/);let linha='';let yy=y;
+ for(const palavra of palavras){
+  const teste=linha?linha+' '+palavra:palavra;
+  if(ctx.measureText(teste).width>maxWidth && linha){ctx.fillText(linha,x,yy);linha=palavra;yy+=lineHeight}else linha=teste;
  }
+ if(linha)ctx.fillText(linha,x,yy);
+ return yy+lineHeight;
 }
+function notaCanvasLinha(ctx,x1,y1,x2,y2,cor='#d6dfe2',largura=2){ctx.strokeStyle=cor;ctx.lineWidth=largura;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+function notaCanvasMoeda(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+function notaCanvasData(v){if(!v)return '—';const s=String(v);const a=s.slice(0,10).split('-');return a.length===3?`${a[2]}/${a[1]}/${a[0]}`:s}
+function dataURLParaBlob(dataURL){
+ const partes=dataURL.split(',');const mime=(partes[0].match(/:(.*?);/)||[])[1]||'image/png';const bin=atob(partes[1]);const bytes=new Uint8Array(bin.length);
+ for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+ return new Blob([bytes],{type:mime});
+}
+function gerarImagemNotaCliente(v){
+ const produtos=Array.isArray(v?.produtos)?v.produtos:[];
+ const linhas=Math.max(1,produtos.length);
+ const W=1580, margem=80, topo=60;
+ const alturaTabela=100+linhas*76;
+ const H=Math.max(1320,topo+190+100+alturaTabela+420);
+ const c=document.createElement('canvas');c.width=W;c.height=H;
+ const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+ const azul='#123f50', cinza='#52656d', claro='#f2f5f6', vermelho='#a12a2a';
+ let y=topo;
+ ctx.fillStyle=azul;ctx.font='900 50px Arial, sans-serif';ctx.textBaseline='top';ctx.fillText('GRANJA SÃO JOSÉ',margem,y);
+ ctx.font='20px Arial, sans-serif';ctx.fillStyle=cinza;ctx.fillText('Seguimos produzindo o melhor alimento depois do leite materno.',margem,y+64);
+ ctx.textAlign='right';ctx.fillStyle=azul;ctx.font='900 36px Arial, sans-serif';ctx.fillText('NOTA DE VENDA',W-margem,y+2);
+ ctx.font='22px Arial, sans-serif';ctx.fillStyle=cinza;ctx.fillText(`Nº ${String(v?.numero||'—').padStart(6,'0')}  •  ${notaCanvasData(v?.data)}`,W-margem,y+55);ctx.textAlign='left';
+ y+=120;notaCanvasLinha(ctx,margem,y,W-margem,y,azul,4);y+=32;
+ ctx.fillStyle=claro;ctx.fillRect(margem,y,W-2*margem,70);ctx.fillStyle=azul;ctx.fillRect(margem,y,8,70);
+ ctx.fillStyle='#26373e';ctx.font='700 24px Arial, sans-serif';ctx.fillText('CLIENTE:',margem+28,y+21);ctx.font='24px Arial, sans-serif';ctx.fillText(String(v?.cliente||'—'),margem+150,y+21);y+=105;
+ const cols=[margem,margem+150,margem+350,margem+980,margem+1190,W-margem];
+ ctx.fillStyle=azul;ctx.fillRect(margem,y,W-2*margem,58);
+ const cab=['Qtd.','Unidade','Classificação / Produto','Valor unit.','Total'];
+ ctx.fillStyle='#fff';ctx.font='700 19px Arial, sans-serif';
+ cab.forEach((t,i)=>ctx.fillText(t.toUpperCase(),cols[i]+16,y+18));y+=58;
+ const itens=linhas===1 && !produtos.length?[{quantidade:0,unidade:'—',produto:'—',valorUnit:0,total:0}]:produtos;
+ for(const p of itens){
+  const rowY=y;ctx.fillStyle='#fff';ctx.fillRect(margem,rowY,W-2*margem,76);
+  ctx.fillStyle='#28383f';ctx.font='22px Arial, sans-serif';ctx.fillText(String(p?.quantidade??0),cols[0]+16,rowY+23);ctx.fillText(String(p?.unidade||'Caixa'),cols[1]+16,rowY+23);
+  notaCanvasTexto(ctx,String(p?.produto||''),cols[2]+16,rowY+12,cols[3]-cols[2]-32,26,'22px Arial, sans-serif','#28383f');
+  ctx.textAlign='right';ctx.fillText(notaCanvasMoeda(p?.valorUnit||0),cols[4]-16,rowY+23);ctx.font='700 22px Arial, sans-serif';ctx.fillText(notaCanvasMoeda(p?.total||0),cols[5]-16,rowY+23);ctx.textAlign='left';
+  y+=76;notaCanvasLinha(ctx,margem,y,W-margem,y,'#d6dfe2',2);
+ }
+ y+=42;
+ const pago=valorPagoVenda(v),saldo=saldoVenda(v),sit=situacaoFinanceira(v), forma=formaPagamentoExibida(v);
+ const leftX=margem,rightX=900,rightW=W-margem-rightX;
+ ctx.fillStyle=azul;ctx.font='800 22px Arial, sans-serif';ctx.fillText('INFORMAÇÕES DA VENDA',leftX,y);ctx.fillText('RESUMO FINANCEIRO',rightX,y);y+=42;
+ const info=[['Forma de pagamento',forma],['Vencimento',notaCanvasData(v?.vencimento)],['Valor pago',notaCanvasMoeda(pago)],['Situação',String(sit||'').toUpperCase()]];
+ let yl=y;ctx.font='21px Arial, sans-serif';
+ for(const [a,b] of info){ctx.fillStyle=cinza;ctx.fillText(a,leftX,yl);ctx.textAlign='right';ctx.fillStyle='#26373e';ctx.font='700 21px Arial, sans-serif';ctx.fillText(String(b),rightX-70,yl);ctx.textAlign='left';ctx.font='21px Arial, sans-serif';notaCanvasLinha(ctx,leftX,yl+34,rightX-70,yl+34,'#e1e7e9',2);yl+=54}
+ let yr=y;const resumo=[['Subtotal',notaCanvasMoeda(v?.subtotal||0)],['Desconto',notaCanvasMoeda(v?.desconto||0)]];
+ for(const [a,b] of resumo){ctx.fillStyle=cinza;ctx.font='21px Arial, sans-serif';ctx.fillText(a,rightX,yr);ctx.textAlign='right';ctx.fillStyle='#26373e';ctx.font='700 21px Arial, sans-serif';ctx.fillText(b,W-margem,yr);ctx.textAlign='left';notaCanvasLinha(ctx,rightX,yr+34,W-margem,yr+34,'#d5dde0',2);yr+=54}
+ ctx.fillStyle=azul;ctx.fillRect(rightX,yr,rightW,64);ctx.fillStyle='#fff';ctx.font='900 25px Arial, sans-serif';ctx.fillText('TOTAL DA VENDA',rightX+16,yr+18);ctx.textAlign='right';ctx.fillText(notaCanvasMoeda(v?.total||0),W-margem-16,yr+18);ctx.textAlign='left';yr+=80;
+ if(saldo>0){ctx.fillStyle=vermelho;ctx.font='900 23px Arial, sans-serif';ctx.fillText('SALDO A RECEBER',rightX+10,yr);ctx.textAlign='right';ctx.fillText(notaCanvasMoeda(saldo),W-margem,yr);ctx.textAlign='left';yr+=48}
+ y=Math.max(yl,yr)+40;
+ if(v?.observacoes){ctx.fillStyle=cinza;ctx.font='700 20px Arial, sans-serif';ctx.fillText('Observações:',margem,y);notaCanvasTexto(ctx,String(v.observacoes),margem+125,y,W-2*margem-125,26,'20px Arial, sans-serif',cinza);y+=70}
+ notaCanvasLinha(ctx,margem,y,W-margem,y,'#cbd6da',2);y+=32;ctx.textAlign='center';ctx.fillStyle=azul;ctx.font='900 23px Arial, sans-serif';ctx.fillText('OBRIGADO PELA PREFERÊNCIA!',W/2,y);ctx.textAlign='left';
+ return c.toDataURL('image/png',1);
+}
+function enviarNotaCliente(){
+ const btn=document.getElementById('btnEnviarNotaCliente');
+ try{
+  if(!notaClienteAtual)throw new Error('Abra uma nota de venda antes de enviar.');
+  if(btn){btn.disabled=true;btn.textContent='Preparando imagem...'}
+  const dataURL=gerarImagemNotaCliente(notaClienteAtual);
+  const blob=dataURLParaBlob(dataURL);
+  const nome=notaClienteNomeArquivo(notaClienteAtual);
+  const arquivo=new File([blob],nome,{type:'image/png'});
+  const numero=String(notaClienteAtual.numero||'—').padStart(6,'0');
+  if(navigator.share && (!navigator.canShare || navigator.canShare({files:[arquivo]}))){
+   navigator.share({files:[arquivo],title:`Nota de Venda Nº ${numero} - Granja São José`,text:`Granja São José — Nota de Venda Nº ${numero}`}).catch(e=>{if(e?.name!=='AbortError'){console.error(e);alert('Não foi possível abrir o compartilhamento. A imagem será salva no aparelho.');baixarImagemNotaCliente(dataURL,nome)}}).finally(()=>{if(btn){btn.disabled=false;btn.textContent='Enviar para o cliente'}});
+  }else{
+   baixarImagemNotaCliente(dataURL,nome);
+   alert('A imagem da nota foi gerada. Abra-a e compartilhe pelo WhatsApp.');
+   if(btn){btn.disabled=false;btn.textContent='Enviar para o cliente'}
+  }
+ }catch(e){console.error(e);alert(e?.message||'Não foi possível gerar a imagem da nota.');if(btn){btn.disabled=false;btn.textContent='Enviar para o cliente'}}
+}
+function baixarImagemNotaCliente(dataURL,nome){const a=document.createElement('a');a.href=dataURL;a.download=nome;document.body.appendChild(a);a.click();a.remove()}
 
 
 /* ===== SINCRONIZAÇÃO ONLINE V10 ===== */
