@@ -535,6 +535,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 </style>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <body>
 
 <div id="onlineModal">
@@ -1952,6 +1953,8 @@ let mudouV9=false;
 classificacoesPadraoV9.forEach(nome=>{if(!produtosCad.some(p=>p.nome===nome)){produtosCad.push({id:gerarId(),nome,preco:0,custo:0,margemMin:10,ativo:'sim'});mudouV9=true}});
 if(mudouV9)localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));
 
+let notaClienteAtual=null;
+
 function formaPagamentoExibida(v){
  const forma=String(v?.pagamento||'').trim();
  if(forma && forma!=='Dividido')return forma;
@@ -1968,19 +1971,91 @@ function formaPagamentoExibida(v){
 
 function abrirNotaCliente(id){
  const v=vendas.find(x=>x.id===id);if(!v)return;
- const linhas=(v.produtos||[]).map(p=>`<tr><td>${p.quantidade||0}</td><td>${p.unidade||'Caixa'}</td><td>${p.produto||''}</td><td style="text-align:right">${moeda(p.valorUnit||0)}</td><td style="text-align:right">${moeda(p.total||0)}</td></tr>`).join('');
+ notaClienteAtual=v;
+ const pago=valorPagoVenda(v),saldo=saldoVenda(v),sit=situacaoFinanceira(v);
+ const classe=sit==='Pago'?'pago':sit==='Parcial'?'parcial':'pendente';
+ const linhas=(v.produtos||[]).map(p=>`<tr>
+   <td>${p.quantidade||0}</td><td>${p.unidade||'Caixa'}</td><td>${p.produto||''}</td>
+   <td style="text-align:right">${moeda(p.valorUnit||0)}</td><td style="text-align:right;font-weight:700">${moeda(p.total||0)}</td>
+ </tr>`).join('');
  document.getElementById('notaClienteConteudo').innerHTML=`
- <div class="nc-topo"><div><div class="nc-marca">GRANJA SÃO JOSÉ</div><div style="font-size:12px;margin-top:4px">Seguimos produzindo o melhor alimento depois do leite materno.</div></div><div class="nc-titulo"><strong>NOTA DE VENDA</strong><span>Nº ${v.numero||'—'}</span></div></div>
- <div class="nc-info"><div><strong>Cliente:</strong> ${v.cliente||'—'}</div><div><strong>Data:</strong> ${dataBR(v.data)}</div><div><strong>Forma combinada:</strong> ${formaPagamentoExibida(v)}</div><div><strong>Situação:</strong> ${situacaoFinanceira(v)}</div><div><strong>Valor recebido:</strong> ${moeda(valorPagoVenda(v))}</div><div><strong>Saldo a receber:</strong> ${moeda(saldoVenda(v))}</div><div><strong>Vencimento:</strong> ${dataBR(v.vencimento)}</div></div>
+ <div class="nc-topo">
+   <div><div class="nc-marca">GRANJA SÃO JOSÉ</div><div class="nc-slogan">Seguimos produzindo o melhor alimento depois do leite materno.</div></div>
+   <div class="nc-titulo"><strong>NOTA DE VENDA</strong><span>Nº ${String(v.numero||'—').padStart(6,'0')} &nbsp; • &nbsp; ${dataBR(v.data)}</span></div>
+ </div>
+ <div class="nc-cliente"><strong>CLIENTE:</strong> ${v.cliente||'—'}</div>
  <table class="nc-table"><thead><tr><th>Qtd.</th><th>Unidade</th><th>Classificação / Produto</th><th>Valor unit.</th><th>Total</th></tr></thead><tbody>${linhas}</tbody></table>
- <div class="nc-total"><div><span>Subtotal</span><strong>${moeda(v.subtotal||0)}</strong></div>${Number(v.desconto||0)>0?`<div><span>Desconto</span><strong>${moeda(v.desconto)}</strong></div>`:''}<div class="grand"><span>TOTAL</span><strong>${moeda(v.total||0)}</strong></div></div>
- ${v.observacoes?`<div style="margin-top:18px;font-size:13px"><strong>Observações:</strong> ${v.observacoes}</div>`:''}
- <div style="margin-top:28px;text-align:center"><div style="border-top:1px solid #777;max-width:380px;margin:auto;padding-top:5px">${v.assinatura||v.responsavel||'Granja São José'}</div><small>Responsável pela venda</small></div>
- <div class="nc-rodape">GRANJA SÃO JOSÉ</div>`;
+ <div class="nc-financeiro">
+   <div class="nc-info-venda">
+     <h4>INFORMAÇÕES DA VENDA</h4>
+     <div><span>Forma de pagamento</span><strong>${formaPagamentoExibida(v)}</strong></div>
+     <div><span>Vencimento</span><strong>${dataBR(v.vencimento)}</strong></div>
+     <div><span>Valor pago</span><strong>${moeda(pago)}</strong></div>
+     <div><span>Situação</span><span class="nc-status ${classe}">${sit.toUpperCase()}</span></div>
+   </div>
+   <div class="nc-total">
+     <h4>RESUMO FINANCEIRO</h4>
+     <div><span>Subtotal</span><strong>${moeda(v.subtotal||0)}</strong></div>
+     <div><span>Desconto</span><strong>${moeda(v.desconto||0)}</strong></div>
+     <div class="grand"><span>TOTAL DA VENDA</span><strong>${moeda(v.total||0)}</strong></div>
+     ${saldo>0?`<div class="saldo"><span>SALDO A RECEBER</span><strong>${moeda(saldo)}</strong></div>`:''}
+   </div>
+ </div>
+ ${v.observacoes?`<div style="margin-top:14px;font-size:11px;color:#52656d"><strong>Observações:</strong> ${v.observacoes}</div>`:''}
+ <div class="nc-rodape">OBRIGADO PELA PREFERÊNCIA!</div>`;
  document.getElementById('notaClienteModal').classList.add('aberto');
 }
 function fecharNotaCliente(){document.getElementById('notaClienteModal').classList.remove('aberto')}
 function imprimirNotaCliente(){document.body.classList.add('print-nota-cliente');window.print();setTimeout(()=>document.body.classList.remove('print-nota-cliente'),400)}
+
+function notaClienteNomeArquivo(v){
+ const numero=String(v?.numero||'nota').padStart(6,'0');
+ const cliente=String(v?.cliente||'cliente').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
+ return `nota-venda-${numero}-${cliente||'cliente'}.png`;
+}
+
+function canvasParaBlob(canvas){return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Não foi possível gerar a imagem.')),'image/png',1));}
+
+async function enviarNotaCliente(){
+ const btn=document.getElementById('btnEnviarNotaCliente');
+ const textoOriginal=btn?btn.textContent:'';
+ let copia=null;
+ try{
+  if(typeof html2canvas!=='function')throw new Error('O gerador de imagem ainda não carregou. Verifique a internet e tente novamente.');
+  if(!notaClienteAtual)throw new Error('Abra uma nota de venda antes de enviar.');
+  const original=document.querySelector('#notaClienteModal .nota-cliente-doc');
+  if(!original)throw new Error('Nota de venda não encontrada.');
+  if(btn){btn.disabled=true;btn.textContent='Preparando imagem...';}
+
+  copia=original.cloneNode(true);
+  copia.querySelectorAll('.nc-actions').forEach(el=>el.remove());
+  copia.removeAttribute('id');
+  Object.assign(copia.style,{position:'fixed',left:'-10000px',top:'0',width:'790px',maxWidth:'790px',margin:'0',padding:'24px',boxShadow:'none',borderRadius:'0',background:'#fff',zIndex:'-9999'});
+  const fin=copia.querySelector('.nc-financeiro');if(fin)fin.style.gridTemplateColumns='1fr 310px';
+  const topo=copia.querySelector('.nc-topo');if(topo)topo.style.gap='18px';
+  const marca=copia.querySelector('.nc-marca');if(marca)marca.style.fontSize='25px';
+  document.body.appendChild(copia);
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+  const canvas=await html2canvas(copia,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:900,scrollX:0,scrollY:0});
+  const blob=await canvasParaBlob(canvas);
+  const arquivo=new File([blob],notaClienteNomeArquivo(notaClienteAtual),{type:'image/png'});
+  const numero=String(notaClienteAtual.numero||'—').padStart(6,'0');
+  const dados={files:[arquivo],title:`Nota de Venda Nº ${numero} - Granja São José`,text:`Granja São José — Nota de Venda Nº ${numero}`};
+
+  if(navigator.share && (!navigator.canShare || navigator.canShare({files:[arquivo]}))){
+   await navigator.share(dados);
+  }else{
+   const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=arquivo.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+   alert('A imagem da nota foi salva. Agora você pode enviá-la pelo WhatsApp.');
+  }
+ }catch(e){
+  if(e?.name!=='AbortError'){console.error(e);alert(e?.message||'Não foi possível preparar a imagem da nota.');}
+ }finally{
+  if(copia&&copia.isConnected)copia.remove();
+  if(btn){btn.disabled=false;btn.textContent=textoOriginal||'Enviar para o cliente';}
+ }
+}
 
 
 /* ===== SINCRONIZAÇÃO ONLINE V10 ===== */
@@ -2991,7 +3066,7 @@ setTimeout(()=>{ enterpriseRender(); },1300);
 
 <div id="notaClienteModal">
  <div class="nota-cliente-doc">
-  <div class="nc-actions actions" style="justify-content:flex-end;margin-top:0"><button class="btn primary" onclick="imprimirNotaCliente()">Gerar PDF / Imprimir</button><button class="btn secondary" onclick="fecharNotaCliente()">Fechar</button></div>
+  <div class="nc-actions actions" style="justify-content:flex-end;margin-top:0"><button class="btn primary" onclick="imprimirNotaCliente()">Imprimir / Gerar PDF</button><button id="btnEnviarNotaCliente" class="btn success" onclick="enviarNotaCliente()">Enviar para o cliente</button><button class="btn secondary" onclick="fecharNotaCliente()">Fechar</button></div>
   <div id="notaClienteConteudo"></div>
  </div>
 </div>
