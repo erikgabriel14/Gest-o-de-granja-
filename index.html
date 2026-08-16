@@ -1,3 +1,4 @@
+<!-- GSJ BUILD: 2026-08-15 23:11 - NOTA CLIENTE MODELO FINANCEIRO + ENVIO IMAGEM -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1710,7 +1711,7 @@ function tabelaVendas(lista,modo='vendas'){
       const caixas=(v.produtos||[]).reduce((s,p)=>s+Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1),0),st=statusReceber(v);
       let acoes=modo==='receber'
         ? `<button class="btn success" onclick="marcarPago(${v.id})">Marcar pago</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Abrir</button>`
-        : `<button class="btn primary" onclick="abrirNotaCliente(${v.id})">Enviar nota</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Editar</button> <button class="btn danger" onclick="excluirVenda(${v.id})">Excluir</button>`;
+        : `<button class="btn primary" onclick="abrirNotaCliente(${v.id})">Ver / Enviar nota</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Editar</button> <button class="btn danger" onclick="excluirVenda(${v.id})">Excluir</button>`;
       return `<tr><td>${v.numero||'—'}</td><td>${v.cliente}</td><td>${dataBR(v.data)}</td><td>${v.canal||'—'}</td><td>${caixas}</td><td>${moeda(v.total)}</td><td>${moeda(saldoVenda(v))}</td><td>${dataBR(v.vencimento)}</td><td><span class="badge ${st}">${st==='vencido'?'Vencido':situacaoFinanceira(v)}</span></td><td>${st==='vencido'?diasEntre(v.vencimento,hojeISO())+' d':'—'}</td><td>${acoes}</td></tr>`;
     }).join('')
   }</tbody></table></div>`;
