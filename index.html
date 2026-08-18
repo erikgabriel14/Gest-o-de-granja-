@@ -1,10 +1,9 @@
-<!-- GSJ BUILD: 2026-08-15 23:11 - NOTA CLIENTE MODELO FINANCEIRO + ENVIO IMAGEM -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Granja São José - Painel Comercial V11 • TESTE</title>
+<title>GRANJA SÃO JOSÉ</title>
 <style>
 :root{
   --azul:#123f52;--azul2:#1b5a72;--claro:#eef4f6;--cinza:#66757b;
@@ -381,158 +380,86 @@ body.v11-enterprise.nav-open .enterprise-overlay{display:block}
 @media(max-width:720px){#precoCentralSvg{min-width:760px;height:400px}.preco-central-card{padding:12px}.preco-central-toolbar{grid-template-columns:1fr 1fr}.canal-interno{padding:9px}}
 
 
-/* ===== CORREÇÃO MOBILE + CONTAS FIXAS MENSAIS ===== */
-.cf-status{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}
-.cf-pago{background:#e4f5eb;color:var(--verde)}.cf-pendente{background:#fff1d6;color:#8a5a00}.cf-vencido{background:#f9dddd;color:var(--vermelho)}.cf-inativo{background:#edf1f2;color:var(--cinza)}
-@media(max-width:820px){
- html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important}
- header{width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin-left:0!important;border-radius:0!important}
- nav{width:100%!important;max-width:100vw!important;box-sizing:border-box!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:thin!important;justify-content:flex-start!important}
- nav button{flex:0 0 auto!important}
- main{width:100%!important;box-sizing:border-box!important}
+/* ===== AJUSTES SOLICITADOS • PRIVACIDADE / NOTAS FISCAIS / CLASSIFICAÇÕES ===== */
+.header-tools{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.privacy-control{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;gap:10px;border:1px solid #d8e2e5;background:rgba(255,255,255,.96);color:var(--azul);padding:7px 9px 7px 10px;border-radius:12px;cursor:pointer;box-shadow:0 2px 8px rgba(18,63,82,.06);transition:.18s ease;min-height:42px}
+.privacy-control:hover{border-color:#b9cbd1;background:#fff;box-shadow:0 4px 12px rgba(18,63,82,.10);transform:translateY(-1px)}
+.privacy-control:focus-visible{outline:3px solid rgba(31,122,77,.20);outline-offset:2px}
+.privacy-icon{width:28px;height:28px;border-radius:9px;background:#eef4f6;display:grid;place-items:center;flex:0 0 28px;color:var(--azul)}
+.privacy-icon svg{width:17px;height:17px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.privacy-icon .icon-eye-off{display:none}
+.privacy-copy{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05;min-width:96px}
+.privacy-label{font-size:9px;letter-spacing:.65px;text-transform:uppercase;color:#71838a;font-weight:800}
+.privacy-state{font-size:12px;margin-top:4px;color:var(--azul);font-weight:850;white-space:nowrap}
+.privacy-switch{width:34px;height:20px;border-radius:999px;background:#dce5e8;padding:2px;display:flex;align-items:center;transition:.18s ease;flex:0 0 34px}
+.privacy-switch::after{content:'';width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(18,63,82,.22);transition:.18s ease}
+.privacy-control.is-private{background:#f8fafb;border-color:#c7d3d7}
+.privacy-control.is-private .privacy-icon{background:#123f52;color:#fff}
+.privacy-control.is-private .privacy-icon .icon-eye{display:none}
+.privacy-control.is-private .privacy-icon .icon-eye-off{display:block}
+.privacy-control.is-private .privacy-switch{background:#123f52}
+.privacy-control.is-private .privacy-switch::after{transform:translateX(14px)}
+.privacy-control.is-private .privacy-state{color:#52656d}
+body.financeiro-oculto #kpiMes,
+body.financeiro-oculto #kpiRecebido,
+body.financeiro-oculto #kpiReceber,
+body.financeiro-oculto #kpiVencido,
+body.financeiro-oculto #kpiMargem,
+body.financeiro-oculto #compAtual,
+body.financeiro-oculto #compAnterior,
+body.financeiro-oculto #compTicket,
+body.financeiro-oculto #compRecebimento .valor,
+body.financeiro-oculto #fechFat,
+body.financeiro-oculto #fechRecebido,
+body.financeiro-oculto #fechReceber,
+body.financeiro-oculto #fechMargem,
+body.financeiro-oculto #relFat,
+body.financeiro-oculto #relMargem,
+body.financeiro-oculto #relPrecoMedio,
+body.financeiro-oculto #smartFat,
+body.financeiro-oculto #smartReceber,
+body.financeiro-oculto #smartPagar,
+body.financeiro-oculto #pcFatAtacado,
+body.financeiro-oculto #pcFatVarejo,
+body.financeiro-oculto #pcMedAtacado,
+body.financeiro-oculto #pcMedVarejo{
+  font-size:0!important;color:transparent!important;text-shadow:none!important;user-select:none!important
 }
-
-
-
-/* ===== CORREÇÃO FINAL • PAINEL CENTRAL NO CELULAR ===== */
-/* Evita estouro horizontal em cards e textos dinâmicos */
-.enterprise-home,.enterprise-grid,.enterprise-panel,.smart-health,.smart-item,.smart-list,.smart-alert{min-width:0;max-width:100%;box-sizing:border-box}
-#pcAutonomiaInsumos,#pcAutonomiaEmb{min-width:0;width:100%}
-#pcAutonomiaInsumos .empty,#pcAutonomiaEmb .empty{grid-column:1/-1;width:100%;max-width:100%;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;word-break:normal}
-.smart-item .top{min-width:0;flex-wrap:wrap}
-.smart-item .name{min-width:0;overflow-wrap:anywhere}
-.smart-muted{white-space:normal;overflow-wrap:anywhere}
-
-@media(max-width:720px){
-  /* Painel central mais compacto, sem retirar conteúdo */
-  #enterpriseHomeV11 .enterprise-home{gap:12px!important}
-  #enterpriseHomeV11 .enterprise-hero,
-  #enterpriseHomeV11 .enterprise-panel,
-  #enterpriseHomeV11 .preco-central-card{padding:14px!important;border-radius:14px!important}
-  #enterpriseHomeV11 .enterprise-grid{grid-template-columns:1fr!important;gap:12px!important;margin-top:12px!important}
-  #enterpriseHomeV11 .enterprise-panel h3{font-size:17px!important;margin-bottom:10px!important}
-  #enterpriseHomeV11 .enterprise-metrics{gap:8px!important}
-  #enterpriseHomeV11 .enterprise-metric{padding:11px!important}
-  #enterpriseHomeV11 .enterprise-metric .value{font-size:20px!important}
-  #enterpriseHomeV11 .enterprise-actions{gap:8px!important}
-  #enterpriseHomeV11 .enterprise-actions button{padding:10px!important;min-height:58px!important}
-
-  /* Insumos detalhados: um card por linha no celular para leitura completa */
-  #pcAutonomiaInsumos{grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
-  #pcAutonomiaInsumos .smart-item{width:100%!important;padding:11px!important}
-  #pcAutonomiaInsumos .empty{padding:14px 6px!important;text-align:center!important;font-size:12px!important}
-
-  /* Embalagens podem continuar em duas colunas quando couber */
-  #pcAutonomiaEmb{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
-  #pcAutonomiaEmb .smart-item{padding:10px!important}
-  #pcAutonomiaEmb .smart-item .name{font-size:13px!important}
-  #pcAutonomiaEmb .smart-days{font-size:20px!important}
-
-  #pcResumoOperacao .smart-alert,#pcComprasSugeridas .smart-alert,#pcFinanceiroMes .smart-alert,#pcHoje .smart-alert{padding:9px!important}
+body.financeiro-oculto #kpiMes::after,
+body.financeiro-oculto #kpiRecebido::after,
+body.financeiro-oculto #kpiReceber::after,
+body.financeiro-oculto #kpiVencido::after,
+body.financeiro-oculto #kpiMargem::after,
+body.financeiro-oculto #compAtual::after,
+body.financeiro-oculto #compAnterior::after,
+body.financeiro-oculto #compTicket::after,
+body.financeiro-oculto #compRecebimento .valor::after,
+body.financeiro-oculto #fechFat::after,
+body.financeiro-oculto #fechRecebido::after,
+body.financeiro-oculto #fechReceber::after,
+body.financeiro-oculto #fechMargem::after,
+body.financeiro-oculto #relFat::after,
+body.financeiro-oculto #relMargem::after,
+body.financeiro-oculto #relPrecoMedio::after,
+body.financeiro-oculto #smartFat::after,
+body.financeiro-oculto #smartReceber::after,
+body.financeiro-oculto #smartPagar::after,
+body.financeiro-oculto #pcFatAtacado::after,
+body.financeiro-oculto #pcFatVarejo::after,
+body.financeiro-oculto #pcMedAtacado::after,
+body.financeiro-oculto #pcMedVarejo::after{
+  content:'R$ •••••';font-size:21px!important;color:var(--azul)!important;font-weight:900!important
 }
+.nf-resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin:14px 0}
+.nf-resumo .mini-card .valor{font-size:22px}
+.nf-tipo{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900}
+.nf-entrada{background:#e8f0fa;color:#315d8a}.nf-saida{background:#e4f5eb;color:var(--verde)}
+.nf-diferenca-pos{color:var(--verde)!important}.nf-diferenca-neg{color:var(--vermelho)!important}
+.prod-inativo{opacity:.68;background:#fafbfb}
+.prod-status{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900}
+.prod-status.ativo{background:#e4f5eb;color:var(--verde)}.prod-status.inativo{background:#eef1f2;color:#59676d}
+@media(max-width:700px){.header-tools{justify-content:flex-start}.privacy-control{width:100%;max-width:230px}.privacy-copy{flex:1}}
 
-@media(max-width:390px){
-  #pcAutonomiaEmb{grid-template-columns:1fr!important}
-  #enterpriseHomeV11 .enterprise-metrics{grid-template-columns:1fr 1fr!important}
-}
-
-/* Correção Painel Central: insumos visíveis e textos sem corte */
-#pcAutonomiaInsumos{width:100%;max-width:100%;overflow:hidden;}
-#pcAutonomiaInsumos .smart-item{min-width:0;max-width:100%;overflow:hidden;}
-#pcAutonomiaInsumos .smart-item .top{min-width:0;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;}
-#pcAutonomiaInsumos .smart-item .name{min-width:0;flex:1 1 140px;white-space:normal;overflow-wrap:anywhere;word-break:normal;}
-#pcAutonomiaInsumos .smart-pill{white-space:normal;max-width:100%;text-align:center;}
-#pcAutonomiaInsumos .smart-muted{white-space:normal;overflow-wrap:anywhere;}
-@media(max-width:720px){
- #pcAutonomiaInsumos{grid-template-columns:1fr!important;}
- #pcAutonomiaInsumos .smart-item{width:100%!important;}
-}
-
-
-
-/* ===== HOTFIX RESPONSIVO REAL • V11 ===== */
-html,body{width:100%;max-width:100%;overflow-x:hidden}
-*,*::before,*::after{box-sizing:border-box}
-#enterpriseHomeV11,#enterpriseHomeV11 *{min-width:0}
-#enterpriseHomeV11 .enterprise-home,
-#enterpriseHomeV11 .enterprise-hero,
-#enterpriseHomeV11 .enterprise-panel,
-#enterpriseHomeV11 .enterprise-grid,
-#enterpriseHomeV11 .enterprise-metrics,
-#enterpriseHomeV11 .enterprise-actions,
-#enterpriseHomeV11 .preco-central-card,
-#enterpriseHomeV11 .preco-central-head,
-#enterpriseHomeV11 .preco-central-toolbar,
-#enterpriseHomeV11 .preco-central-chart-wrap,
-#enterpriseHomeV11 .v11-canal-grid,
-#enterpriseHomeV11 .smart-health,
-#enterpriseHomeV11 .smart-list,
-#enterpriseHomeV11 .smart-item,
-#enterpriseHomeV11 .smart-alert,
-#enterpriseHomeV11 .enterprise-alert{
-  width:100%;max-width:100%;min-width:0;box-sizing:border-box
-}
-#enterpriseHomeV11 .help,
-#enterpriseHomeV11 p,
-#enterpriseHomeV11 small,
-#enterpriseHomeV11 strong,
-#enterpriseHomeV11 span,
-#enterpriseHomeV11 div,
-#enterpriseHomeV11 label{
-  max-width:100%;overflow-wrap:anywhere;word-break:normal;white-space:normal
-}
-#enterpriseHomeV11 .preco-central-head>div{width:100%;max-width:100%;min-width:0}
-#enterpriseHomeV11 #precoCentralAviso{display:block;width:100%;max-width:100%;line-height:1.45;overflow-wrap:anywhere}
-#enterpriseHomeV11 .preco-central-chart-wrap{overflow:hidden!important}
-#enterpriseHomeV11 #precoCentralSvg{display:block;width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;aspect-ratio:980/440;overflow:visible}
-#enterpriseHomeV11 .preco-classificacoes{display:flex;flex-wrap:wrap;width:100%;max-width:100%;gap:8px}
-#enterpriseHomeV11 .preco-classificacoes label{flex:0 1 auto;max-width:100%;white-space:normal}
-#enterpriseHomeV11 input,#enterpriseHomeV11 select,#enterpriseHomeV11 textarea{min-width:0;max-width:100%}
-#enterpriseHomeV11 .smart-item .top{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
-#enterpriseHomeV11 .smart-item .name{min-width:0;flex:1 1 130px;overflow-wrap:anywhere}
-#enterpriseHomeV11 .smart-badge{flex:0 1 auto;max-width:100%;white-space:normal}
-
-@media(max-width:820px){
-  main{width:100%!important;max-width:100%!important;padding-left:10px!important;padding-right:10px!important;overflow-x:hidden!important}
-  #enterpriseHomeV11{width:100%;max-width:100%;overflow:hidden}
-  #enterpriseHomeV11 .enterprise-home{gap:12px}
-  #enterpriseHomeV11 .enterprise-grid{grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
-  #enterpriseHomeV11 .enterprise-metrics,
-  #enterpriseHomeV11 .enterprise-actions,
-  #enterpriseHomeV11 .v11-canal-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
-  #enterpriseHomeV11 .preco-central-toolbar{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
-  #enterpriseHomeV11 .preco-central-card,
-  #enterpriseHomeV11 .enterprise-panel,
-  #enterpriseHomeV11 .enterprise-hero{padding:12px!important}
-  #enterpriseHomeV11 .preco-central-head h3{font-size:20px;line-height:1.2}
-  #enterpriseHomeV11 .preco-central-head .help{font-size:12px;line-height:1.45}
-  #enterpriseHomeV11 #precoCentralSvg{aspect-ratio:1.45/1}
-  #pcAutonomiaInsumos{grid-template-columns:minmax(0,1fr)!important}
-  #pcAutonomiaEmb{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-}
-@media(max-width:420px){
-  main{padding-left:7px!important;padding-right:7px!important}
-  #enterpriseHomeV11 .enterprise-metrics,
-  #enterpriseHomeV11 .enterprise-actions,
-  #enterpriseHomeV11 .v11-canal-grid,
-  #pcAutonomiaEmb{grid-template-columns:minmax(0,1fr)!important}
-  #enterpriseHomeV11 .preco-classificacoes label{flex:1 1 calc(50% - 8px)}
-  #enterpriseHomeV11 #precoCentralSvg{aspect-ratio:1.25/1}
-}
-
-/* ===== Funcionários V1 ===== */
-.func-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
-.func-tab-btn{border:1px solid #cfd9dd;background:#fff;color:#173f50;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer}
-.func-tab-btn.active{background:#173f50;color:#fff;border-color:#173f50}
-.func-tab{display:none}.func-tab.active{display:block}
-.func-kpis{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin:12px 0 16px}
-.func-kpi{border:1px solid #d9e2e5;border-radius:10px;padding:12px;background:#fbfcfd}
-.func-kpi small{display:block;color:#60727a;margin-bottom:5px}.func-kpi strong{font-size:18px;color:#173f50}
-.func-acerto-box{border:1px solid #dbe4e7;border-radius:12px;padding:14px;background:#fff}
-.func-resumo-linha{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px dashed #d7dfe2}.func-resumo-linha:last-child{border-bottom:0}
-.func-status{display:inline-block;border:1px solid #173f50;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800}
-@media(max-width:760px){.func-kpis{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.func-kpis{grid-template-columns:1fr}.func-tab-btn{flex:1 1 45%}}
 </style>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -581,8 +508,19 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 </div>
 
 <header>
-  <div><h1>GRANJA SÃO JOSÉ</h1><small>Painel comercial e financeiro • V11</small></div>
-  <div><span id="dataHoje"></span><span id="onlineStatus" class="online-pill" onclick="abrirOnlineModal()" style="cursor:pointer">Online: não conectado</span></div>
+  <div><h1>GRANJA SÃO JOSÉ</h1><small>Painel comercial e financeiro • V11 • teste de ajustes</small></div>
+  <div class="header-tools">
+    <span id="dataHoje"></span>
+    <button id="btnSigiloFinanceiro" class="privacy-control" type="button" onclick="alternarPrivacidadeFinanceira()" title="Alternar privacidade dos valores financeiros" aria-label="Alternar privacidade dos valores financeiros" aria-pressed="false">
+      <span class="privacy-icon" aria-hidden="true">
+        <svg class="icon-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+        <svg class="icon-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 6.2A10.6 10.6 0 0 1 12 6c6 0 9.5 6 9.5 6a15.9 15.9 0 0 1-3.1 3.8"/><path d="M6.1 6.2C3.8 8 2.5 12 2.5 12s3.5 6 9.5 6c1.4 0 2.7-.3 3.8-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+      </span>
+      <span class="privacy-copy"><span class="privacy-label">Privacidade</span><span id="privacyState" class="privacy-state">Valores visíveis</span></span>
+      <span class="privacy-switch" aria-hidden="true"></span>
+    </button>
+    <span id="onlineStatus" class="online-pill" onclick="abrirOnlineModal()" style="cursor:pointer">Online: não conectado</span>
+  </div>
 </header>
 
 <nav>
@@ -601,7 +539,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
   <button data-section="painelV11">Painel Geral</button>
   <button data-section="embalagensV11">Embalagens</button>
   <button data-section="financeiroV11">Financeiro</button>
-  <button data-section="contasFixasV11">Contas Fixas Mensais</button>
+  <button data-section="notasFiscaisV11">Notas Fiscais</button>
   <button data-section="fabricaV11">Fábrica / Insumos</button>
   <button data-section="producaoV11">Lotes / Produção</button>
 
@@ -692,12 +630,8 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 
   <div class="bloco-opcoes">
 <div>
-<h4>FORMA DE PAGAMENTO / RECEBIMENTO</h4>
-<div class="form-grid">
-<div class="full"><label>Forma combinada com o cliente</label><select id="formaPagamentoVenda" onchange="atualizarPagamentoDividido()"><option value="PIX">PIX</option><option value="Dinheiro">Dinheiro</option><option value="Cheque">Cheque</option><option value="Cartão">Cartão</option><option value="Boleto / Transferência">Boleto / Transferência</option><option value="Dividido">Pagamento dividido</option><option value="A combinar">A combinar</option></select></div>
-</div>
-<div class="help print-hide" style="margin:8px 0 10px">A forma combinada pode ser PIX, por exemplo, mesmo que o cliente ainda não tenha pago. Preencha abaixo somente o valor que realmente foi recebido agora.</div>
-<h4 style="margin-top:10px">VALOR RECEBIDO AGORA</h4>
+<h4>PAGAMENTO DIVIDIDO</h4>
+<div class="help print-hide">Pode combinar PIX, dinheiro, cheque e outro na mesma venda.</div>
 <div class="form-grid">
 <div><label>PIX (R$)</label><input id="pagPix" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
 <div><label>Dinheiro (R$)</label><input id="pagDinheiro" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
@@ -950,44 +884,12 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
    <div class="enterprise-actions">
     <button onclick="v11Ir('novaVenda')">Nova venda de ovos<span>Comercial / V10</span></button>
     <button onclick="v11Ir('fabricaV11')">Comprar insumos<span>Milho, soja, premix, óleo</span></button>
-    <button onclick="v11Ir('fabricaV11')">Produzir ração<span>Batidas de 500 kg, 250 kg ou personalizada</span></button>
+    <button onclick="v11Ir('fabricaV11')">Produzir ração<span>Batidas de 500 kg</span></button>
     <button onclick="v11Ir('embalagensV11')">Embalagens<span>Estoque, consumo e venda</span></button>
     <button onclick="v11Ir('financeiroV11')">Financeiro<span>Pagamentos e renegociações</span></button>
     <button onclick="v11Ir('funcionariosV11')">Funcionários<span>Vales, acerto e recibos</span></button>
     <button onclick="v11Ir('chequesV11')">Cheques / boletos<span>Recebidos e emitidos</span></button>
     <button onclick="v11Ir('fechamentoV11')">Relatórios<span>DRE e fechamento mensal</span></button>
-</div></div>
-
-  <div class="enterprise-grid" style="margin-top:16px">
-   <div class="enterprise-panel">
-    <h3>Resumo da operação</h3>
-    <div id="pcResumoOperacao" class="smart-list"></div>
-   </div>
-   <div class="enterprise-panel">
-    <h3>Próximas compras sugeridas</h3>
-    <div id="pcComprasSugeridas" class="smart-list"></div>
-   </div>
-  </div>
-
-  <div class="enterprise-grid">
-   <div class="enterprise-panel">
-    <h3>Autonomia detalhada dos insumos</h3>
-    <div id="pcAutonomiaInsumos" class="smart-health"></div>
-   </div>
-   <div class="enterprise-panel">
-    <h3>Autonomia das embalagens</h3>
-    <div id="pcAutonomiaEmb" class="smart-health"></div>
-   </div>
-  </div>
-
-  <div class="enterprise-grid">
-   <div class="enterprise-panel">
-    <h3>Financeiro do mês</h3>
-    <div id="pcFinanceiroMes" class="smart-list"></div>
-   </div>
-   <div class="enterprise-panel">
-    <h3>Hoje</h3>
-    <div id="pcHoje" class="smart-list"></div>
    </div>
   </div>
 
@@ -1008,7 +910,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
    </div>
    <div><label>Classificações exibidas</label><div id="precoCentralClasses" class="preco-classificacoes"></div></div>
    <div id="precoCentralAviso" class="help" style="margin-top:8px"></div>
-   <div class="preco-central-chart-wrap"><svg id="precoCentralSvg" viewBox="0 0 980 440" preserveAspectRatio="xMidYMid meet" aria-label="Gráfico de evolução do preço dos ovos"></svg></div>
+   <div class="preco-central-chart-wrap"><svg id="precoCentralSvg" viewBox="0 0 980 440" preserveAspectRatio="none" aria-label="Gráfico de evolução do preço dos ovos"></svg></div>
    <div id="precoCentralLegenda" class="preco-central-legenda"></div>
    <div id="precoCentralResumo" class="preco-central-resumo"></div>
   </div>
@@ -1155,57 +1057,12 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 </section>
 
 
-
-<section id="contasFixasV11" class="section">
- <div class="card">
-  <h2>Contas Fixas Mensais</h2>
-  <div class="help">Cadastre despesas que se repetem todos os meses. O painel acompanha o que já foi pago, o que ainda falta pagar e o que está vencido.</div>
-  <input type="hidden" id="v11CFEditId">
-  <div class="form-grid">
-   <div><label>Conta / descrição</label><input id="v11CFNome" placeholder="Ex.: Energia elétrica"></div>
-   <div><label>Categoria</label><select id="v11CFCategoria"><option>Energia</option><option>Internet / Telefone</option><option>Contabilidade</option><option>Aluguel</option><option>Financiamento</option><option>Assinaturas</option><option>Funcionários</option><option>Manutenção</option><option>Administrativo</option><option>Outro</option></select></div>
-   <div><label>Valor previsto (R$)</label><input id="v11CFValor" type="number" min="0" step="0.01"></div>
-   <div><label>Dia do vencimento</label><input id="v11CFDia" type="number" min="1" max="31" placeholder="Ex.: 10"></div>
-   <div><label>Forma de pagamento</label><select id="v11CFForma"><option>PIX</option><option>Dinheiro</option><option>Boleto</option><option>Débito automático</option><option>Cartão</option><option>Cheque</option><option>Outro</option></select></div>
-   <div><label>Ativa</label><select id="v11CFAtiva"><option value="sim">Sim</option><option value="nao">Não</option></select></div>
-   <div class="full"><label>Observação</label><input id="v11CFObs" placeholder="Opcional"></div>
-  </div>
-  <div class="actions"><button class="btn primary" onclick="v11SalvarContaFixa()">Salvar conta mensal</button><button class="btn secondary" onclick="v11LimparContaFixa()">Limpar</button></div>
- </div>
- <div class="card" style="margin-top:16px">
-  <div class="filtros"><div><label>Mês de referência</label><input id="v11CFMes" type="month" onchange="v11RenderContasFixas()"></div></div>
-  <div class="grid">
-   <div class="mini-card"><h3>Previsto no mês</h3><div class="valor" id="v11CFPrevisto">R$ 0,00</div></div>
-   <div class="mini-card"><h3>Pago</h3><div class="valor" id="v11CFPago">R$ 0,00</div></div>
-   <div class="mini-card"><h3>A pagar</h3><div class="valor" id="v11CFApagar">R$ 0,00</div></div>
-   <div class="mini-card kpi-alerta"><h3>Vencidas</h3><div class="valor" id="v11CFVencidas">0</div></div>
-  </div>
-  <div id="v11CFLista" style="margin-top:16px"></div>
- </div>
-</section>
-
 <section id="fabricaV11" class="section">
  <div class="card">
   <h2>Fábrica de Ração / Estoque de Insumos</h2>
   <div class="help">Fluxo completo: compra → estoque → formulação de 500 kg → produção → baixa automática dos ingredientes → custo da ração produzida.</div>
 
   <div id="v11FabEstoqueCards" class="v2-kpi-grid"></div>
- </div>
-
- <div class="card" style="margin-top:16px">
-  <h2>Cadastro de Insumos</h2>
-  <div class="help">Adicione produtos que você usa na fábrica além dos itens padrão. O insumo cadastrado passa a aparecer no estoque, na autonomia, nas compras e pode ser incluído nas formulações.</div>
-  <input type="hidden" id="v11InsumoEditId">
-  <div class="form-grid">
-   <div><label>Nome do insumo</label><input id="v11InsumoNome" placeholder="Ex.: Metionina, adsorvente, enzima..."></div>
-   <div><label>Categoria</label><select id="v11InsumoCategoria"><option>Aminoácido</option><option>Aditivo</option><option>Mineral</option><option>Vitamina</option><option>Premix</option><option>Matéria-prima</option><option>Outro</option></select></div>
-   <div><label>Unidade de estoque</label><select id="v11InsumoUnidade"><option value="kg">kg</option><option value="L">Litro</option></select></div>
-   <div><label>Estoque mínimo</label><input id="v11InsumoMin" type="number" min="0" step="0.01" value="0"></div>
-   <div><label>Ativo</label><select id="v11InsumoAtivo"><option value="sim">Sim</option><option value="nao">Não</option></select></div>
-   <div><label>Observação</label><input id="v11InsumoObs" placeholder="Opcional"></div>
-  </div>
-  <div class="actions"><button class="btn primary" onclick="v11SalvarInsumoCad()">+ Adicionar / Salvar insumo</button><button class="btn secondary" onclick="v11LimparInsumoCad()">Limpar</button></div>
-  <div id="v11InsumosCadLista" style="margin-top:16px"></div>
  </div>
 
  <div class="card" style="margin-top:16px">
@@ -1267,17 +1124,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
    <div><label>Calcário (kg)</label><input id="v11FabFCalcario" type="number" step="0.01" oninput="v11FabSomarFormula()"></div>
    <div><label>Sal (kg)</label><input id="v11FabFSal" type="number" step="0.01" oninput="v11FabSomarFormula()"></div>
    <div><label>Óleo (kg)</label><input id="v11FabFOleo" type="number" step="0.01" oninput="v11FabSomarFormula()"></div>
-   <div><label>Outros ingredientes genéricos (kg)</label><input id="v11FabFOutros" type="number" step="0.01" oninput="v11FabSomarFormula()"></div>
-   <div class="full" style="border-top:1px solid #e5ecef;padding-top:12px;margin-top:4px">
-    <label>Insumos personalizados na fórmula</label>
-    <div class="help">Escolha um insumo cadastrado, informe quantos kg entram na formulação-base de 500 kg e clique em adicionar.</div>
-    <div class="form-grid">
-     <div><select id="v11FormulaExtraItem"></select></div>
-     <div><input id="v11FormulaExtraQtd" type="number" min="0" step="0.01" placeholder="Quantidade (kg)"></div>
-    </div>
-    <div class="actions"><button type="button" class="btn secondary" onclick="v11AdicionarExtraFormula()">+ Adicionar à fórmula</button></div>
-    <div id="v11FormulaExtrasLista"></div>
-   </div>
+   <div><label>Outros ingredientes (kg)</label><input id="v11FabFOutros" type="number" step="0.01" oninput="v11FabSomarFormula()"></div>
    <div><label>Total da fórmula</label><input id="v11FabFTotal" disabled value="0 kg"></div>
   </div>
   <div id="v11FabFormulaAviso" class="help"></div>
@@ -1290,8 +1137,6 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
   <div class="form-grid">
    <div><label>Data</label><input id="v11FabProdData" type="date"></div>
    <div><label>Formulação</label><select id="v11FabProdFormula" onchange="v11FabPreviewProducao()"></select></div>
-   <div><label>Tamanho da batida</label><select id="v11FabProdTamanho" onchange="v11FabAtualizarTamanhoBatida()"><option value="500">Batida completa — 500 kg</option><option value="250">Meia batida — 250 kg</option><option value="personalizada">Personalizada</option></select></div>
-   <div id="v11FabProdPersonalizadaBox" style="display:none"><label>Kg por batida personalizada</label><input id="v11FabProdPersonalizadaKg" type="number" min="1" step="0.01" value="500" oninput="v11FabPreviewProducao()"></div>
    <div><label>Número de batidas</label><input id="v11FabProdBatidas" type="number" min="1" step="1" value="1" oninput="v11FabPreviewProducao()"></div>
    <div><label>Produção total</label><input id="v11FabProdKg" disabled></div>
   </div>
@@ -1334,22 +1179,13 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 </div></section>
 
 <section id="funcionariosV11" class="section"><div class="card">
-<h2>Funcionários</h2>
-<div class="help">Cadastre cada funcionário uma única vez. Dentro da ficha ficam salário, vales, forma de recebimento, acertos e recibos.</div>
-<input type="hidden" id="v11FuncEditId">
+<h2>Funcionários / Vales / Acerto</h2><div class="help">O salário é abatido automaticamente pelos vales e pagamentos. O saldo mostra quanto ainda falta pagar.</div>
 <div class="form-grid">
-<div><label>Nome do funcionário</label><input id="v11FuncNome" autocomplete="off"></div>
-<div><label>Salário mensal (R$)</label><input id="v11FuncSal" type="number" min="0" step="0.01"></div>
-<div><label>Cargo / função</label><input id="v11FuncCargo" placeholder="Ex.: Auxiliar de Produção"></div>
-<div><label>Observação</label><input id="v11FuncObs" placeholder="Opcional"></div>
-</div>
-<div class="actions">
-<button class="btn primary" type="button" onclick="v11SalvarFuncionarioCad()">Salvar funcionário</button>
-<button class="btn secondary" type="button" onclick="v11CancelarEdicaoFuncionario()">Limpar</button>
-</div>
-<div style="margin-top:14px;max-width:430px"><label>Buscar funcionário</label><input id="v11FuncBusca" placeholder="Digite o nome" oninput="v11RenderFuncionarios()"></div>
-<div id="v11FuncLista" style="margin-top:16px"></div>
-<div id="v11FuncFicha" style="margin-top:18px"></div>
+<div><label>Funcionário</label><input id="v11FuncNome"></div><div><label>Salário (R$)</label><input id="v11FuncSal" type="number" step="0.01" oninput="v11CalcFunc()"></div>
+<div><label>Vales (R$)</label><input id="v11FuncVale" type="number" step="0.01" value="0" oninput="v11CalcFunc()"></div><div><label>PIX (R$)</label><input id="v11FuncPix" type="number" step="0.01" value="0" oninput="v11CalcFunc()"></div>
+<div><label>Dinheiro (R$)</label><input id="v11FuncDin" type="number" step="0.01" value="0" oninput="v11CalcFunc()"></div><div><label>Cheque / outro (R$)</label><input id="v11FuncOut" type="number" step="0.01" value="0" oninput="v11CalcFunc()"></div>
+<div><label>Total abatido/pago</label><input id="v11FuncPago" disabled value="R$ 0,00"></div><div><label>Falta pagar</label><input id="v11FuncSaldo" disabled value="R$ 0,00"></div>
+</div><div class="actions"><button class="btn primary" onclick="v11SalvarFunc()">Registrar acerto</button><button class="btn" onclick="v11ImprimirFunc()">Imprimir recibo / acerto</button></div><div id="v11FuncLista" style="margin-top:16px"></div>
 </div></section>
 
 <section id="chequesV11" class="section"><div class="card">
@@ -1380,6 +1216,39 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 <div class="actions"><button class="btn primary" onclick="v11GerarFechamento()">Gerar fechamento</button></div><div id="v11FechResumo" style="margin-top:16px"></div>
 </div></section>
 
+
+<section id="notasFiscaisV11" class="section">
+ <div class="card">
+  <h2>Notas Fiscais • Entradas e Saídas</h2>
+  <div class="help">Registre aqui as notas fiscais de compra e de venda. O resumo mensal compara o total das entradas com o total das saídas sem alterar a lógica das vendas de ovos.</div>
+  <input id="v11NfEditId" type="hidden">
+  <div class="form-grid">
+   <div><label>Tipo</label><select id="v11NfTipo"><option value="entrada">Entrada • Compra</option><option value="saida">Saída • Venda</option></select></div>
+   <div><label>Data da nota</label><input id="v11NfData" type="date"></div>
+   <div><label>Número da NF</label><input id="v11NfNumero" placeholder="Ex.: 000123"></div>
+   <div><label>Cliente / Fornecedor</label><input id="v11NfPessoa" placeholder="Quem emitiu ou recebeu"></div>
+   <div><label>Valor total (R$)</label><input id="v11NfValor" type="number" min="0" step="0.01"></div>
+   <div><label>Descrição / Referência</label><input id="v11NfDescricao" placeholder="Ex.: milho, ovos, embalagens..."></div>
+  </div>
+  <div class="actions"><button class="btn primary" onclick="v11SalvarNotaFiscal()">Salvar nota fiscal</button><button class="btn secondary" onclick="v11LimparNotaFiscal()">Limpar</button></div>
+ </div>
+ <div class="card" style="margin-top:16px">
+  <h2>Conferência mensal</h2>
+  <div class="filtros">
+   <div><label>Mês</label><input id="v11NfMes" type="month" onchange="v11RenderNotasFiscais()"></div>
+   <div><label>Mostrar</label><select id="v11NfFiltroTipo" onchange="v11RenderNotasFiscais()"><option value="">Entradas + Saídas</option><option value="entrada">Somente entradas</option><option value="saida">Somente saídas</option></select></div>
+   <div><label>Buscar</label><input id="v11NfBusca" placeholder="Número, cliente, fornecedor..." oninput="v11RenderNotasFiscais()"></div>
+  </div>
+  <div class="nf-resumo">
+   <div class="mini-card"><h3>Compras • NF de entrada</h3><div class="valor" id="v11NfTotalEntrada">R$ 0,00</div></div>
+   <div class="mini-card"><h3>Vendas • NF de saída</h3><div class="valor" id="v11NfTotalSaida">R$ 0,00</div></div>
+   <div class="mini-card"><h3>Diferença • saídas − entradas</h3><div class="valor" id="v11NfDiferenca">R$ 0,00</div></div>
+   <div class="mini-card"><h3>Notas no mês</h3><div class="valor" id="v11NfQtd">0</div></div>
+  </div>
+  <div id="v11NfLista"></div>
+ </div>
+</section>
+
 <section id="backupV11" class="section"><div class="card">
 <h2>Backup / Segurança</h2><div class="help">Exporte os dados do painel antes de trocar de aparelho ou fazer grandes alterações.</div>
 <div class="actions"><button class="btn primary" onclick="v11ExportarBackup()">Gerar backup JSON</button><button class="btn" onclick="document.getElementById('v11BackupFile').click()">Restaurar backup</button><input id="v11BackupFile" type="file" accept=".json" style="display:none" onchange="v11ImportarBackup(event)"></div>
@@ -1401,7 +1270,9 @@ function snapshotDados(){
     vendas: JSON.parse(localStorage.getItem('granja_vendas') || '[]'),
     clientes: JSON.parse(localStorage.getItem('granja_clientes') || '[]'),
     produtos: JSON.parse(localStorage.getItem('granja_produtos') || '[]'),
-    producoes: JSON.parse(localStorage.getItem('granja_producoes') || '[]')
+    producoes: JSON.parse(localStorage.getItem('granja_producoes') || '[]'),
+    notasFiscais: JSON.parse(localStorage.getItem('gsj_v11_notas_fiscais') || '[]'),
+    produtosExcluidos: JSON.parse(localStorage.getItem('gsj_v11_produtos_excluidos') || '[]')
   };
   localStorage.setItem('granja_snapshot_interno', JSON.stringify(dados));
   localStorage.setItem('granja_ultimo_salvamento', new Date().toISOString());
@@ -1442,6 +1313,12 @@ function restaurarBackup(event){
       clientesCad = dados.clientes;
       produtosCad = dados.produtos;
       producoes = Array.isArray(dados.producoes) ? dados.producoes : [];
+      const notasRestauradas = Array.isArray(dados.notasFiscais) ? dados.notasFiscais : [];
+      const excluidosRestaurados = Array.isArray(dados.produtosExcluidos) ? dados.produtosExcluidos : [];
+      localStorage.setItem('gsj_v11_notas_fiscais', JSON.stringify(notasRestauradas));
+      localStorage.setItem('gsj_v11_produtos_excluidos', JSON.stringify(excluidosRestaurados));
+      if(typeof v11NotasFiscais!=='undefined')v11NotasFiscais=notasRestauradas;
+      if(typeof produtosExcluidosV11!=='undefined')produtosExcluidosV11=excluidosRestaurados;
       localStorage.setItem('granja_vendas', JSON.stringify(vendas));
       localStorage.setItem('granja_clientes', JSON.stringify(clientesCad));
       localStorage.setItem('granja_produtos', JSON.stringify(produtosCad));
@@ -1475,6 +1352,7 @@ let vendas=JSON.parse(localStorage.getItem('granja_vendas')||'[]');
 let clientesCad=JSON.parse(localStorage.getItem('granja_clientes')||'[]');
 let produtosCad=JSON.parse(localStorage.getItem('granja_produtos')||'[]');
 let producoes=JSON.parse(localStorage.getItem('granja_producoes')||'[]');
+let produtosExcluidosV11=JSON.parse(localStorage.getItem('gsj_v11_produtos_excluidos')||'[]');
 
 if(!produtosCad.length){
   produtosCad=[
@@ -1499,9 +1377,12 @@ document.querySelectorAll('nav button').forEach(btn=>{
 });
 
 function proximoNumero(){return Math.max(0,...vendas.map(v=>Number(v.numero)||0))+1}
-function produtoAtivo(nome){return produtosCad.find(p=>p.nome===nome)}
+function produtoAtivo(nome){return produtosCad.find(p=>p.nome===nome&&p.ativo==='sim')}
 function optionsProdutos(sel=''){
-  const opts=produtosCad.filter(p=>p.ativo==='sim').map(p=>`<option value="${p.nome.replaceAll('"','&quot;')}" ${p.nome===sel?'selected':''}>${p.nome}</option>`).join('');
+  let lista=produtosCad.filter(p=>p.ativo==='sim');
+  const historico=sel?produtosCad.find(p=>p.nome===sel&&p.ativo!=='sim'):null;
+  if(historico)lista=[...lista,historico];
+  const opts=lista.map(p=>`<option value="${p.nome.replaceAll('"','&quot;')}" ${p.nome===sel?'selected':''}>${p.nome}${p.ativo==='sim'?'':' (inativo • histórico)'}</option>`).join('');
   return `<option value="">Selecione...</option>${opts}<option value="__outro__">Outro / digitar</option>`;
 }
 
@@ -1582,8 +1463,7 @@ function atualizarPagamentoDividido(){
   if(r) r.checked=true;
 
   const valorCheque=Number(document.getElementById('pagCheque').value||0);
-  const forma=document.getElementById('formaPagamentoVenda')?.value||'';
-  document.getElementById('dadosChequeVenda').style.display=(valorCheque>0||forma==='Cheque')?'grid':'none';
+  document.getElementById('dadosChequeVenda').style.display=valorCheque>0?'grid':'none';
 }
 function atualizarSituacaoPeloPagamento(){atualizarPagamentoDividido();}
 
@@ -1599,7 +1479,6 @@ function limparFormulario(){
   document.getElementById('assinaturaExibida').value='Erik Gabriel';
   document.getElementById('desconto').value=0;
   document.getElementById('observacoes').value='';
-  if(document.getElementById('formaPagamentoVenda'))document.getElementById('formaPagamentoVenda').value='PIX';
   ['pagPix','pagDinheiro','pagCheque','pagOutro'].forEach(id=>document.getElementById(id).value=0);
   document.getElementById('valorPagoVenda').value=moeda(0);
   ['chequeBancoVenda','chequeNumeroVenda','chequeEmitenteVenda','chequeDataVenda'].forEach(id=>document.getElementById(id).value='');
@@ -1636,7 +1515,7 @@ function salvarVenda(){
     vendedor:document.getElementById('vendedor').value.trim(),responsavel:document.getElementById('responsavelVenda').value.trim(),
     assinatura:document.getElementById('assinaturaExibida').value.trim(),produtos,subtotal,desconto,total,
     custoTotal:produtos.reduce((s,p)=>s+p.custoTotal,0),
-    pagamento:(document.getElementById('formaPagamentoVenda')?.value||'A combinar'),
+    pagamento:'Dividido',
     pagamentos:{pix:Math.max(0,Number(document.getElementById('pagPix').value||0)),dinheiro:Math.max(0,Number(document.getElementById('pagDinheiro').value||0)),cheque:Math.max(0,Number(document.getElementById('pagCheque').value||0)),outro:Math.max(0,Number(document.getElementById('pagOutro').value||0))},
     valorPago:Math.min(total,totalPagamentoDividido()),
     cheque:Number(document.getElementById('pagCheque').value||0)>0?{valor:Math.max(0,Number(document.getElementById('pagCheque').value||0)),banco:document.getElementById('chequeBancoVenda').value.trim(),numero:document.getElementById('chequeNumeroVenda').value.trim(),emitente:document.getElementById('chequeEmitenteVenda').value.trim(),data:document.getElementById('chequeDataVenda').value,status:'Em carteira'}:null,
@@ -1669,14 +1548,7 @@ function editarVenda(id){
   document.getElementById('responsavelVenda').value=v.responsavel||'Erik Gabriel';
   document.getElementById('assinaturaExibida').value=v.assinatura||v.responsavel||'Erik Gabriel';
   document.getElementById('desconto').value=v.desconto||0;document.getElementById('observacoes').value=v.observacoes||'';
-  const pg=v.pagamentos||{};
-  if(document.getElementById('formaPagamentoVenda')){
-    let forma=v.pagamento||'A combinar';
-    const opts=[...document.getElementById('formaPagamentoVenda').options].map(o=>o.value);
-    if(!opts.includes(forma))forma='A combinar';
-    document.getElementById('formaPagamentoVenda').value=forma;
-  }
-  document.getElementById('pagPix').value=pg.pix||0;document.getElementById('pagDinheiro').value=pg.dinheiro||0;document.getElementById('pagCheque').value=pg.cheque||0;document.getElementById('pagOutro').value=pg.outro||0;
+  const pg=v.pagamentos||{};document.getElementById('pagPix').value=pg.pix||0;document.getElementById('pagDinheiro').value=pg.dinheiro||0;document.getElementById('pagCheque').value=pg.cheque||0;document.getElementById('pagOutro').value=pg.outro||0;
   if(v.cheque){document.getElementById('chequeBancoVenda').value=v.cheque.banco||'';document.getElementById('chequeNumeroVenda').value=v.cheque.numero||'';document.getElementById('chequeEmitenteVenda').value=v.cheque.emitente||'';document.getElementById('chequeDataVenda').value=v.cheque.data||'';}
   const sr=document.querySelector(`input[name="situacaoRadio"][value="${v.situacao}"]`);if(sr)sr.checked=true;
   document.getElementById('produtos').innerHTML='';
@@ -1711,7 +1583,7 @@ function tabelaVendas(lista,modo='vendas'){
       const caixas=(v.produtos||[]).reduce((s,p)=>s+Number(p.quantidade||0)*(p.unidade==='Pente'?1/12:1),0),st=statusReceber(v);
       let acoes=modo==='receber'
         ? `<button class="btn success" onclick="marcarPago(${v.id})">Marcar pago</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Abrir</button>`
-        : `<button class="btn primary" onclick="abrirNotaCliente(${v.id})">Ver / Enviar nota</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Editar</button> <button class="btn danger" onclick="excluirVenda(${v.id})">Excluir</button>`;
+        : `<button class="btn primary" onclick="abrirNotaCliente(${v.id})">Enviar nota</button> <button class="btn secondary" onclick="editarVenda(${v.id})">Editar</button> <button class="btn danger" onclick="excluirVenda(${v.id})">Excluir</button>`;
       return `<tr><td>${v.numero||'—'}</td><td>${v.cliente}</td><td>${dataBR(v.data)}</td><td>${v.canal||'—'}</td><td>${caixas}</td><td>${moeda(v.total)}</td><td>${moeda(saldoVenda(v))}</td><td>${dataBR(v.vencimento)}</td><td><span class="badge ${st}">${st==='vencido'?'Vencido':situacaoFinanceira(v)}</span></td><td>${st==='vencido'?diasEntre(v.vencimento,hojeISO())+' d':'—'}</td><td>${acoes}</td></tr>`;
     }).join('')
   }</tbody></table></div>`;
@@ -1801,9 +1673,26 @@ function salvarProdutoCad(){
 }
 function editarProdutoCad(id){const p=produtosCad.find(x=>x.id===id);if(!p)return;document.getElementById('produtoEditId').value=p.id;document.getElementById('cadProdutoNome').value=p.nome;document.getElementById('cadProdutoPreco').value=p.preco;document.getElementById('cadProdutoCusto').value=p.custo;document.getElementById('cadProdutoMargem').value=p.margemMin||0;document.getElementById('cadProdutoAtivo').value=p.ativo}
 function limparProdutoCad(){document.getElementById('produtoEditId').value='';document.getElementById('cadProdutoNome').value='';document.getElementById('cadProdutoPreco').value='';document.getElementById('cadProdutoCusto').value='';document.getElementById('cadProdutoMargem').value='10';document.getElementById('cadProdutoAtivo').value='sim'}
-function excluirProdutoCad(id){if(confirm('Excluir este produto?')){produtosCad=produtosCad.filter(p=>p.id!==id);localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));snapshotDados();renderTudo()}}
+function produtoTemHistorico(nome){return vendas.some(v=>(v.produtos||[]).some(p=>p.produto===nome))||producoes.some(p=>p.produto===nome)}
+function definirProdutoAtivo(id,ativo){
+  produtosCad=produtosCad.map(p=>p.id===id?{...p,ativo:ativo?'sim':'nao'}:p);
+  localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));snapshotDados();renderTudo();
+}
+function excluirProdutoCad(id){
+  const p=produtosCad.find(x=>x.id===id);if(!p)return;
+  if(produtoTemHistorico(p.nome)){
+    if(confirm('Esta classificação já aparece no histórico de vendas ou produção. Para preservar os registros antigos, ela não pode ser apagada de vez. Deseja inativá-la para ela sumir das opções de novos lançamentos?'))definirProdutoAtivo(id,false);
+    return;
+  }
+  if(confirm(`Excluir definitivamente “${p.nome}”? Ela deixará de aparecer nas opções de venda e produção.`)){
+    if(!produtosExcluidosV11.includes(p.nome))produtosExcluidosV11.push(p.nome);
+    produtosCad=produtosCad.filter(x=>x.id!==id);
+    localStorage.setItem('gsj_v11_produtos_excluidos',JSON.stringify(produtosExcluidosV11));
+    localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));snapshotDados();renderTudo();
+  }
+}
 function renderProdutosCad(){
-  document.getElementById('listaProdutosCad').innerHTML=produtosCad.length?`<div class="table-wrap"><table><thead><tr><th>Classificação</th><th>Preço padrão</th><th>Custo estimado</th><th>Preço mínimo</th><th>Margem unitária</th><th>Ativo</th><th>Ações</th></tr></thead><tbody>${produtosCad.map(p=>`<tr><td>${p.nome}</td><td>${moeda(p.preco)}</td><td>${moeda(p.custo)}</td><td>${moeda(p.custo*(1+(Number(p.margemMin||0)/100)))}</td><td>${moeda(p.preco-p.custo)}</td><td>${p.ativo==='sim'?'Sim':'Não'}</td><td><button class="btn secondary" onclick="editarProdutoCad(${p.id})">Editar</button> <button class="btn danger" onclick="excluirProdutoCad(${p.id})">Excluir</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhum produto cadastrado.</div>';
+  document.getElementById('listaProdutosCad').innerHTML=produtosCad.length?`<div class="table-wrap"><table><thead><tr><th>Classificação</th><th>Preço padrão</th><th>Custo estimado</th><th>Preço mínimo</th><th>Margem unitária</th><th>Status</th><th>Ações</th></tr></thead><tbody>${produtosCad.map(p=>`<tr class="${p.ativo==='sim'?'':'prod-inativo'}"><td>${p.nome}</td><td>${moeda(p.preco)}</td><td>${moeda(p.custo)}</td><td>${moeda(p.custo*(1+(Number(p.margemMin||0)/100)))}</td><td>${moeda(p.preco-p.custo)}</td><td><span class="prod-status ${p.ativo==='sim'?'ativo':'inativo'}">${p.ativo==='sim'?'Ativo':'Inativo'}</span></td><td><button class="btn secondary" onclick="editarProdutoCad(${p.id})">Editar</button> ${p.ativo==='sim'?`<button class="btn secondary" onclick="definirProdutoAtivo(${p.id},false)">Inativar</button>`:`<button class="btn secondary" onclick="definirProdutoAtivo(${p.id},true)">Ativar</button>`} <button class="btn danger" onclick="excluirProdutoCad(${p.id})">Excluir</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhum produto cadastrado.</div>';
 }
 
 function renderRelatorios(){
@@ -1828,7 +1717,6 @@ function salvarProducao(){
   if(!data||!produto||qtd<=0){alert('Informe data, classificação e quantidade produzida.');return}
   producoes.unshift({id:gerarId(),data,produto,qtd,obs});
   localStorage.setItem('granja_producoes',JSON.stringify(producoes));
-    if(d.v11Extras&&typeof d.v11Extras==='object')Object.entries(d.v11Extras).forEach(([k,v])=>{if(k.startsWith('gsj_v11_')&&typeof v==='string')localStorage.setItem(k,v)});
   snapshotDados();
   document.getElementById('prodQtd').value='';document.getElementById('prodObs').value='';
   renderTudo();
@@ -1950,28 +1838,11 @@ if(migrouV10)localStorage.setItem('granja_vendas',JSON.stringify(vendas));
 
 const classificacoesPadraoV9=['Caixa de Ovos Jumbo Branco','Caixa de Ovos Extra Branco','Caixa de Ovos A Branco','Caixa de Ovos Jumbo Vermelho','Caixa de Ovos Extra Vermelho','Caixa de Ovos A Vermelho','Ovos Caipiras'];
 let mudouV9=false;
-classificacoesPadraoV9.forEach(nome=>{if(!produtosCad.some(p=>p.nome===nome)){produtosCad.push({id:gerarId(),nome,preco:0,custo:0,margemMin:10,ativo:'sim'});mudouV9=true}});
+classificacoesPadraoV9.forEach(nome=>{if(!produtosCad.some(p=>p.nome===nome)&&!produtosExcluidosV11.includes(nome)){produtosCad.push({id:gerarId(),nome,preco:0,custo:0,margemMin:10,ativo:'sim'});mudouV9=true}});
 if(mudouV9)localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));
-
-let notaClienteAtual=null;
-
-function formaPagamentoExibida(v){
- const forma=String(v?.pagamento||'').trim();
- if(forma && forma!=='Dividido')return forma;
- const pg=v?.pagamentos||{};
- const usadas=[];
- if(Number(pg.pix||0)>0)usadas.push('PIX');
- if(Number(pg.dinheiro||0)>0)usadas.push('Dinheiro');
- if(Number(pg.cheque||0)>0)usadas.push('Cheque');
- if(Number(pg.outro||0)>0)usadas.push('Cartão / Outro');
- if(usadas.length===1)return usadas[0];
- if(usadas.length>1)return 'Pagamento dividido';
- return forma==='Dividido'?'A combinar':(forma||'A combinar');
-}
 
 function abrirNotaCliente(id){
  const v=vendas.find(x=>x.id===id);if(!v)return;
- notaClienteAtual=v;
  const pago=valorPagoVenda(v),saldo=saldoVenda(v),sit=situacaoFinanceira(v);
  const classe=sit==='Pago'?'pago':sit==='Parcial'?'parcial':'pendente';
  const linhas=(v.produtos||[]).map(p=>`<tr>
@@ -1980,7 +1851,7 @@ function abrirNotaCliente(id){
  </tr>`).join('');
  document.getElementById('notaClienteConteudo').innerHTML=`
  <div class="nc-topo">
-   <div><div class="nc-marca">GRANJA SÃO JOSÉ</div><div class="nc-slogan">Seguimos produzindo o melhor alimento depois do leite materno.</div></div>
+   <div><div class="nc-marca">GRANJA SÃO JOSÉ</div><div class="nc-slogan">Qualidade, tradição e confiança em cada ovo.</div></div>
    <div class="nc-titulo"><strong>NOTA DE VENDA</strong><span>Nº ${String(v.numero||'—').padStart(6,'0')} &nbsp; • &nbsp; ${dataBR(v.data)}</span></div>
  </div>
  <div class="nc-cliente"><strong>CLIENTE:</strong> ${v.cliente||'—'}</div>
@@ -1988,7 +1859,7 @@ function abrirNotaCliente(id){
  <div class="nc-financeiro">
    <div class="nc-info-venda">
      <h4>INFORMAÇÕES DA VENDA</h4>
-     <div><span>Forma de pagamento</span><strong>${formaPagamentoExibida(v)}</strong></div>
+     <div><span>Forma de pagamento</span><strong>${v.pagamento||'—'}</strong></div>
      <div><span>Vencimento</span><strong>${dataBR(v.vencimento)}</strong></div>
      <div><span>Valor pago</span><strong>${moeda(pago)}</strong></div>
      <div><span>Situação</span><span class="nc-status ${classe}">${sit.toUpperCase()}</span></div>
@@ -2007,97 +1878,6 @@ function abrirNotaCliente(id){
 }
 function fecharNotaCliente(){document.getElementById('notaClienteModal').classList.remove('aberto')}
 function imprimirNotaCliente(){document.body.classList.add('print-nota-cliente');window.print();setTimeout(()=>document.body.classList.remove('print-nota-cliente'),400)}
-
-function notaClienteNomeArquivo(v){
- const numero=String(v?.numero||'nota').padStart(6,'0');
- const cliente=String(v?.cliente||'cliente').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
- return `nota-venda-${numero}-${cliente||'cliente'}.png`;
-}
-
-function notaCanvasTexto(ctx,text,x,y,maxWidth,lineHeight,fonte,cor='#1f3037'){
- ctx.font=fonte;ctx.fillStyle=cor;ctx.textBaseline='top';
- const palavras=String(text??'').split(/\s+/);let linha='';let yy=y;
- for(const palavra of palavras){
-  const teste=linha?linha+' '+palavra:palavra;
-  if(ctx.measureText(teste).width>maxWidth && linha){ctx.fillText(linha,x,yy);linha=palavra;yy+=lineHeight}else linha=teste;
- }
- if(linha)ctx.fillText(linha,x,yy);
- return yy+lineHeight;
-}
-function notaCanvasLinha(ctx,x1,y1,x2,y2,cor='#d6dfe2',largura=2){ctx.strokeStyle=cor;ctx.lineWidth=largura;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
-function notaCanvasMoeda(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
-function notaCanvasData(v){if(!v)return '—';const s=String(v);const a=s.slice(0,10).split('-');return a.length===3?`${a[2]}/${a[1]}/${a[0]}`:s}
-function dataURLParaBlob(dataURL){
- const partes=dataURL.split(',');const mime=(partes[0].match(/:(.*?);/)||[])[1]||'image/png';const bin=atob(partes[1]);const bytes=new Uint8Array(bin.length);
- for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
- return new Blob([bytes],{type:mime});
-}
-function gerarImagemNotaCliente(v){
- const produtos=Array.isArray(v?.produtos)?v.produtos:[];
- const linhas=Math.max(1,produtos.length);
- const W=1580, margem=80, topo=60;
- const alturaTabela=100+linhas*76;
- const H=Math.max(1320,topo+190+100+alturaTabela+420);
- const c=document.createElement('canvas');c.width=W;c.height=H;
- const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
- const azul='#123f50', cinza='#52656d', claro='#f2f5f6', vermelho='#a12a2a';
- let y=topo;
- ctx.fillStyle=azul;ctx.font='900 50px Arial, sans-serif';ctx.textBaseline='top';ctx.fillText('GRANJA SÃO JOSÉ',margem,y);
- ctx.font='20px Arial, sans-serif';ctx.fillStyle=cinza;ctx.fillText('Seguimos produzindo o melhor alimento depois do leite materno.',margem,y+64);
- ctx.textAlign='right';ctx.fillStyle=azul;ctx.font='900 36px Arial, sans-serif';ctx.fillText('NOTA DE VENDA',W-margem,y+2);
- ctx.font='22px Arial, sans-serif';ctx.fillStyle=cinza;ctx.fillText(`Nº ${String(v?.numero||'—').padStart(6,'0')}  •  ${notaCanvasData(v?.data)}`,W-margem,y+55);ctx.textAlign='left';
- y+=120;notaCanvasLinha(ctx,margem,y,W-margem,y,azul,4);y+=32;
- ctx.fillStyle=claro;ctx.fillRect(margem,y,W-2*margem,70);ctx.fillStyle=azul;ctx.fillRect(margem,y,8,70);
- ctx.fillStyle='#26373e';ctx.font='700 24px Arial, sans-serif';ctx.fillText('CLIENTE:',margem+28,y+21);ctx.font='24px Arial, sans-serif';ctx.fillText(String(v?.cliente||'—'),margem+150,y+21);y+=105;
- const cols=[margem,margem+150,margem+350,margem+980,margem+1190,W-margem];
- ctx.fillStyle=azul;ctx.fillRect(margem,y,W-2*margem,58);
- const cab=['Qtd.','Unidade','Classificação / Produto','Valor unit.','Total'];
- ctx.fillStyle='#fff';ctx.font='700 19px Arial, sans-serif';
- cab.forEach((t,i)=>ctx.fillText(t.toUpperCase(),cols[i]+16,y+18));y+=58;
- const itens=linhas===1 && !produtos.length?[{quantidade:0,unidade:'—',produto:'—',valorUnit:0,total:0}]:produtos;
- for(const p of itens){
-  const rowY=y;ctx.fillStyle='#fff';ctx.fillRect(margem,rowY,W-2*margem,76);
-  ctx.fillStyle='#28383f';ctx.font='22px Arial, sans-serif';ctx.fillText(String(p?.quantidade??0),cols[0]+16,rowY+23);ctx.fillText(String(p?.unidade||'Caixa'),cols[1]+16,rowY+23);
-  notaCanvasTexto(ctx,String(p?.produto||''),cols[2]+16,rowY+12,cols[3]-cols[2]-32,26,'22px Arial, sans-serif','#28383f');
-  ctx.textAlign='right';ctx.fillText(notaCanvasMoeda(p?.valorUnit||0),cols[4]-16,rowY+23);ctx.font='700 22px Arial, sans-serif';ctx.fillText(notaCanvasMoeda(p?.total||0),cols[5]-16,rowY+23);ctx.textAlign='left';
-  y+=76;notaCanvasLinha(ctx,margem,y,W-margem,y,'#d6dfe2',2);
- }
- y+=42;
- const pago=valorPagoVenda(v),saldo=saldoVenda(v),sit=situacaoFinanceira(v), forma=formaPagamentoExibida(v);
- const leftX=margem,rightX=900,rightW=W-margem-rightX;
- ctx.fillStyle=azul;ctx.font='800 22px Arial, sans-serif';ctx.fillText('INFORMAÇÕES DA VENDA',leftX,y);ctx.fillText('RESUMO FINANCEIRO',rightX,y);y+=42;
- const info=[['Forma de pagamento',forma],['Vencimento',notaCanvasData(v?.vencimento)],['Valor pago',notaCanvasMoeda(pago)],['Situação',String(sit||'').toUpperCase()]];
- let yl=y;ctx.font='21px Arial, sans-serif';
- for(const [a,b] of info){ctx.fillStyle=cinza;ctx.fillText(a,leftX,yl);ctx.textAlign='right';ctx.fillStyle='#26373e';ctx.font='700 21px Arial, sans-serif';ctx.fillText(String(b),rightX-70,yl);ctx.textAlign='left';ctx.font='21px Arial, sans-serif';notaCanvasLinha(ctx,leftX,yl+34,rightX-70,yl+34,'#e1e7e9',2);yl+=54}
- let yr=y;const resumo=[['Subtotal',notaCanvasMoeda(v?.subtotal||0)],['Desconto',notaCanvasMoeda(v?.desconto||0)]];
- for(const [a,b] of resumo){ctx.fillStyle=cinza;ctx.font='21px Arial, sans-serif';ctx.fillText(a,rightX,yr);ctx.textAlign='right';ctx.fillStyle='#26373e';ctx.font='700 21px Arial, sans-serif';ctx.fillText(b,W-margem,yr);ctx.textAlign='left';notaCanvasLinha(ctx,rightX,yr+34,W-margem,yr+34,'#d5dde0',2);yr+=54}
- ctx.fillStyle=azul;ctx.fillRect(rightX,yr,rightW,64);ctx.fillStyle='#fff';ctx.font='900 25px Arial, sans-serif';ctx.fillText('TOTAL DA VENDA',rightX+16,yr+18);ctx.textAlign='right';ctx.fillText(notaCanvasMoeda(v?.total||0),W-margem-16,yr+18);ctx.textAlign='left';yr+=80;
- if(saldo>0){ctx.fillStyle=vermelho;ctx.font='900 23px Arial, sans-serif';ctx.fillText('SALDO A RECEBER',rightX+10,yr);ctx.textAlign='right';ctx.fillText(notaCanvasMoeda(saldo),W-margem,yr);ctx.textAlign='left';yr+=48}
- y=Math.max(yl,yr)+40;
- if(v?.observacoes){ctx.fillStyle=cinza;ctx.font='700 20px Arial, sans-serif';ctx.fillText('Observações:',margem,y);notaCanvasTexto(ctx,String(v.observacoes),margem+125,y,W-2*margem-125,26,'20px Arial, sans-serif',cinza);y+=70}
- notaCanvasLinha(ctx,margem,y,W-margem,y,'#cbd6da',2);y+=32;ctx.textAlign='center';ctx.fillStyle=azul;ctx.font='900 23px Arial, sans-serif';ctx.fillText('OBRIGADO PELA PREFERÊNCIA!',W/2,y);ctx.textAlign='left';
- return c.toDataURL('image/png',1);
-}
-function enviarNotaCliente(){
- const btn=document.getElementById('btnEnviarNotaCliente');
- try{
-  if(!notaClienteAtual)throw new Error('Abra uma nota de venda antes de enviar.');
-  if(btn){btn.disabled=true;btn.textContent='Preparando imagem...'}
-  const dataURL=gerarImagemNotaCliente(notaClienteAtual);
-  const blob=dataURLParaBlob(dataURL);
-  const nome=notaClienteNomeArquivo(notaClienteAtual);
-  const arquivo=new File([blob],nome,{type:'image/png'});
-  const numero=String(notaClienteAtual.numero||'—').padStart(6,'0');
-  if(navigator.share && (!navigator.canShare || navigator.canShare({files:[arquivo]}))){
-   navigator.share({files:[arquivo],title:`Nota de Venda Nº ${numero} - Granja São José`,text:`Granja São José — Nota de Venda Nº ${numero}`}).catch(e=>{if(e?.name!=='AbortError'){console.error(e);alert('Não foi possível abrir o compartilhamento. A imagem será salva no aparelho.');baixarImagemNotaCliente(dataURL,nome)}}).finally(()=>{if(btn){btn.disabled=false;btn.textContent='Enviar para o cliente'}});
-  }else{
-   baixarImagemNotaCliente(dataURL,nome);
-   alert('A imagem da nota foi gerada. Abra-a e compartilhe pelo WhatsApp.');
-   if(btn){btn.disabled=false;btn.textContent='Enviar para o cliente'}
-  }
- }catch(e){console.error(e);alert(e?.message||'Não foi possível gerar a imagem da nota.');if(btn){btn.disabled=false;btn.textContent='Enviar para o cliente'}}
-}
-function baixarImagemNotaCliente(dataURL,nome){const a=document.createElement('a');a.href=dataURL;a.download=nome;document.body.appendChild(a);a.click();a.remove()}
 
 
 /* ===== SINCRONIZAÇÃO ONLINE V10 ===== */
@@ -2232,6 +2012,9 @@ function aplicarPacoteOnline(d){
     localStorage.setItem('granja_clientes',JSON.stringify(clientesCad));
     localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));
     localStorage.setItem('granja_producoes',JSON.stringify(producoes));
+    if(d.v11Extras&&typeof d.v11Extras==='object')Object.entries(d.v11Extras).forEach(([k,v])=>{if(k.startsWith('gsj_v11_')&&typeof v==='string')localStorage.setItem(k,v)});
+    produtosExcluidosV11=JSON.parse(localStorage.getItem('gsj_v11_produtos_excluidos')||'[]');
+    if(typeof v11NotasFiscais!=='undefined')v11NotasFiscais=JSON.parse(localStorage.getItem('gsj_v11_notas_fiscais')||'[]');
   }finally{onlineIgnorarSync=false}
   renderTudo();
 }
@@ -2382,371 +2165,63 @@ let v11Clientes=v11Get('gsj_v11_clientes',[]),v11Fornecedores=v11Get('gsj_v11_fo
 function v11Table(el,heads,rows){const x=document.getElementById(el);if(!x)return;x.innerHTML=rows.length?`<div class="table-wrap"><table><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.join('')}</table></div>`:'<div class="empty">Nenhum registro.</div>'}
 function v11SalvarCliente(){const nome=v11CliNome.value.trim();if(!nome)return alert('Informe o cliente.');v11Clientes.unshift({nome,limite:Number(v11CliLimite.value||0),obs:v11CliObs.value.trim()});v11Set('gsj_v11_clientes',v11Clientes);v11RenderExtras()}
 
-function v11FecharRelatorioCliente(){
-  var el=document.getElementById('v11CliRelatorio');
-  if(el){
-    el.innerHTML='';
-    el.style.display='none';
-  }
-}
-
 function v11VerRelatorioCliente(indice){
-  try{
-    var c=(Array.isArray(v11Clientes)?v11Clientes:[])[indice];
-    if(!c){ alert('Cliente não encontrado.'); return; }
+ const c=v11Clientes[indice];
+ if(!c)return;
+ const nome=(c.nome||'').trim().toLowerCase();
+ const vendasCliente=(typeof vendas!=='undefined'?vendas:[]).filter(v=>(v.cliente||'').trim().toLowerCase()===nome);
+ const vendasRacaoCliente=(typeof v11Racoes!=='undefined'?v11Racoes:[]).filter(v=>(v.cliente||'').trim().toLowerCase()===nome);
+ const vendasEmbCliente=(typeof v11EmbHist!=='undefined'?v11EmbHist:[]).filter(v=>v.mov==='venda'&&(v.pessoa||'').trim().toLowerCase()===nome);
 
-    var nomeOriginal=String(c.nome||'').trim();
-    var nome=nomeOriginal.toLowerCase();
+ const totalOvos=vendasCliente.reduce((s,v)=>s+Number(v.total||0),0);
+ const recebidoOvos=vendasCliente.reduce((s,v)=>s+Number(typeof valorPagoVenda==='function'?valorPagoVenda(v):(v.valorPago||0)),0);
+ const saldoOvos=Math.max(0,totalOvos-recebidoOvos);
+ const totalRacao=vendasRacaoCliente.reduce((s,v)=>s+Number(v.total||0),0);
+ const totalEmb=vendasEmbCliente.reduce((s,v)=>s+Number(v.q||0)*Number(v.preco||0),0);
+ const totalGeral=totalOvos+totalRacao+totalEmb;
+ const saldoTotal=saldoOvos;
+ const limite=Number(c.limite||0);
+ const creditoLivre=Math.max(0,limite-saldoTotal);
 
-    var listaVendas=(typeof vendas!=='undefined' && Array.isArray(vendas))?vendas:[];
-    var listaRacoes=(typeof v11Racoes!=='undefined' && Array.isArray(v11Racoes))?v11Racoes:[];
-    var listaEmb=(typeof v11EmbHist!=='undefined' && Array.isArray(v11EmbHist))?v11EmbHist:[];
+ const historicoOvos=vendasCliente.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Nº</th><th>Total</th><th>Recebido</th><th>Saldo</th><th>Status</th></tr>${
+   [...vendasCliente].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(v=>`<tr><td>${dataBR(v.data)}</td><td>${v.numero||'—'}</td><td>${moeda(v.total)}</td><td>${moeda(typeof valorPagoVenda==='function'?valorPagoVenda(v):(v.valorPago||0))}</td><td>${moeda(typeof saldoVenda==='function'?saldoVenda(v):Math.max(0,Number(v.total||0)-Number(v.valorPago||0)))}</td><td>${typeof situacaoFinanceira==='function'?situacaoFinanceira(v):(v.situacao||'—')}</td></tr>`).join('')
+ }</table></div>`:'<div class="empty">Nenhuma venda de ovos encontrada para este cliente.</div>';
 
-    var vendasCliente=listaVendas.filter(function(v){
-      return String((v&&v.cliente)||'').trim().toLowerCase()===nome;
-    });
-    var racoesCliente=listaRacoes.filter(function(v){
-      return String((v&&v.cliente)||'').trim().toLowerCase()===nome;
-    });
-    var embCliente=listaEmb.filter(function(v){
-      return v && v.mov==='venda' &&
-        String(v.pessoa||'').trim().toLowerCase()===nome;
-    });
-
-    var totalOvos=vendasCliente.reduce(function(s,v){
-      return s+Number((v&&v.total)||0);
-    },0);
-
-    var recebidoOvos=vendasCliente.reduce(function(s,v){
-      var pago=(typeof valorPagoVenda==='function')
-        ? valorPagoVenda(v)
-        : Number((v&&v.valorPago)||0);
-      return s+Number(pago||0);
-    },0);
-
-    var saldoOvos=Math.max(0,totalOvos-recebidoOvos);
-    var totalRacao=racoesCliente.reduce(function(s,v){
-      return s+Number((v&&v.total)||0);
-    },0);
-    var totalEmb=embCliente.reduce(function(s,v){
-      return s+(Number((v&&v.q)||0)*Number((v&&v.preco)||0));
-    },0);
-
-    var totalGeral=totalOvos+totalRacao+totalEmb;
-    var limite=Number(c.limite||0);
-    var creditoLivre=Math.max(0,limite-saldoOvos);
-
-    var linhas='';
-    vendasCliente.slice().sort(function(a,b){
-      return String((b&&b.data)||'').localeCompare(String((a&&a.data)||''));
-    }).forEach(function(v){
-      var pago=(typeof valorPagoVenda==='function')
-        ? valorPagoVenda(v)
-        : Number((v&&v.valorPago)||0);
-
-      var saldo=(typeof saldoVenda==='function')
-        ? saldoVenda(v)
-        : Math.max(0,Number((v&&v.total)||0)-Number((v&&v.valorPago)||0));
-
-      var status=(typeof situacaoFinanceira==='function')
-        ? situacaoFinanceira(v)
-        : ((v&&v.situacao)||'—');
-
-      linhas += '<tr>'+
-        '<td>'+((typeof dataBR==='function')?dataBR(v.data):(v.data||'—'))+'</td>'+
-        '<td>'+(v.numero||'—')+'</td>'+
-        '<td>'+moeda(Number(v.total||0))+'</td>'+
-        '<td>'+moeda(Number(pago||0))+'</td>'+
-        '<td>'+moeda(Number(saldo||0))+'</td>'+
-        '<td>'+status+'</td>'+
-      '</tr>';
-    });
-
-    var historico = vendasCliente.length
-      ? '<div class="table-wrap"><table>'+
-        '<tr><th>Data</th><th>Nº</th><th>Total</th><th>Recebido</th><th>Saldo</th><th>Status</th></tr>'+
-        linhas+
-        '</table></div>'
-      : '<div class="empty">Nenhuma venda de ovos encontrada para este cliente.</div>';
-
-    var el=document.getElementById('v11CliRelatorio');
-    if(!el){ alert('Área do relatório não encontrada.'); return; }
-
-    el.style.display='block';
-    el.innerHTML=
-      '<div class="card" style="margin-top:16px;border:2px solid #d7e1e5;box-shadow:none">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">'+
-          '<div><h2 style="margin:0;color:var(--azul)">Relatório do Cliente</h2>'+
-          '<div class="help">'+nomeOriginal+'</div></div>'+
-          '<button type="button" class="btn secondary" onclick="v11FecharRelatorioCliente()">Fechar</button>'+
-        '</div>'+
-        '<div class="v2-kpi-grid" style="margin-top:14px">'+
-          '<div class="v2-card"><h3>Total comprado</h3><div class="big">'+moeda(totalGeral)+'</div></div>'+
-          '<div class="v2-card"><h3>Compras de ovos</h3><div class="big">'+moeda(totalOvos)+'</div></div>'+
-          '<div class="v2-card"><h3>Rações</h3><div class="big">'+moeda(totalRacao)+'</div></div>'+
-          '<div class="v2-card"><h3>Embalagens</h3><div class="big">'+moeda(totalEmb)+'</div></div>'+
-          '<div class="v2-card"><h3>Recebido</h3><div class="big">'+moeda(recebidoOvos)+'</div></div>'+
-          '<div class="v2-card"><h3>Saldo em aberto</h3><div class="big">'+moeda(saldoOvos)+'</div></div>'+
-          '<div class="v2-card"><h3>Limite de crédito</h3><div class="big">'+moeda(limite)+'</div></div>'+
-          '<div class="v2-card"><h3>Crédito disponível</h3><div class="big">'+moeda(creditoLivre)+'</div></div>'+
-        '</div>'+
-        '<h3 style="color:var(--azul);margin-top:18px">Histórico de vendas de ovos</h3>'+
-        historico+
-      '</div>';
-
-    setTimeout(function(){
-      el.scrollIntoView({behavior:'smooth',block:'start'});
-    },50);
-
-  }catch(e){
-    console.error(e);
-    alert('Não foi possível abrir o relatório do cliente.');
-  }
+ const el=document.getElementById('v11CliRelatorio');
+ if(!el)return;
+ el.innerHTML=`
+ <div class="card" style="box-shadow:none;border:1px solid #dbe4e7">
+   <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+     <div><h2 style="margin:0">Relatório do Cliente</h2><div class="help">${c.nome}</div></div>
+     <button class="btn secondary" onclick="document.getElementById('v11CliRelatorio').innerHTML=''">Fechar</button>
+   </div>
+   <div class="v2-kpi-grid" style="margin-top:12px">
+     <div class="v2-card"><h3>Total comprado</h3><div class="big">${moeda(totalGeral)}</div></div>
+     <div class="v2-card"><h3>Compras de ovos</h3><div class="big">${moeda(totalOvos)}</div></div>
+     <div class="v2-card"><h3>Rações</h3><div class="big">${moeda(totalRacao)}</div></div>
+     <div class="v2-card"><h3>Embalagens</h3><div class="big">${moeda(totalEmb)}</div></div>
+     <div class="v2-card"><h3>Recebido em ovos</h3><div class="big">${moeda(recebidoOvos)}</div></div>
+     <div class="v2-card"><h3>Saldo em aberto</h3><div class="big">${moeda(saldoTotal)}</div></div>
+     <div class="v2-card"><h3>Limite de crédito</h3><div class="big">${moeda(limite)}</div></div>
+     <div class="v2-card"><h3>Crédito disponível</h3><div class="big">${moeda(creditoLivre)}</div></div>
+   </div>
+   <h3 style="color:var(--azul);margin-top:18px">Histórico de vendas de ovos</h3>
+   ${historicoOvos}
+ </div>`;
+ el.scrollIntoView({behavior:'smooth',block:'start'});
 }
-
-window.v11VerRelatorioCliente=v11VerRelatorioCliente;
-window.v11FecharRelatorioCliente=v11FecharRelatorioCliente;
-
-document.addEventListener('click',function(e){
- const modal=document.getElementById('v11RelatorioClienteModal');
- if(modal&&e.target===modal)v11FecharRelatorioCliente();
-});
-document.addEventListener('keydown',function(e){
- if(e.key==='Escape')v11FecharRelatorioCliente();
-});
 
 function v11SalvarFornecedor(){const nome=v11FornNome.value.trim();if(!nome)return alert('Informe o fornecedor.');v11Fornecedores.unshift({nome,prod:v11FornProd.value.trim(),obs:v11FornObs.value.trim()});v11Set('gsj_v11_fornecedores',v11Fornecedores);v11RenderExtras()}
-// ===== FUNCIONÁRIOS V1: CADASTRO + FICHA + VALES + ACERTOS =====
-let v11FuncionariosCad=v11Get('gsj_v11_funcionarios_cad',[]);
-let v11FuncMovs=v11Get('gsj_v11_func_movs',[]);
-let v11FuncAcertos=v11Get('gsj_v11_func_acertos',[]);
-let v11FuncAbertoId=null;
-let v11FuncAbaAtiva='resumo';
-
-(function v11MigrarFuncionariosAntigos(){
- if(v11FuncionariosCad.length || !Array.isArray(v11Funcs) || !v11Funcs.length)return;
- const porNome=new Map();
- v11Funcs.forEach(x=>{
-   const nome=String(x.nome||'').trim(); if(!nome)return;
-   const chave=nome.toLowerCase();
-   if(!porNome.has(chave)) porNome.set(chave,{id:'f'+Date.now()+Math.random().toString(36).slice(2,8),nome,salario:Number(x.sal||0),cargo:'',obs:'Migrado do modelo anterior'});
-   else if(Number(x.sal||0)>0) porNome.get(chave).salario=Number(x.sal||0);
- });
- v11FuncionariosCad=[...porNome.values()];
- v11Funcs.forEach(x=>{
-   const f=v11FuncionariosCad.find(y=>y.nome.toLowerCase()===String(x.nome||'').trim().toLowerCase());
-   if(!f)return;
-   if(Number(x.vale||0)>0) v11FuncMovs.push({id:'m'+Date.now()+Math.random().toString(36).slice(2,8),funcId:f.id,data:x.data||new Date().toISOString().slice(0,10),tipo:'Vale',forma:'Não informado',valor:Number(x.vale||0),obs:'Registro migrado'});
- });
- v11Set('gsj_v11_funcionarios_cad',v11FuncionariosCad);
- v11Set('gsj_v11_func_movs',v11FuncMovs);
-})();
-
-function v11Esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function v11MesAtual(){return hojeISO().slice(0,7)}
-function v11NomeMes(ym){if(!ym)return '—';const [a,m]=ym.split('-').map(Number);return new Date(a,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}
-function v11MovsFuncionario(id,mes){return v11FuncMovs.filter(m=>m.funcId===id&&(!mes||String(m.data||'').slice(0,7)===mes)).sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')))}
-function v11TotalVales(id,mes=v11MesAtual()){return v11MovsFuncionario(id,mes).filter(m=>m.tipo==='Vale').reduce((s,m)=>s+Number(m.valor||0),0)}
-function v11AcertoFuncionarioMes(id,mes){return v11FuncAcertos.find(a=>a.funcId===id&&a.mes===mes)}
-function v11NumRecibo(n){return String(n||0).padStart(6,'0')}
-function v11ProximoNumeroAcerto(){let n=Number(localStorage.getItem('gsj_v11_acerto_seq')||0)+1;localStorage.setItem('gsj_v11_acerto_seq',String(n));return n}
-
-function v11SalvarFuncionarioCad(){
- const nome=document.getElementById('v11FuncNome').value.trim();
- const salario=Number(document.getElementById('v11FuncSal').value||0);
- const cargo=document.getElementById('v11FuncCargo').value.trim();
- const obs=document.getElementById('v11FuncObs').value.trim();
- const editId=document.getElementById('v11FuncEditId').value;
- if(!nome||salario<=0)return alert('Informe o nome e o salário do funcionário.');
- const duplicado=v11FuncionariosCad.find(f=>f.nome.trim().toLowerCase()===nome.toLowerCase()&&f.id!==editId);
- if(duplicado)return alert('Já existe um funcionário cadastrado com esse nome.');
- const existe=editId?v11FuncionariosCad.find(f=>f.id===editId):null;
- if(existe){existe.nome=nome;existe.salario=salario;existe.cargo=cargo;existe.obs=obs;}
- else v11FuncionariosCad.unshift({id:'f'+Date.now()+Math.random().toString(36).slice(2,7),nome,salario,cargo,obs});
- v11Set('gsj_v11_funcionarios_cad',v11FuncionariosCad);
- v11CancelarEdicaoFuncionario();
- v11RenderFuncionarios();
-}
-
-function v11EditarFuncionario(id){
- const f=v11FuncionariosCad.find(x=>x.id===id);if(!f)return;
- document.getElementById('v11FuncEditId').value=f.id;
- document.getElementById('v11FuncNome').value=f.nome||'';
- document.getElementById('v11FuncSal').value=f.salario||'';
- document.getElementById('v11FuncCargo').value=f.cargo||'';
- document.getElementById('v11FuncObs').value=f.obs||'';
- document.getElementById('v11FuncNome').focus();
-}
-function v11CancelarEdicaoFuncionario(){
- ['v11FuncEditId','v11FuncNome','v11FuncSal','v11FuncCargo','v11FuncObs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
-}
-
-function v11RenderFuncionarios(){
- const el=document.getElementById('v11FuncLista'); if(!el)return;
- const busca=String(document.getElementById('v11FuncBusca')?.value||'').trim().toLowerCase();
- const lista=v11FuncionariosCad.filter(f=>!busca||String(f.nome||'').toLowerCase().includes(busca)||String(f.cargo||'').toLowerCase().includes(busca));
- if(!lista.length){el.innerHTML='<div class="empty">Nenhum funcionário encontrado.</div>';return;}
- const mes=v11MesAtual();
- el.innerHTML='<div class="table-wrap"><table><tr><th>Funcionário</th><th>Cargo</th><th>Salário</th><th>Vales do mês</th><th>Líquido após vales</th><th>Ações</th></tr>'+lista.map(f=>{
-   const vales=v11TotalVales(f.id,mes),saldo=Math.max(0,Number(f.salario||0)-vales);
-   return `<tr><td><b>${v11Esc(f.nome)}</b></td><td>${v11Esc(f.cargo||'—')}</td><td>${moeda(f.salario)}</td><td>${moeda(vales)}</td><td>${moeda(saldo)}</td><td><button type="button" class="btn secondary" onclick="v11AbrirFichaFuncionario('${f.id}','resumo')">Abrir ficha</button> <button type="button" class="btn" onclick="v11AbrirFichaFuncionario('${f.id}','vales')">Novo vale</button></td></tr>`;
- }).join('')+'</table></div>';
-}
-
-function v11AbrirFichaFuncionario(id,aba='resumo'){
- const f=v11FuncionariosCad.find(x=>x.id===id); if(!f)return;
- if(aba===true)aba='vales';
- v11FuncAbertoId=id;v11FuncAbaAtiva=aba||'resumo';
- const mes=v11MesAtual(), valesMes=v11TotalVales(id,mes), liquido=Math.max(0,Number(f.salario||0)-valesMes);
- const movs=v11MovsFuncionario(id);
- const histVales=movs.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Valor</th><th>Recebido em</th><th>Observação</th><th>Ação</th></tr>${movs.map(m=>`<tr><td>${dataBR(m.data)}</td><td>${moeda(m.valor)}</td><td>${v11Esc(m.forma||'Não informado')}</td><td>${v11Esc(m.obs||'—')}</td><td><button type="button" class="btn danger" onclick="v11ExcluirMovFunc('${m.id}')">Excluir</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum vale registrado para este funcionário.</div>';
- const acertos=[...v11FuncAcertos].filter(a=>a.funcId===id).sort((a,b)=>String(b.mes||'').localeCompare(String(a.mes||'')));
- const histAcertos=acertos.length?`<div class="table-wrap"><table><tr><th>Referência</th><th>Líquido</th><th>Pago</th><th>Saldo</th><th>Situação</th><th>Recibo</th></tr>${acertos.map(a=>`<tr><td>${v11Esc(v11NomeMes(a.mes))}</td><td>${moeda(a.liquido)}</td><td>${moeda(Number(a.pix||0)+Number(a.din||0)+Number(a.outro||0))}</td><td>${moeda(a.saldo)}</td><td>${a.status==='PAGO'?'<span class="func-status">PAGO</span>':'<span class="func-status">PENDENTE</span>'}</td><td><button class="btn secondary" type="button" onclick="v11ImprimirAcertoSalvo('${a.id}')">Nº ${v11NumRecibo(a.numero)}</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum acerto registrado.</div>';
- const el=document.getElementById('v11FuncFicha');
- el.innerHTML=`<div class="card" style="box-shadow:none;border:1px solid #dbe4e7">
- <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
-   <div><h2 style="margin:0">${v11Esc(f.nome)}</h2><div class="help">${v11Esc(f.cargo||'Funcionário')} · Salário ${moeda(f.salario)}</div></div>
-   <button type="button" class="btn secondary" onclick="v11FecharFichaFuncionario()">Fechar ficha</button>
- </div>
- <div class="func-tabs">
-   <button class="func-tab-btn" data-tab="resumo" onclick="v11TrocarAbaFuncionario('resumo')">Resumo</button>
-   <button class="func-tab-btn" data-tab="vales" onclick="v11TrocarAbaFuncionario('vales')">Vales</button>
-   <button class="func-tab-btn" data-tab="acertos" onclick="v11TrocarAbaFuncionario('acertos')">Acertos</button>
-   <button class="func-tab-btn" data-tab="dados" onclick="v11TrocarAbaFuncionario('dados')">Dados</button>
- </div>
- <div class="func-tab" id="v11FuncTab-resumo">
-   <div class="func-kpis"><div class="func-kpi"><small>Salário mensal</small><strong>${moeda(f.salario)}</strong></div><div class="func-kpi"><small>Vales neste mês</small><strong>${moeda(valesMes)}</strong></div><div class="func-kpi"><small>Líquido após vales</small><strong>${moeda(liquido)}</strong></div><div class="func-kpi"><small>Registros de vales</small><strong>${movs.length}</strong></div></div>
-   <div class="func-acerto-box"><h3 style="margin-top:0;color:var(--azul)">Últimas movimentações</h3>${movs.slice(0,5).length?movs.slice(0,5).map(m=>`<div class="func-resumo-linha"><span>${dataBR(m.data)} · Vale (${v11Esc(m.forma||'Não informado')})</span><strong>${moeda(m.valor)}</strong></div>`).join(''):'<div class="empty">Ainda não há movimentações.</div>'}</div>
- </div>
- <div class="func-tab" id="v11FuncTab-vales">
-   <div class="func-acerto-box"><h3 style="margin-top:0;color:var(--azul)">Registrar novo vale</h3>
-   <div class="form-grid"><div><label>Data</label><input id="v11ValeData" type="date" value="${hojeISO()}"></div><div><label>Valor do vale (R$)</label><input id="v11ValeValor" type="number" min="0" step="0.01"></div><div><label>Recebido em</label><select id="v11FuncValeForma"><option value="PIX">PIX</option><option value="Dinheiro">Dinheiro</option><option value="Outro">Outro</option></select></div><div><label>Observação</label><input id="v11ValeObs" placeholder="Opcional"></div></div>
-   <div class="actions"><button type="button" class="btn primary" onclick="v11RegistrarVale('${f.id}')">Registrar vale</button></div></div>
-   <h3 style="color:var(--azul);margin-top:18px">Histórico de vales</h3>${histVales}
- </div>
- <div class="func-tab" id="v11FuncTab-acertos">
-   <div class="func-acerto-box"><h3 style="margin-top:0;color:var(--azul)">Acerto de salário</h3>
-   <div class="form-grid"><div><label>Referência</label><input id="v11AcertoMes" type="month" value="${mes}" onchange="v11AtualizarAcertoForm('${f.id}')"></div><div><label>Data do pagamento</label><input id="v11AcertoData" type="date" value="${hojeISO()}"></div><div><label>Pagamento via PIX (R$)</label><input id="v11AcertoPix" type="number" min="0" step="0.01" value="0" oninput="v11CalcAcertoForm('${f.id}')"></div><div><label>Pagamento em dinheiro (R$)</label><input id="v11AcertoDin" type="number" min="0" step="0.01" value="0" oninput="v11CalcAcertoForm('${f.id}')"></div><div><label>Outro pagamento (R$)</label><input id="v11AcertoOutro" type="number" min="0" step="0.01" value="0" oninput="v11CalcAcertoForm('${f.id}')"></div><div><label>Observações</label><input id="v11AcertoObs" placeholder="Opcional"></div></div>
-   <div class="func-kpis"><div class="func-kpi"><small>Salário</small><strong id="v11AcertoSalario">${moeda(f.salario)}</strong></div><div class="func-kpi"><small>(-) Vales</small><strong id="v11AcertoVales">${moeda(valesMes)}</strong></div><div class="func-kpi"><small>Valor líquido a receber</small><strong id="v11AcertoLiquido">${moeda(liquido)}</strong></div><div class="func-kpi"><small>Saldo restante</small><strong id="v11AcertoSaldo">${moeda(liquido)}</strong></div></div>
-   <div class="actions"><button type="button" class="btn primary" onclick="v11SalvarAcertoFuncionario('${f.id}')">Registrar acerto</button><button type="button" class="btn secondary" onclick="v11SalvarEImprimirAcerto('${f.id}')">Salvar e imprimir recibo</button></div></div>
-   <h3 style="color:var(--azul);margin-top:18px">Histórico de acertos</h3>${histAcertos}
- </div>
- <div class="func-tab" id="v11FuncTab-dados">
-   <div class="func-acerto-box"><div class="func-resumo-linha"><span>Nome</span><strong>${v11Esc(f.nome)}</strong></div><div class="func-resumo-linha"><span>Cargo / função</span><strong>${v11Esc(f.cargo||'—')}</strong></div><div class="func-resumo-linha"><span>Salário mensal</span><strong>${moeda(f.salario)}</strong></div><div class="func-resumo-linha"><span>Observação</span><strong>${v11Esc(f.obs||'—')}</strong></div><div class="actions"><button class="btn secondary" type="button" onclick="v11EditarFuncionario('${f.id}')">Editar cadastro</button></div></div>
- </div>
- </div>`;
- v11TrocarAbaFuncionario(v11FuncAbaAtiva);
- if(v11FuncAbaAtiva==='acertos')setTimeout(()=>v11AtualizarAcertoForm(id),0);
- setTimeout(()=>{el.scrollIntoView({behavior:'smooth',block:'start'});if(v11FuncAbaAtiva==='vales')document.getElementById('v11ValeValor')?.focus()},20);
-}
-
-function v11FecharFichaFuncionario(){v11FuncAbertoId=null;const el=document.getElementById('v11FuncFicha');if(el)el.innerHTML=''}
-function v11TrocarAbaFuncionario(aba){
- v11FuncAbaAtiva=aba;
- document.querySelectorAll('#v11FuncFicha .func-tab').forEach(x=>x.classList.toggle('active',x.id==='v11FuncTab-'+aba));
- document.querySelectorAll('#v11FuncFicha .func-tab-btn').forEach(x=>x.classList.toggle('active',x.dataset.tab===aba));
- if(aba==='acertos'&&v11FuncAbertoId)v11AtualizarAcertoForm(v11FuncAbertoId);
-}
-
-function v11RegistrarVale(funcId){
- const f=v11FuncionariosCad.find(x=>x.id===funcId);if(!f)return;
- const data=document.getElementById('v11ValeData').value||hojeISO();
- const valor=Number(document.getElementById('v11ValeValor').value||0);
- const forma=document.getElementById('v11FuncValeForma').value||'PIX';
- const obs=document.getElementById('v11ValeObs').value.trim();
- if(valor<=0)return alert('Informe o valor do vale.');
- v11FuncMovs.unshift({id:'m'+Date.now()+Math.random().toString(36).slice(2,7),funcId,data,tipo:'Vale',forma,valor,obs});
- v11Set('gsj_v11_func_movs',v11FuncMovs);
- v11RenderFuncionarios();v11AbrirFichaFuncionario(funcId,'vales');
-}
-function v11ExcluirMovFunc(id){
- if(!confirm('Excluir este vale do histórico?'))return;
- const mov=v11FuncMovs.find(m=>m.id===id);const fid=mov?.funcId||v11FuncAbertoId;
- v11FuncMovs=v11FuncMovs.filter(m=>m.id!==id);v11Set('gsj_v11_func_movs',v11FuncMovs);v11RenderFuncionarios();if(fid)v11AbrirFichaFuncionario(fid,'vales');
-}
-
-function v11AtualizarAcertoForm(funcId){
- const f=v11FuncionariosCad.find(x=>x.id===funcId);if(!f)return;
- const mes=document.getElementById('v11AcertoMes')?.value||v11MesAtual();
- const salvo=v11AcertoFuncionarioMes(funcId,mes);
- const vales=v11TotalVales(funcId,mes),liquido=Math.max(0,Number(f.salario||0)-vales);
- if(salvo){
-   document.getElementById('v11AcertoData').value=salvo.data||hojeISO();
-   document.getElementById('v11AcertoPix').value=Number(salvo.pix||0)||0;
-   document.getElementById('v11AcertoDin').value=Number(salvo.din||0)||0;
-   document.getElementById('v11AcertoOutro').value=Number(salvo.outro||0)||0;
-   document.getElementById('v11AcertoObs').value=salvo.obs||'';
- }else{
-   document.getElementById('v11AcertoData').value=hojeISO();
-   document.getElementById('v11AcertoPix').value=0;document.getElementById('v11AcertoDin').value=0;document.getElementById('v11AcertoOutro').value=0;document.getElementById('v11AcertoObs').value='';
- }
- document.getElementById('v11AcertoSalario').textContent=moeda(f.salario);
- document.getElementById('v11AcertoVales').textContent=moeda(vales);
- document.getElementById('v11AcertoLiquido').textContent=moeda(liquido);
- v11CalcAcertoForm(funcId);
-}
-function v11CalcAcertoForm(funcId){
- const f=v11FuncionariosCad.find(x=>x.id===funcId);if(!f)return null;
- const mes=document.getElementById('v11AcertoMes')?.value||v11MesAtual();
- const salario=Number(f.salario||0),vales=v11TotalVales(funcId,mes),liquido=Math.max(0,salario-vales);
- const pix=Number(document.getElementById('v11AcertoPix')?.value||0),din=Number(document.getElementById('v11AcertoDin')?.value||0),outro=Number(document.getElementById('v11AcertoOutro')?.value||0);
- const totalPago=pix+din+outro,saldo=Math.max(0,liquido-totalPago),status=saldo<=0.005?'PAGO':'PENDENTE';
- const el=document.getElementById('v11AcertoSaldo');if(el)el.textContent=moeda(saldo);
- return {mes,salario,vales,liquido,pix,din,outro,totalPago,saldo,status};
-}
-function v11SalvarAcertoFuncionario(funcId,semAviso=false){
- const f=v11FuncionariosCad.find(x=>x.id===funcId);if(!f)return null;
- const x=v11CalcAcertoForm(funcId);if(!x)return null;
- const data=document.getElementById('v11AcertoData')?.value||hojeISO();
- const obs=document.getElementById('v11AcertoObs')?.value.trim()||'';
- let a=v11AcertoFuncionarioMes(funcId,x.mes);
- if(a){Object.assign(a,{data,salario:x.salario,vales:x.vales,liquido:x.liquido,pix:x.pix,din:x.din,outro:x.outro,totalPago:x.totalPago,saldo:x.saldo,status:x.status,obs});}
- else{a={id:'a'+Date.now()+Math.random().toString(36).slice(2,7),numero:v11ProximoNumeroAcerto(),funcId,mes:x.mes,data,salario:x.salario,vales:x.vales,liquido:x.liquido,pix:x.pix,din:x.din,outro:x.outro,totalPago:x.totalPago,saldo:x.saldo,status:x.status,obs};v11FuncAcertos.unshift(a)}
- v11Set('gsj_v11_func_acertos',v11FuncAcertos);
- if(!semAviso)alert('Acerto registrado.');
- return a;
-}
-function v11CarregarAcerto(funcId,mes){
- if(v11FuncAbertoId!==funcId)v11AbrirFichaFuncionario(funcId,'acertos');
- else v11TrocarAbaFuncionario('acertos');
- setTimeout(()=>{const e=document.getElementById('v11AcertoMes');if(e){e.value=mes;v11AtualizarAcertoForm(funcId)}},0);
-}
-function v11SalvarEImprimirAcerto(funcId){const a=v11SalvarAcertoFuncionario(funcId,true);if(a){v11AbrirFichaFuncionario(funcId,'acertos');setTimeout(()=>{const e=document.getElementById('v11AcertoMes');if(e)e.value=a.mes;v11AtualizarAcertoForm(funcId);v11ImprimirAcertoFuncionario(funcId,a)},0)}}
-
-// Compatibilidade com trechos antigos.
-function v11CalcFunc(){return v11FuncAbertoId?v11CalcAcertoForm(v11FuncAbertoId):{sal:0,vale:0,pix:0,din:0,out:0,pago:0,saldo:0}}
-function v11SalvarFunc(){v11SalvarFuncionarioCad()}
-function v11ImprimirFunc(){if(v11FuncAbertoId)v11SalvarEImprimirAcerto(v11FuncAbertoId);else alert('Abra a ficha de um funcionário para fazer o acerto.')}
-
-function v11ImprimirAcertoSalvo(acertoId){const a=v11FuncAcertos.find(x=>x.id===acertoId);if(!a)return alert('Acerto não encontrado.');v11ImprimirAcertoFuncionario(a.funcId,a)}
-
-function v11ImprimirAcertoFuncionario(funcId,acerto){
- const f=v11FuncionariosCad.find(x=>x.id===funcId);if(!f)return;
- const mes=document.getElementById('v11AcertoMes')?.value||v11MesAtual();
- const a=acerto||v11AcertoFuncionarioMes(funcId,mes);if(!a)return alert('Registre o acerto antes de imprimir.');
- const totalPago=Number(a.pix||0)+Number(a.din||0)+Number(a.outro||0),status=Number(a.saldo||0)<=0.005?'PAGO':'PENDENTE';
- const recibo=v11NumRecibo(a.numero),ref=v11NomeMes(a.mes),data=dataBR(a.data),obs=v11Esc(a.obs||'');
- const w=window.open('','_blank');if(!w)return alert('O navegador bloqueou a abertura do recibo. Libere pop-ups e tente novamente.');
- w.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recibo ${recibo}</title><style>
- @page{size:A4;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:Arial,Helvetica,sans-serif;background:#fff;color:#111;margin:0}.actions{text-align:center;margin:10px 0 16px}.actions button{border:1px solid #111;background:#fff;color:#111;border-radius:6px;padding:9px 16px;font-weight:700}.doc{max-width:780px;margin:0 auto;border:1px solid #777;border-radius:10px;padding:22px 24px}.brand{text-align:center;padding:2px 0 12px;border-bottom:1px solid #555}.brand h1{margin:0;font-size:26px;letter-spacing:.8px}.brand p{margin:5px 0 0;font-size:11px;font-style:italic}.title-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border:1px solid #777;border-radius:7px;padding:11px 13px;margin:14px 0}.title{font-size:17px;font-weight:800}.num{border:1px solid #777;border-radius:6px;padding:7px 12px;font-size:12px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 26px;border:1px solid #777;border-radius:7px;padding:12px 13px;margin-bottom:14px;font-size:12px}.meta b{font-weight:800}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#111;color:#fff;text-transform:uppercase}th,td{border:1px solid #777;padding:9px 10px}th:first-child,td:first-child{text-align:left}th:last-child,td:last-child{text-align:right;width:185px}.strong td{font-weight:800}.dash td{border-top:1px dashed #444}.status{width:250px;margin:14px auto 0;border:1px solid #777;border-radius:6px;text-align:center;padding:9px;font-weight:800}.status .check{display:inline-flex;width:20px;height:20px;border-radius:50%;background:#111;color:#fff;align-items:center;justify-content:center;margin:0 8px;font-size:12px}.obs{border:1px solid #777;border-radius:6px;min-height:74px;padding:10px;margin-top:14px;font-size:11px}.obs b{display:block;margin-bottom:6px}.decl{margin:6px 0 0;line-height:1.4}.sign{display:grid;grid-template-columns:1fr 1fr;gap:70px;margin-top:44px;text-align:center;font-size:11px}.sign div{border-top:1px solid #333;padding-top:5px}.sign strong{display:block;font-size:12px;margin-bottom:2px}@media print{.actions{display:none}.doc{border:0;padding:0}}@media(max-width:600px){.doc{border:0;padding:12px}.meta,.sign{grid-template-columns:1fr}.sign{gap:38px}.title-row{grid-template-columns:1fr}.num{justify-self:start}}
- </style></head><body><div class="actions"><button onclick="window.print()">Imprimir / Gerar PDF</button></div><div class="doc">
- <div class="brand"><h1>GRANJA SÃO JOSÉ</h1><p>Seguimos produzindo o melhor alimento depois do leite materno.</p></div>
- <div class="title-row"><div class="title">▤ &nbsp; RECIBO / ACERTO DE PAGAMENTO</div><div class="num">Nº ${recibo}</div></div>
- <div class="meta"><div><b>Funcionário:</b> ${v11Esc(f.nome)}</div><div><b>Referência:</b> ${v11Esc(ref)}</div><div><b>Função:</b> ${v11Esc(f.cargo||'—')}</div><div><b>Data do pagamento:</b> ${data}</div></div>
- <table><tr><th>Descrição</th><th>Valor (R$)</th></tr><tr><td>Salário do mês</td><td>${moeda(a.salario)}</td></tr><tr><td>(-) Vales realizados</td><td>- ${moeda(a.vales)}</td></tr><tr class="strong"><td>VALOR LÍQUIDO A RECEBER</td><td>${moeda(a.liquido)}</td></tr><tr><td>Pagamento via PIX</td><td>${moeda(a.pix)}</td></tr><tr><td>Pagamento em dinheiro</td><td>${moeda(a.din)}</td></tr><tr><td>Outro pagamento</td><td>${moeda(a.outro)}</td></tr><tr class="strong dash"><td>TOTAL PAGO NO ACERTO</td><td>${moeda(totalPago)}</td></tr><tr class="strong"><td>SALDO RESTANTE</td><td>${moeda(a.saldo)}</td></tr></table>
- <div class="status">SITUAÇÃO: <span class="check">${status==='PAGO'?'✓':'!'}</span> ${status}</div>
- <div class="obs"><b>OBSERVAÇÕES:</b>${obs?`<div>${obs}</div>`:''}<p class="decl">Declaro ter recebido da Granja São José os valores acima discriminados, referentes ao período informado.</p></div>
- <div class="sign"><div><strong>${v11Esc(f.nome)}</strong>Funcionário</div><div><strong>Erik Gabriel</strong>Responsável — Granja São José</div></div>
- </div></body></html>`);w.document.close();
-}
-
+function v11CalcFunc(){const sal=Number(v11FuncSal.value||0),vale=Number(v11FuncVale.value||0),pix=Number(v11FuncPix.value||0),din=Number(v11FuncDin.value||0),out=Number(v11FuncOut.value||0),pago=vale+pix+din+out,saldo=Math.max(0,sal-pago);v11FuncPago.value=moeda(pago);v11FuncSaldo.value=moeda(saldo);return{sal,vale,pix,din,out,pago,saldo}}
+function v11SalvarFunc(){const nome=v11FuncNome.value.trim(),x=v11CalcFunc();if(!nome||x.sal<=0)return alert('Informe funcionário e salário.');v11Funcs.unshift({id:Date.now(),data:new Date().toISOString().slice(0,10),nome,...x});v11Set('gsj_v11_funcs',v11Funcs);v11RenderExtras()}
+function v11ImprimirFunc(){const x=v11CalcFunc(),n=v11FuncNome.value.trim()||'Funcionário';const w=window.open('','_blank');w.document.write(`<html><head><title>Recibo</title><style>body{font-family:Arial;color:#000;padding:32px}h1,h2{text-align:center}table{width:100%;border-collapse:collapse}td{border:1px solid #000;padding:9px}.assin{margin-top:70px;text-align:center}</style></head><body><h1>Granja São José</h1><h2>RECIBO / ACERTO DE PAGAMENTO</h2><table><tr><td>Funcionário</td><td>${n}</td></tr><tr><td>Salário</td><td>${moeda(x.sal)}</td></tr><tr><td>Vales</td><td>${moeda(x.vale)}</td></tr><tr><td>PIX</td><td>${moeda(x.pix)}</td></tr><tr><td>Dinheiro</td><td>${moeda(x.din)}</td></tr><tr><td>Cheque / outro</td><td>${moeda(x.out)}</td></tr><tr><td><b>Saldo</b></td><td><b>${moeda(x.saldo)}</b></td></tr></table><div class="assin">____________________________________<br>${n}</div></body></html>`);w.document.close();w.print()}
 function v11SalvarTitulo(){const valor=Number(v11TitValor.value||0);if(valor<=0)return alert('Informe o valor.');v11Titulos.unshift({data:new Date().toISOString().slice(0,10),tipo:v11TitTipo.value,pessoa:v11TitPessoa.value.trim(),valor,banco:v11TitBanco.value.trim(),numero:v11TitNumero.value.trim(),venc:v11TitData.value,status:v11TitStatus.value});v11Set('gsj_v11_titulos',v11Titulos);v11RenderExtras();v11AtualizarPainel()}
 function v11SalvarRacao(){const kg=Number(v11RacKg.value||0),preco=Number(v11RacPreco.value||0);if(kg<=0)return alert('Informe a quantidade.');v11Racoes.unshift({data:new Date().toISOString().slice(0,10),cliente:v11RacCli.value.trim(),tipo:v11RacTipo.value,kg,preco,total:kg*preco,obs:v11RacObs.value.trim()});v11Set('gsj_v11_racoes',v11Racoes);v11RenderExtras();v11AtualizarPainel()}
 function v11SalvarCusto(){const valor=Number(v11CustoValor.value||0);if(valor<=0)return alert('Informe o valor.');v11Custos.unshift({data:v11CustoData.value||new Date().toISOString().slice(0,10),centro:v11CustoCentro.value,desc:v11CustoDesc.value.trim(),valor});v11Set('gsj_v11_custos',v11Custos);v11RenderExtras();v11AtualizarPainel()}
 function v11RenderExtras(){
- v11Table('v11CliLista',['Cliente','Limite','Observação','Ações'],v11Clientes.map((x,i)=>`<tr><td>${x.nome}</td><td>${moeda(x.limite)}</td><td>${x.obs||'—'}</td><td><button type="button" class="btn secondary" onclick="v11VerRelatorioCliente(${i});return false;">Ver relatório</button></td></tr>`));
+ v11Table('v11CliLista',['Cliente','Limite','Observação','Ações'],v11Clientes.map((x,i)=>`<tr><td>${x.nome}</td><td>${moeda(x.limite)}</td><td>${x.obs||'—'}</td><td><button class="btn secondary" onclick="v11VerRelatorioCliente(${i})">Ver relatório</button></td></tr>`));
  v11Table('v11FornLista',['Fornecedor','Produto','Observação'],v11Fornecedores.map(x=>`<tr><td>${x.nome}</td><td>${x.prod||'—'}</td><td>${x.obs||'—'}</td></tr>`));
- v11RenderFuncionarios();
+ v11Table('v11FuncLista',['Data','Funcionário','Salário','Vales','Pago','Saldo'],v11Funcs.map(x=>`<tr><td>${dataBR(x.data)}</td><td>${x.nome}</td><td>${moeda(x.sal)}</td><td>${moeda(x.vale)}</td><td>${moeda(x.pago)}</td><td>${moeda(x.saldo)}</td></tr>`));
  v11Table('v11TitLista',['Tipo','Pessoa','Valor','Vencimento','Situação'],v11Titulos.map(x=>`<tr><td>${x.tipo}</td><td>${x.pessoa||'—'}</td><td>${moeda(x.valor)}</td><td>${x.venc?dataBR(x.venc):'—'}</td><td>${x.status}</td></tr>`));
  v11Table('v11RacLista',['Data','Cliente','Ração','Kg','Preço/kg','Total'],v11Racoes.map(x=>`<tr><td>${dataBR(x.data)}</td><td>${x.cliente||'—'}</td><td>${x.tipo}</td><td>${x.kg}</td><td>${moeda(x.preco)}</td><td>${moeda(x.total)}</td></tr>`));
  const por={};v11Custos.forEach(x=>por[x.centro]=(por[x.centro]||0)+x.valor);v11Table('v11CustoResumo',['Centro de custo','Total'],Object.entries(por).map(([k,v])=>`<tr><td>${k}</td><td>${moeda(v)}</td></tr>`));
@@ -2764,16 +2239,6 @@ let v11FabCompras=v11Get('gsj_v11_fab_compras',[]);
 let v11FabEstoque=v11Get('gsj_v11_fab_estoque',{});
 let v11FabFormulas=v11Get('gsj_v11_fab_formulas',[]);
 let v11FabProducoes=v11Get('gsj_v11_fab_producoes',[]);
-
-// Garante que os principais insumos apareçam no Painel Central mesmo antes da primeira compra.
-const v11FabInsumosPadrao=[
- 'Milho','Soja','Prêmix 600 red','Prêmix 800 red','Prêmix Inicial','Prêmix Recria','Prêmix Pré-Postura','Calcário','Sal','Óleo'
-];
-v11FabInsumosPadrao.forEach(nome=>{
- const key=(nome||'').trim().toLowerCase();
- if(!v11FabEstoque[key]) v11FabEstoque[key]={nome,saldo:0,valor:0,unidade:nome==='Óleo'?'L':'kg'};
-});
-v11Set('gsj_v11_fab_estoque',v11FabEstoque);
 
 if(!v11FabFormulas.length){
  v11FabFormulas=['Ração Inicial','Ração Recria','Ração Pré-Postura','Ração Pico','Ração Postura 1','Ração Postura 2'].map((nome,i)=>({
@@ -2856,41 +2321,28 @@ function v11FabSalvarFormula(){
  const i=v11FabFormulas.findIndex(x=>x.nome===nome);if(i>=0){f.id=v11FabFormulas[i].id;v11FabFormulas[i]=f}else v11FabFormulas.push(f);
  v11Set('gsj_v11_fab_formulas',v11FabFormulas);v11FabRenderTudo();
 }
-function v11FabAtualizarTamanhoBatida(){
- const sel=document.getElementById('v11FabProdTamanho'),box=document.getElementById('v11FabProdPersonalizadaBox');
- if(box)box.style.display=sel?.value==='personalizada'?'block':'none';
- v11FabPreviewProducao();
-}
-function v11FabKgPorBatida(){
- const sel=document.getElementById('v11FabProdTamanho');
- if(!sel)return 500;
- if(sel.value==='personalizada')return Math.max(1,Number(document.getElementById('v11FabProdPersonalizadaKg')?.value||500));
- return Math.max(1,Number(sel.value||500));
-}
 function v11FabPreviewProducao(){
  const f=v11FabFormulas.find(x=>x.id===Number(v11FabProdFormula.value)),b=Math.max(1,Number(v11FabProdBatidas.value||1));
- const kgBatida=v11FabKgPorBatida(), totalKg=kgBatida*b, fator=totalKg/500;
- v11FabProdKg.value=totalKg.toLocaleString('pt-BR',{maximumFractionDigits:2})+' kg';
+ v11FabProdKg.value=(500*b).toLocaleString('pt-BR')+' kg';
  if(!f){v11FabProdResumo.innerHTML='<div class="help">Selecione uma formulação.</div>';return null}
  const itens=[['Milho',f.milho],['Soja',f.soja],[f.premixTipo||'Premix',f.premix],['Calcário',f.calcario],['Sal',f.sal],['Óleo',f.oleo],['Outros',f.outros]];
  let custo=0,linhas='',ok=true;
  itens.forEach(([nome,q])=>{
-  const req=Number(q||0)*fator, est=v11FabEstoque[v11FabKey(nome)], saldo=Number(est?.saldo||0), cm=v11FabCustoMedio(nome);
+  const req=Number(q||0)*b, est=v11FabEstoque[v11FabKey(nome)], saldo=Number(est?.saldo||0), cm=v11FabCustoMedio(nome);
   custo+=req*cm;if(req>saldo+0.0001)ok=false;
   linhas+=`<div class="v2-dre-linha"><span>${nome}: <b>${req.toFixed(2)} kg</b></span><span>Estoque: ${saldo.toFixed(2)} ${est?.unidade||'kg'}</span></div>`;
  });
- const tipoBatida=kgBatida===500?'Batida completa':kgBatida===250?'Meia batida':'Batida personalizada';
- v11FabProdResumo.innerHTML=`<h3 style="margin-top:0">${f.nome}</h3><div>${b} × ${kgBatida.toLocaleString('pt-BR',{maximumFractionDigits:2})} kg (${tipoBatida}) = <b>${totalKg.toLocaleString('pt-BR',{maximumFractionDigits:2})} kg</b></div><div class="help">Ingredientes calculados proporcionalmente sobre a formulação-base de 500 kg.</div>${linhas}<div class="v2-dre-linha v2-dre-total"><span>Custo estimado</span><b>${moeda(custo)}</b></div><div class="help">Custo/kg: <b>${moeda(totalKg>0?custo/totalKg:0)}</b> • Estoque: <b>${ok?'SUFICIENTE':'INSUFICIENTE'}</b></div>`;
- return {f,b,itens,custo,ok,kgBatida,totalKg,fator};
+ v11FabProdResumo.innerHTML=`<h3 style="margin-top:0">${f.nome}</h3><div>${b} batida(s) × 500 kg = <b>${500*b} kg</b></div>${linhas}<div class="v2-dre-linha v2-dre-total"><span>Custo estimado</span><b>${moeda(custo)}</b></div><div class="help">Custo/kg: <b>${moeda(custo/(500*b))}</b> • Estoque: <b>${ok?'SUFICIENTE':'INSUFICIENTE'}</b></div>`;
+ return {f,b,itens,custo,ok};
 }
 function v11FabProduzir(){
  const p=v11FabPreviewProducao();if(!p||!v11FabProdData.value)return alert('Selecione data e formulação.');if(!p.ok)return alert('Estoque insuficiente para produzir esta quantidade.');
  p.itens.forEach(([nome,q])=>{
-  const req=Number(q||0)*p.fator,key=v11FabKey(nome),e=v11FabEstoque[key];if(!e)return;
+  const req=Number(q||0)*p.b,key=v11FabKey(nome),e=v11FabEstoque[key];if(!e)return;
   const cm=e.saldo>0?e.valor/e.saldo:0;e.saldo-=req;e.valor=Math.max(0,e.valor-req*cm);
  });
- const consumos={};p.itens.forEach(([nome,q])=>consumos[nome]=Number(q||0)*p.fator);
- v11FabProducoes.unshift({id:Date.now(),data:v11FabProdData.value,formula:p.f.nome,batidas:p.fator,numeroBatidas:p.b,tamanhoBatidaKg:p.kgBatida,totalKg:p.totalKg,custo:p.custo,custoKg:p.totalKg>0?p.custo/p.totalKg:0,consumos});
+ const consumos={};p.itens.forEach(([nome,q])=>consumos[nome]=Number(q||0)*p.b);
+ v11FabProducoes.unshift({id:Date.now(),data:v11FabProdData.value,formula:p.f.nome,batidas:p.b,totalKg:500*p.b,custo:p.custo,custoKg:p.custo/(500*p.b),consumos});
  v11Set('gsj_v11_fab_estoque',v11FabEstoque);v11Set('gsj_v11_fab_producoes',v11FabProducoes);v11FabRenderTudo();
 }
 function v11FabRenderTudo(){
@@ -2899,13 +2351,13 @@ function v11FabRenderTudo(){
  v11FabComprasLista.innerHTML=v11FabCompras.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Insumo</th><th>Fornecedor</th><th>Quantidade</th><th>Frete</th><th>Total</th><th>Custo unit.</th></tr>${v11FabCompras.slice(0,30).map(c=>`<tr><td>${dataBR(c.data)}</td><td>${c.item}</td><td>${c.fornecedor||'—'}</td><td>${Number(c.qtd).toLocaleString('pt-BR')} ${c.un==='L'?'L':c.un==='saca60'?'kg':c.un}${(c.un==='saco'||c.un==='pacote')&&c.pesoUn?' ('+Number(c.estoqueQtd||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' kg)':''}</td><td>${moeda(c.frete)}</td><td>${moeda(c.total)}</td><td>${moeda(c.custo)}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma compra registrada.</div>';
  const old=v11FabProdFormula.value;v11FabProdFormula.innerHTML='<option value="">Selecione...</option>'+v11FabFormulas.map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');if(old)v11FabProdFormula.value=old;
  v11FabFormulasLista.innerHTML=`<div class="table-wrap"><table><tr><th>Formulação</th><th>Milho</th><th>Soja</th><th>Prêmix</th><th>Tipo</th><th>Calcário</th><th>Sal</th><th>Óleo</th><th>Outros</th><th>Total</th></tr>${v11FabFormulas.map(f=>`<tr><td>${f.nome}</td><td>${f.milho}</td><td>${f.soja}</td><td>${f.premix}</td><td>${f.premixTipo||'—'}</td><td>${f.calcario}</td><td>${f.sal}</td><td>${f.oleo}</td><td>${f.outros}</td><td>${(f.milho+f.soja+f.premix+f.calcario+f.sal+f.oleo+f.outros).toFixed(2)} kg</td></tr>`).join('')}</table></div>`;
- v11FabProducoesLista.innerHTML=v11FabProducoes.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Ração</th><th>Batidas</th><th>Produção</th><th>Custo</th><th>Custo/kg</th></tr>${v11FabProducoes.slice(0,30).map(p=>`<tr><td>${dataBR(p.data)}</td><td>${p.formula}</td><td>${p.numeroBatidas&&p.tamanhoBatidaKg?(p.numeroBatidas+' × '+Number(p.tamanhoBatidaKg).toLocaleString('pt-BR',{maximumFractionDigits:2})+' kg'):p.batidas}</td><td>${Number(p.totalKg||0).toLocaleString('pt-BR',{maximumFractionDigits:2})} kg</td><td>${moeda(p.custo)}</td><td>${moeda(p.custoKg)}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma produção registrada.</div>';
+ v11FabProducoesLista.innerHTML=v11FabProducoes.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Ração</th><th>Batidas</th><th>Produção</th><th>Custo</th><th>Custo/kg</th></tr>${v11FabProducoes.slice(0,30).map(p=>`<tr><td>${dataBR(p.data)}</td><td>${p.formula}</td><td>${p.batidas}</td><td>${p.totalKg} kg</td><td>${moeda(p.custo)}</td><td>${moeda(p.custoKg)}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma produção registrada.</div>';
  v11FabPreviewProducao();
 }
 setTimeout(()=>{
  if(document.getElementById('v11FabCompraData'))v11FabCompraData.value=new Date().toISOString().slice(0,10);
  if(document.getElementById('v11FabProdData'))v11FabProdData.value=new Date().toISOString().slice(0,10);
- v11FabAtualizarUnidades();v11FabSomarFormula();v11FabAtualizarTamanhoBatida();v11FabRenderTudo();
+ v11FabAtualizarUnidades();v11FabSomarFormula();v11FabRenderTudo();
 },850);
 
 
@@ -3054,61 +2506,13 @@ function enterpriseRender(){
  if(document.getElementById('entAutonomia'))entAutonomia.innerHTML=all.length?all.slice(0,10).map(x=>smartCard(x,limite)).join(''):'<div class="empty">Ainda sem histórico suficiente.</div>';
  if(document.getElementById('entAlertList'))entAlertList.innerHTML=alerts.length?alerts.slice(0,8).map(x=>`<div class="enterprise-alert"><strong>${x.nome}</strong><small>${x.autonomia.toFixed(1)} dias estimados de estoque • ${x.autonomia<=5?'comprar com urgência':'programar reposição'}</small></div>`).join(''):'<div class="enterprise-alert"><strong>Sem alertas críticos</strong><small>Nenhum item abaixo do limite configurado.</small></div>';
 }
-
-function enterpriseRenderCompleto(){
- const limite=10;
- const ins=typeof smartAutonomiaInsumos==='function'?smartAutonomiaInsumos():[];
- const emb=typeof smartAutonomiaEmbalagens==='function'?smartAutonomiaEmbalagens():[];
- const all=[...ins,...emb];
- const alerts=all.filter(x=>x.autonomia!==null&&x.autonomia<=limite).sort((a,b)=>a.autonomia-b.autonomia);
- const elIns=document.getElementById('pcAutonomiaInsumos');
- if(elIns) elIns.innerHTML=ins.length?ins.map(x=>smartCard(x,limite)).join(''):'<div class="empty">Ainda sem histórico suficiente de insumos.</div>';
- const elEmb=document.getElementById('pcAutonomiaEmb');
- if(elEmb) elEmb.innerHTML=emb.length?emb.map(x=>smartCard(x,limite)).join(''):'<div class="empty">Ainda sem histórico de embalagens.</div>';
- const compras=document.getElementById('pcComprasSugeridas');
- if(compras) compras.innerHTML=alerts.length?alerts.slice(0,10).map(x=>`<div class="smart-alert"><span class="smart-dot ${x.autonomia<=5?'danger':'warn'}"></span><div><b>${x.nome}</b><div class="smart-muted">${x.autonomia.toFixed(1)} dias estimados de estoque • ${x.autonomia<=5?'comprar com urgência':'programar reposição'}</div></div></div>`).join(''):'<div class="smart-alert"><span class="smart-dot ok"></span><div><b>Nenhuma compra urgente</b><div class="smart-muted">Os itens com histórico estão acima do limite de 10 dias.</div></div></div>';
-
- const hoje=hojeISO();
- const h=new Date(hoje+'T12:00:00'); const ini30=new Date(h);ini30.setDate(ini30.getDate()-29);
- const prod30=(typeof v11FabProducoes!=='undefined'?v11FabProducoes:[]).filter(p=>{if(!p.data)return false;const d=new Date(p.data+'T12:00:00');return d>=ini30&&d<=h}).reduce((s,p)=>s+Number(p.totalKg||0),0);
- const vendasHoje=(typeof vendas!=='undefined'?vendas:[]).filter(v=>v.data===hoje);
- const fatHoje=vendasHoje.reduce((s,v)=>s+Number(v.total||0),0);
- const chequesCarteira=(typeof v11Titulos!=='undefined'?v11Titulos:[]).filter(x=>/Cheque recebido/i.test(x.tipo||'') && !/Compensado/i.test(x.status||'')).reduce((s,x)=>s+Number(x.valor||0),0);
- const resumo=document.getElementById('pcResumoOperacao');
- if(resumo) resumo.innerHTML=`
-  <div class="smart-alert"><span class="smart-dot ok"></span><div><b>Ração produzida nos últimos 30 dias</b><div class="smart-muted">${prod30.toLocaleString('pt-BR',{maximumFractionDigits:0})} kg</div></div></div>
-  <div class="smart-alert"><span class="smart-dot"></span><div><b>Cheques em carteira</b><div class="smart-muted">${moeda(chequesCarteira)}</div></div></div>
-  <div class="smart-alert"><span class="smart-dot"></span><div><b>Lotes registrados</b><div class="smart-muted">${(typeof v11Lotes!=='undefined'?v11Lotes:[]).length} lançamento(s)</div></div></div>`;
-
- const mes=hoje.slice(0,7);
- const contas=(typeof v11ContasFixas!=='undefined'?v11ContasFixas:[]).filter(c=>c.ativo!==false);
- const pags=(typeof v11ContasFixasPag!=='undefined'?v11ContasFixasPag:[]).filter(x=>x.mes===mes);
- const previsto=contas.reduce((s,c)=>s+Number(c.valor||0),0);
- const pago=pags.reduce((s,x)=>s+Number(x.valorPago||0),0);
- const pend=Math.max(0,previsto-pago);
- const custosMes=(typeof v11Custos!=='undefined'?v11Custos:[]).filter(x=>(x.data||'').slice(0,7)===mes).reduce((s,x)=>s+Number(x.valor||0),0);
- const fin=document.getElementById('pcFinanceiroMes');
- if(fin) fin.innerHTML=`
-  <div class="smart-alert"><span class="smart-dot"></span><div><b>Contas fixas previstas</b><div class="smart-muted">${moeda(previsto)}</div></div></div>
-  <div class="smart-alert"><span class="smart-dot ok"></span><div><b>Contas fixas pagas</b><div class="smart-muted">${moeda(pago)}</div></div></div>
-  <div class="smart-alert"><span class="smart-dot ${pend>0?'warn':'ok'}"></span><div><b>Contas fixas a pagar</b><div class="smart-muted">${moeda(pend)}</div></div></div>
-  <div class="smart-alert"><span class="smart-dot"></span><div><b>Outros custos lançados no mês</b><div class="smart-muted">${moeda(custosMes)}</div></div></div>`;
-
- const hojeEl=document.getElementById('pcHoje');
- if(hojeEl) hojeEl.innerHTML=`
-  <div class="smart-alert"><span class="smart-dot ok"></span><div><b>Vendas de hoje</b><div class="smart-muted">${vendasHoje.length} venda(s) • ${moeda(fatHoje)}</div></div></div>
-  <div class="smart-alert"><span class="smart-dot"></span><div><b>Produção de ração hoje</b><div class="smart-muted">${(typeof v11FabProducoes!=='undefined'?v11FabProducoes:[]).filter(p=>p.data===hoje).reduce((s,p)=>s+Number(p.totalKg||0),0).toLocaleString('pt-BR')} kg</div></div></div>
-  <div class="smart-alert"><span class="smart-dot ${alerts.length?'warn':'ok'}"></span><div><b>Alertas de estoque</b><div class="smart-muted">${alerts.length} item(ns) abaixo do limite</div></div></div>`;
-}
-const _enterpriseBase=enterpriseRender;
-enterpriseRender=function(){_enterpriseBase.apply(this,arguments);enterpriseRenderCompleto();};
 setTimeout(()=>{ enterpriseRender(); },1300);
 
 </script>
 
 <div id="notaClienteModal">
  <div class="nota-cliente-doc">
-  <div class="nc-actions actions" style="justify-content:flex-end;margin-top:0"><button class="btn primary" onclick="imprimirNotaCliente()">Imprimir / Gerar PDF</button><button id="btnEnviarNotaCliente" class="btn success" onclick="enviarNotaCliente()">Enviar para o cliente</button><button class="btn secondary" onclick="fecharNotaCliente()">Fechar</button></div>
+  <div class="nc-actions actions" style="justify-content:flex-end;margin-top:0"><button class="btn primary" onclick="imprimirNotaCliente()">Gerar PDF / Imprimir</button><button class="btn secondary" onclick="fecharNotaCliente()">Fechar</button></div>
   <div id="notaClienteConteudo"></div>
  </div>
 </div>
@@ -3159,18 +2563,18 @@ function precoDadosFiltrados(){
 function precoMedioCanalMes(canal){const ym=hojeISO().slice(0,7),vs=(typeof vendas!=='undefined'?vendas:[]).filter(v=>(v.data||'').startsWith(ym)&&v.canal===canal);let rev=0,cx=0;vs.forEach(v=>(v.produtos||[]).forEach(p=>{const q=Number(p.quantidade||0),eq=p.unidade==='Pente'?q/12:q;rev+=Number(p.total!==undefined?p.total:q*Number(p.valorUnit||0));cx+=eq}));return {fat:vs.reduce((s,v)=>s+Number(v.total||0),0),media:cx?rev/cx:0}}
 function precoAtualizaCardsCanal(){const a=precoMedioCanalMes('Atacado'),v=precoMedioCanalMes('Varejo');[['pcFatAtacado',a.fat],['pcFatVarejo',v.fat],['pcMedAtacado',a.media],['pcMedVarejo',v.media]].forEach(([id,val])=>{const e=document.getElementById(id);if(e)e.textContent=moeda(val)})}
 function renderGraficoPrecosCentral(refreshClasses=true){
- const svg=document.getElementById('precoCentralSvg');if(!svg)return;const W=Math.max(300,Math.round(svg.getBoundingClientRect().width||980)),H=W<=420?336:W<=820?360:440;svg.setAttribute('viewBox',`0 0 ${W} ${H}`);if(refreshClasses)precoRenderClasses();precoAtualizaCardsCanal();
+ const svg=document.getElementById('precoCentralSvg');if(!svg)return;if(refreshClasses)precoRenderClasses();precoAtualizaCardsCanal();
  const {canal,de,ate,agr,buckets,series}=precoDadosFiltrados(),aviso=document.getElementById('precoCentralAviso');
  const legacy=(typeof vendas!=='undefined'?vendas:[]).filter(v=>!v.canal).length;if(aviso)aviso.innerHTML=`Canal interno selecionado: <b>${canal}</b>. ${legacy?`Existem <b>${legacy}</b> venda(s) antiga(s) sem Atacado/Varejo; elas não entram neste gráfico até serem editadas.`:'Todas as vendas classificadas podem entrar no cálculo.'}`;
  svg.innerHTML='';const valid=Object.values(series).flat().filter(v=>Number.isFinite(v));
  const legenda=document.getElementById('precoCentralLegenda'),resumoEl=document.getElementById('precoCentralResumo');if(legenda)legenda.innerHTML='';if(resumoEl)resumoEl.innerHTML='';
- if(!de||!ate||de>ate){svg.appendChild(precoSvgEl('text',{x:W/2,y:H/2,'text-anchor':'middle','font-size':14,fill:'#66757b'},'Selecione um período válido.'));return}
- if(!buckets.length||!valid.length){svg.appendChild(precoSvgEl('text',{x:W/2,y:H/2-12,'text-anchor':'middle','font-size':13,'font-weight':700,fill:'#123f52'},'Ainda não há dados para este período.'));svg.appendChild(precoSvgEl('text',{x:W/2,y:H/2+14,'text-anchor':'middle','font-size':W<500?9.5:11,fill:'#66757b'},'Registre vendas e o histórico aparecerá aqui.'));return}
- const L=Math.max(48,Math.min(78,W*.09)),R=18,T=30,B=58,plotW=W-L-R,plotH=H-T-B,minRaw=Math.min(...valid),maxRaw=Math.max(...valid),pad=Math.max(3,(maxRaw-minRaw)*.16);let min=Math.floor((minRaw-pad)/5)*5,max=Math.ceil((maxRaw+pad)/5)*5;if(max<=min)max=min+10;
+ if(!de||!ate||de>ate){svg.appendChild(precoSvgEl('text',{x:490,y:220,'text-anchor':'middle','font-size':14,fill:'#66757b'},'Selecione um período válido.'));return}
+ if(!buckets.length||!valid.length){svg.appendChild(precoSvgEl('text',{x:490,y:210,'text-anchor':'middle','font-size':14,'font-weight':700,fill:'#123f52'},'Ainda não há vendas suficientes para montar este gráfico.'));svg.appendChild(precoSvgEl('text',{x:490,y:238,'text-anchor':'middle','font-size':12,fill:'#66757b'},'Registre vendas com canal Atacado/Varejo e o histórico aparecerá automaticamente.'));return}
+ const W=980,H=440,L=78,R=30,T=34,B=70,plotW=W-L-R,plotH=H-T-B,minRaw=Math.min(...valid),maxRaw=Math.max(...valid),pad=Math.max(3,(maxRaw-minRaw)*.16);let min=Math.floor((minRaw-pad)/5)*5,max=Math.ceil((maxRaw+pad)/5)*5;if(max<=min)max=min+10;
  const x=i=>L+(buckets.length===1?plotW/2:i*plotW/(buckets.length-1)),y=v=>T+(max-v)*plotH/(max-min);
  for(let i=0;i<=5;i++){const val=min+(max-min)*i/5,yy=y(val);svg.appendChild(precoSvgEl('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:'#e7edef','stroke-width':1}));svg.appendChild(precoSvgEl('text',{x:L-10,y:yy+4,'text-anchor':'end','font-size':11,fill:'#66757b'},'R$ '+val.toFixed(0)))}
  svg.appendChild(precoSvgEl('line',{x1:L,y1:T,x2:L,y2:H-B,stroke:'#9aabb2','stroke-width':1.2}));svg.appendChild(precoSvgEl('line',{x1:L,y1:H-B,x2:W-R,y2:H-B,stroke:'#9aabb2','stroke-width':1.2}));
- const passo=Math.max(1,Math.ceil(buckets.length/12));buckets.forEach((k,i)=>{if(i%passo===0||i===buckets.length-1)svg.appendChild(precoSvgEl('text',{x:x(i),y:H-B+24,'text-anchor':'middle','font-size':W<500?8.5:10,fill:'#52656d'},precoLabelPeriodo(k,agr)))});svg.appendChild(precoSvgEl('text',{x:18,y:T+plotH/2,transform:`rotate(-90 18 ${T+plotH/2})`,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#123f52'},'Preço médio por caixa (R$)'));
+ const passo=Math.max(1,Math.ceil(buckets.length/12));buckets.forEach((k,i)=>{if(i%passo===0||i===buckets.length-1)svg.appendChild(precoSvgEl('text',{x:x(i),y:H-B+24,'text-anchor':'middle','font-size':10,fill:'#52656d'},precoLabelPeriodo(k,agr)))});svg.appendChild(precoSvgEl('text',{x:18,y:T+plotH/2,transform:`rotate(-90 18 ${T+plotH/2})`,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#123f52'},'Preço médio por caixa (R$)'));
  const cores=['#123f52','#1f7a4d','#b26a2d','#6b4fa1','#a83f5e','#147f8f','#8a6a12','#4a6572','#b23b3b','#315d8a'];let ci=0;
  Object.entries(series).forEach(([nome,arr])=>{const cor=cores[ci++%cores.length];let seg=[];const flush=()=>{if(seg.length>1)svg.appendChild(precoSvgEl('polyline',{points:seg.join(' '),fill:'none',stroke:cor,'stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round'}));seg=[]};arr.forEach((v,i)=>{if(!Number.isFinite(v)){flush();return}seg.push(`${x(i)},${y(v)}`);svg.appendChild(precoSvgEl('circle',{cx:x(i),cy:y(v),r:4.5,fill:'#fff',stroke:cor,'stroke-width':2.5}));if(buckets.length<=14)svg.appendChild(precoSvgEl('text',{x:x(i),y:y(v)-9,'text-anchor':'middle','font-size':9.5,'font-weight':800,fill:cor},'R$ '+v.toFixed(0).replace('.',',')))});flush();
    if(legenda){const sp=document.createElement('span'),ii=document.createElement('i');ii.style.background=cor;sp.append(ii,document.createTextNode(precoNomeCurto(nome)));legenda.appendChild(sp)}
@@ -3178,161 +2582,76 @@ function renderGraficoPrecosCentral(refreshClasses=true){
  });
 }
 setTimeout(()=>{if(document.getElementById('precoCentralDe')&&!document.getElementById('precoCentralDe').value)precoAplicarPeriodoCentral();else renderGraficoPrecosCentral()},900);
-let _precoResizeTimer;window.addEventListener('resize',()=>{clearTimeout(_precoResizeTimer);_precoResizeTimer=setTimeout(()=>{if(document.getElementById('precoCentralSvg'))renderGraficoPrecosCentral(false)},180)});
 </script>
 
 
 <script>
-// ===== V11 CONTAS FIXAS MENSAIS =====
-let v11ContasFixas=v11Get('gsj_v11_contas_fixas',[]);
-let v11ContasFixasPag=v11Get('gsj_v11_contas_fixas_pag',[]);
-
-function v11MesAtual(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
-function v11ContaPagMes(id,mes){return v11ContasFixasPag.find(p=>String(p.contaId)===String(id)&&p.mes===mes)}
-function v11VencimentoConta(mes,dia){
- const [a,m]=mes.split('-').map(Number); const ultimo=new Date(a,m,0).getDate(); const d=Math.max(1,Math.min(Number(dia||1),ultimo));
- return `${a}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+/* ===== V11 • AJUSTES SOLICITADOS EM 18/08/2026 ===== */
+function aplicarPrivacidadeFinanceira(){
+ const oculto=localStorage.getItem('gsj_v11_sigilo_financeiro')==='1';
+ document.body.classList.toggle('financeiro-oculto',oculto);
+ const b=document.getElementById('btnSigiloFinanceiro');
+ const estado=document.getElementById('privacyState');
+ if(b){
+   b.classList.toggle('is-private',oculto);
+   b.setAttribute('aria-pressed',oculto?'true':'false');
+   b.setAttribute('aria-label',oculto?'Mostrar valores financeiros':'Ocultar valores financeiros');
+   b.title=oculto?'Mostrar valores financeiros':'Ocultar valores financeiros';
+ }
+ if(estado)estado.textContent=oculto?'Valores ocultos':'Valores visíveis';
 }
-function v11ContaVencida(c,mes){
- if(c.ativa==='nao'||v11ContaPagMes(c.id,mes))return false;
- const hoje=hojeISO(); const mesHoje=hoje.slice(0,7);
- if(mes<mesHoje)return true; if(mes>mesHoje)return false;
- return v11VencimentoConta(mes,c.dia)<hoje;
-}
-function v11SalvarContaFixa(){
- const nome=document.getElementById('v11CFNome').value.trim(); const valor=Number(document.getElementById('v11CFValor').value||0); const dia=Number(document.getElementById('v11CFDia').value||0);
- if(!nome)return alert('Informe o nome da conta.'); if(valor<0)return alert('Informe um valor válido.'); if(dia<1||dia>31)return alert('Informe o dia de vencimento de 1 a 31.');
- const id=Number(document.getElementById('v11CFEditId').value||0)||gerarId();
- const obj={id,nome,categoria:document.getElementById('v11CFCategoria').value,valor,dia,forma:document.getElementById('v11CFForma').value,ativa:document.getElementById('v11CFAtiva').value,obs:document.getElementById('v11CFObs').value.trim()};
- const idx=v11ContasFixas.findIndex(x=>String(x.id)===String(id)); if(idx>=0)v11ContasFixas[idx]=obj;else v11ContasFixas.unshift(obj);
- v11Set('gsj_v11_contas_fixas',v11ContasFixas); v11LimparContaFixa(); v11RenderContasFixas(); v11AtualizarContasNoPainel();
-}
-function v11EditarContaFixa(id){
- const c=v11ContasFixas.find(x=>String(x.id)===String(id));if(!c)return;
- v11CFEditId.value=c.id;v11CFNome.value=c.nome||'';v11CFCategoria.value=c.categoria||'Outro';v11CFValor.value=c.valor||0;v11CFDia.value=c.dia||1;v11CFForma.value=c.forma||'PIX';v11CFAtiva.value=c.ativa||'sim';v11CFObs.value=c.obs||'';
- document.getElementById('contasFixasV11').scrollIntoView({behavior:'smooth'});
-}
-function v11ExcluirContaFixa(id){if(!confirm('Excluir esta conta fixa? O histórico de pagamentos será mantido no backup, mas deixará de aparecer aqui.'))return;v11ContasFixas=v11ContasFixas.filter(x=>String(x.id)!==String(id));v11Set('gsj_v11_contas_fixas',v11ContasFixas);v11RenderContasFixas();v11AtualizarContasNoPainel()}
-function v11LimparContaFixa(){['v11CFEditId','v11CFNome','v11CFValor','v11CFDia','v11CFObs'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});if(document.getElementById('v11CFAtiva'))v11CFAtiva.value='sim'}
-function v11PagarContaFixa(id){
- const mes=v11CFMes.value||v11MesAtual(),c=v11ContasFixas.find(x=>String(x.id)===String(id));if(!c)return;
- const valTxt=prompt(`Valor pago de ${c.nome}:`,Number(c.valor||0).toFixed(2).replace('.',','));if(valTxt===null)return;
- const valor=Number(String(valTxt).replace(/\./g,'').replace(',','.'));if(!Number.isFinite(valor)||valor<0)return alert('Valor inválido.');
- const dataTxt=prompt('Data do pagamento (AAAA-MM-DD):',hojeISO());if(dataTxt===null)return;
- v11ContasFixasPag=v11ContasFixasPag.filter(p=>!(String(p.contaId)===String(id)&&p.mes===mes));
- v11ContasFixasPag.unshift({id:gerarId(),contaId:id,mes,valor,data:dataTxt||hojeISO(),forma:c.forma||'',registradoEm:new Date().toISOString()});
- v11Set('gsj_v11_contas_fixas_pag',v11ContasFixasPag);v11RenderContasFixas();v11AtualizarContasNoPainel();
-}
-function v11DesfazerPagamentoConta(id){const mes=v11CFMes.value||v11MesAtual();if(!confirm('Desfazer o pagamento desta conta neste mês?'))return;v11ContasFixasPag=v11ContasFixasPag.filter(p=>!(String(p.contaId)===String(id)&&p.mes===mes));v11Set('gsj_v11_contas_fixas_pag',v11ContasFixasPag);v11RenderContasFixas();v11AtualizarContasNoPainel()}
-function v11RenderContasFixas(){
- const mes=(document.getElementById('v11CFMes')?.value)||v11MesAtual(); if(document.getElementById('v11CFMes')&&!v11CFMes.value)v11CFMes.value=mes;
- const ativas=v11ContasFixas.filter(c=>c.ativa!=='nao'); const previsto=ativas.reduce((s,c)=>s+Number(c.valor||0),0);
- const pagos=ativas.map(c=>v11ContaPagMes(c.id,mes)).filter(Boolean); const totalPago=pagos.reduce((s,p)=>s+Number(p.valor||0),0);
- const aPagar=ativas.filter(c=>!v11ContaPagMes(c.id,mes)).reduce((s,c)=>s+Number(c.valor||0),0); const vencidas=ativas.filter(c=>v11ContaVencida(c,mes)).length;
- if(document.getElementById('v11CFPrevisto'))v11CFPrevisto.textContent=moeda(previsto);if(document.getElementById('v11CFPago'))v11CFPago.textContent=moeda(totalPago);if(document.getElementById('v11CFApagar'))v11CFApagar.textContent=moeda(aPagar);if(document.getElementById('v11CFVencidas'))v11CFVencidas.textContent=vencidas;
- const el=document.getElementById('v11CFLista');if(!el)return;
- if(!v11ContasFixas.length){el.innerHTML='<div class="empty">Nenhuma conta fixa cadastrada.</div>';return}
- const rows=[...v11ContasFixas].sort((a,b)=>Number(a.dia||0)-Number(b.dia||0)).map(c=>{
-  const pg=v11ContaPagMes(c.id,mes),venc=v11ContaVencida(c,mes);let status,cls;if(c.ativa==='nao'){status='Inativa';cls='cf-inativo'}else if(pg){status='Pago';cls='cf-pago'}else if(venc){status='Vencida';cls='cf-vencido'}else{status='Pendente';cls='cf-pendente'}
-  const acao=pg?`<button class="btn secondary" onclick="v11DesfazerPagamentoConta('${c.id}')">Desfazer</button>`:(c.ativa==='nao'?'':`<button class="btn success" onclick="v11PagarContaFixa('${c.id}')">Marcar pago</button>`);
-  return `<tr><td><strong>${c.nome}</strong><div class="sub">${c.categoria||''}</div></td><td>Dia ${c.dia}</td><td>${moeda(c.valor)}</td><td>${pg?moeda(pg.valor):'—'}</td><td>${pg?dataBR(pg.data):dataBR(v11VencimentoConta(mes,c.dia))}</td><td><span class="cf-status ${cls}">${status}</span></td><td><div class="actions" style="margin:0">${acao}<button class="btn secondary" onclick="v11EditarContaFixa('${c.id}')">Editar</button><button class="btn danger" onclick="v11ExcluirContaFixa('${c.id}')">Excluir</button></div></td></tr>`;
- }).join('');
- el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Conta</th><th>Vencimento</th><th>Previsto</th><th>Pago</th><th>Data</th><th>Status</th><th>Ações</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-}
-function v11ResumoContasFixasMes(mes=v11MesAtual()){
- const ativas=v11ContasFixas.filter(c=>c.ativa!=='nao');const aPagar=ativas.filter(c=>!v11ContaPagMes(c.id,mes)).reduce((s,c)=>s+Number(c.valor||0),0);const pago=ativas.map(c=>v11ContaPagMes(c.id,mes)).filter(Boolean).reduce((s,p)=>s+Number(p.valor||0),0);const vencidas=ativas.filter(c=>v11ContaVencida(c,mes)).length;return{aPagar,pago,vencidas,previsto:ativas.reduce((s,c)=>s+Number(c.valor||0),0)};
-}
-function v11AtualizarContasNoPainel(){
- const r=v11ResumoContasFixasMes();
- ['entPagar','latPagar','smartPagar','v11Apagar'].forEach(id=>{const e=document.getElementById(id);if(!e)return;const atual=Number((e.textContent||'').replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'))||0; if(!e.dataset.baseSemFixas)e.dataset.baseSemFixas=String(atual);e.textContent=moeda(Number(e.dataset.baseSemFixas||0)+r.aPagar)});
+function alternarPrivacidadeFinanceira(){
+ const oculto=localStorage.getItem('gsj_v11_sigilo_financeiro')==='1';
+ localStorage.setItem('gsj_v11_sigilo_financeiro',oculto?'0':'1');
+ aplicarPrivacidadeFinanceira();
 }
 
-// Inclui contas fixas no fechamento mensal sem duplicar o cadastro em Custos/DRE.
-const _v11GerarFechamentoSemFixas=window.v11GerarFechamento;
-window.v11GerarFechamento=function(){
- const mes=v11FechMes.value;if(!mes)return alert('Escolha o mês.');const [a,m]=mes.split('-').map(Number),noMes=d=>{if(!d)return false;const x=new Date(d+'T12:00:00');return x.getFullYear()===a&&x.getMonth()+1===m};
- const ovos=(typeof vendas!=='undefined'?vendas:[]).filter(v=>noMes(v.data)).reduce((s,v)=>s+Number(v.total||0),0),racao=v11Racoes.filter(x=>noMes(x.data)).reduce((s,x)=>s+x.total,0),emb=v11EmbHist.filter(x=>x.mov==='venda'&&noMes(x.data)).reduce((s,x)=>s+x.q*x.preco,0),cust=v11Custos.filter(x=>noMes(x.data)).reduce((s,x)=>s+x.valor,0),fixas=v11ContasFixasPag.filter(x=>x.mes===mes).reduce((s,x)=>s+Number(x.valor||0),0);
- v11FechResumo.innerHTML=`<div class="v2-kpi-grid"><div class="v2-card"><h3>Vendas de ovos</h3><div class="big">${moeda(ovos)}</div></div><div class="v2-card"><h3>Rações</h3><div class="big">${moeda(racao)}</div></div><div class="v2-card"><h3>Embalagens</h3><div class="big">${moeda(emb)}</div></div><div class="v2-card"><h3>Custos lançados</h3><div class="big">${moeda(cust)}</div></div><div class="v2-card"><h3>Contas fixas pagas</h3><div class="big">${moeda(fixas)}</div></div><div class="v2-card"><h3>Resultado simplificado</h3><div class="big">${moeda(ovos+racao+emb-cust-fixas)}</div></div></div>`;
+let v11NotasFiscais=v11Get('gsj_v11_notas_fiscais',[]);
+function v11LimparNotaFiscal(){
+ const edit=document.getElementById('v11NfEditId');if(edit)edit.value='';
+ const tipo=document.getElementById('v11NfTipo');if(tipo)tipo.value='entrada';
+ const data=document.getElementById('v11NfData');if(data)data.value=hojeISO();
+ ['v11NfNumero','v11NfPessoa','v11NfValor','v11NfDescricao'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
 }
-
-
-// ===== V11 TESTE — CADASTRO LIVRE DE INSUMOS + INTEGRAÇÃO COM FÓRMULAS =====
-let v11InsumosCad=v11Get('gsj_v11_insumos_cad',[]);
-let v11FormulaExtrasTemp=[];
-const v11InsumosFixos=['Milho','Soja','Prêmix 600 red','Prêmix 800 red','Prêmix Inicial','Prêmix Recria','Prêmix Pré-Postura','Calcário','Sal','Óleo'];
-function v11Esc(t){return String(t??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function v11TodosInsumosAtivos(){
- const custom=v11InsumosCad.filter(x=>x.ativo!=='nao').map(x=>x.nome);
- return [...new Set([...v11InsumosFixos,...custom])];
+function v11SalvarNotaFiscal(){
+ const id=Number(document.getElementById('v11NfEditId')?.value||0);
+ const tipo=document.getElementById('v11NfTipo')?.value||'entrada';
+ const data=document.getElementById('v11NfData')?.value||'';
+ const numero=document.getElementById('v11NfNumero')?.value.trim()||'';
+ const pessoa=document.getElementById('v11NfPessoa')?.value.trim()||'';
+ const valor=Number(document.getElementById('v11NfValor')?.value||0);
+ const descricao=document.getElementById('v11NfDescricao')?.value.trim()||'';
+ if(!data||!numero||valor<=0){alert('Informe a data, o número da nota e um valor maior que zero.');return}
+ const nf={id:id||gerarId(),tipo,data,numero,pessoa,valor,descricao,atualizadoEm:new Date().toISOString()};
+ v11NotasFiscais=id?v11NotasFiscais.map(x=>x.id===id?nf:x):[nf,...v11NotasFiscais];
+ v11Set('gsj_v11_notas_fiscais',v11NotasFiscais);snapshotDados();v11LimparNotaFiscal();v11RenderNotasFiscais();
 }
-function v11GarantirEstoqueInsumo(c){
- const key=v11FabKey(c.nome); if(!v11FabEstoque[key])v11FabEstoque[key]={nome:c.nome,saldo:0,valor:0,unidade:c.unidade||'kg',minimo:Number(c.minimo||0)};
- else {v11FabEstoque[key].nome=c.nome;v11FabEstoque[key].minimo=Number(c.minimo||0);if(!v11FabEstoque[key].unidade)v11FabEstoque[key].unidade=c.unidade||'kg'}
+function v11EditarNotaFiscal(id){
+ const n=v11NotasFiscais.find(x=>x.id===id);if(!n)return;
+ document.getElementById('v11NfEditId').value=n.id;document.getElementById('v11NfTipo').value=n.tipo;document.getElementById('v11NfData').value=n.data;document.getElementById('v11NfNumero').value=n.numero||'';document.getElementById('v11NfPessoa').value=n.pessoa||'';document.getElementById('v11NfValor').value=Number(n.valor||0);document.getElementById('v11NfDescricao').value=n.descricao||'';
+ v11Ir('notasFiscaisV11');window.scrollTo({top:0,behavior:'smooth'});
 }
-function v11SincronizarInsumosCad(){
- v11InsumosCad.forEach(v11GarantirEstoqueInsumo);v11Set('gsj_v11_fab_estoque',v11FabEstoque);
- const compra=document.getElementById('v11FabCompraItem');
- if(compra){const old=compra.value;compra.innerHTML=v11TodosInsumosAtivos().map(n=>`<option>${v11Esc(n)}</option>`).join('')+'<option>Outro</option>';if([...compra.options].some(o=>o.value===old))compra.value=old;}
- const extra=document.getElementById('v11FormulaExtraItem');
- if(extra){const old=extra.value;const extras=v11InsumosCad.filter(x=>x.ativo!=='nao');extra.innerHTML='<option value="">Selecione um insumo cadastrado...</option>'+extras.map(x=>`<option value="${v11Esc(x.nome)}">${v11Esc(x.nome)}</option>`).join('');if([...extra.options].some(o=>o.value===old))extra.value=old;}
- v11RenderInsumosCad();
+function v11ExcluirNotaFiscal(id){
+ const n=v11NotasFiscais.find(x=>x.id===id);if(!n)return;
+ if(confirm(`Excluir a nota fiscal ${n.numero||''}?`)){v11NotasFiscais=v11NotasFiscais.filter(x=>x.id!==id);v11Set('gsj_v11_notas_fiscais',v11NotasFiscais);snapshotDados();v11RenderNotasFiscais()}
 }
-function v11SalvarInsumoCad(){
- const nome=document.getElementById('v11InsumoNome').value.trim(),unidade=v11InsumoUnidade.value,minimo=Math.max(0,Number(v11InsumoMin.value||0)),id=Number(v11InsumoEditId.value||0)||gerarId();
- if(!nome)return alert('Informe o nome do insumo.');
- const duplicado=v11InsumosCad.find(x=>x.nome.toLowerCase()===nome.toLowerCase()&&String(x.id)!==String(id));if(duplicado)return alert('Já existe um insumo cadastrado com esse nome.');
- const obj={id,nome,categoria:v11InsumoCategoria.value,unidade,minimo,ativo:v11InsumoAtivo.value,obs:v11InsumoObs.value.trim()};
- const idx=v11InsumosCad.findIndex(x=>String(x.id)===String(id));if(idx>=0)v11InsumosCad[idx]=obj;else v11InsumosCad.push(obj);
- v11Set('gsj_v11_insumos_cad',v11InsumosCad);v11GarantirEstoqueInsumo(obj);v11Set('gsj_v11_fab_estoque',v11FabEstoque);v11LimparInsumoCad();v11SincronizarInsumosCad();v11FabRenderTudo();if(typeof smartRender==='function')smartRender();
+function v11RenderNotasFiscais(){
+ const mes=document.getElementById('v11NfMes')?.value||hojeISO().slice(0,7),tipo=document.getElementById('v11NfFiltroTipo')?.value||'',busca=(document.getElementById('v11NfBusca')?.value||'').trim().toLowerCase();
+ const mensal=v11NotasFiscais.filter(n=>(n.data||'').startsWith(mes));
+ const entrada=mensal.filter(n=>n.tipo==='entrada').reduce((s,n)=>s+Number(n.valor||0),0),saida=mensal.filter(n=>n.tipo==='saida').reduce((s,n)=>s+Number(n.valor||0),0),dif=saida-entrada;
+ const eEnt=document.getElementById('v11NfTotalEntrada'),eSai=document.getElementById('v11NfTotalSaida'),eDif=document.getElementById('v11NfDiferenca'),eQtd=document.getElementById('v11NfQtd');
+ if(eEnt)eEnt.textContent=moeda(entrada);if(eSai)eSai.textContent=moeda(saida);if(eQtd)eQtd.textContent=mensal.length;
+ if(eDif){eDif.textContent=moeda(dif);eDif.classList.remove('nf-diferenca-pos','nf-diferenca-neg');if(dif>0)eDif.classList.add('nf-diferenca-pos');if(dif<0)eDif.classList.add('nf-diferenca-neg')}
+ let lista=mensal.filter(n=>!tipo||n.tipo===tipo);if(busca)lista=lista.filter(n=>`${n.numero} ${n.pessoa} ${n.descricao}`.toLowerCase().includes(busca));lista.sort((a,b)=>(b.data||'').localeCompare(a.data||'')||Number(b.id)-Number(a.id));
+ const box=document.getElementById('v11NfLista');if(!box)return;
+ box.innerHTML=lista.length?`<div class="table-wrap"><table><thead><tr><th>Data</th><th>Tipo</th><th>Nº NF</th><th>Cliente / Fornecedor</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead><tbody>${lista.map(n=>`<tr><td>${dataBR(n.data)}</td><td><span class="nf-tipo ${n.tipo==='entrada'?'nf-entrada':'nf-saida'}">${n.tipo==='entrada'?'Entrada • Compra':'Saída • Venda'}</span></td><td>${n.numero||'—'}</td><td>${n.pessoa||'—'}</td><td>${n.descricao||'—'}</td><td><strong>${moeda(n.valor)}</strong></td><td><button class="btn secondary" onclick="v11EditarNotaFiscal(${n.id})">Editar</button> <button class="btn danger" onclick="v11ExcluirNotaFiscal(${n.id})">Excluir</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma nota fiscal lançada neste mês.</div>';
 }
-function v11EditarInsumoCad(id){const x=v11InsumosCad.find(a=>String(a.id)===String(id));if(!x)return;v11InsumoEditId.value=x.id;v11InsumoNome.value=x.nome||'';v11InsumoCategoria.value=x.categoria||'Outro';v11InsumoUnidade.value=x.unidade||'kg';v11InsumoMin.value=x.minimo||0;v11InsumoAtivo.value=x.ativo||'sim';v11InsumoObs.value=x.obs||'';}
-function v11AlternarInsumoCad(id){const x=v11InsumosCad.find(a=>String(a.id)===String(id));if(!x)return;x.ativo=x.ativo==='nao'?'sim':'nao';v11Set('gsj_v11_insumos_cad',v11InsumosCad);v11SincronizarInsumosCad();}
-function v11ExcluirInsumoCad(id){
- const x=v11InsumosCad.find(a=>String(a.id)===String(id));if(!x)return;const e=v11FabEstoque[v11FabKey(x.nome)];
- if(e&&Number(e.saldo||0)>0)return alert('Este insumo ainda possui estoque. Zere o saldo ou apenas desative o cadastro.');
- if(!confirm('Excluir o cadastro deste insumo?'))return;v11InsumosCad=v11InsumosCad.filter(a=>String(a.id)!==String(id));v11Set('gsj_v11_insumos_cad',v11InsumosCad);v11SincronizarInsumosCad();
-}
-function v11LimparInsumoCad(){['v11InsumoEditId','v11InsumoNome','v11InsumoObs'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});if(document.getElementById('v11InsumoMin'))v11InsumoMin.value=0;if(document.getElementById('v11InsumoAtivo'))v11InsumoAtivo.value='sim'}
-function v11RenderInsumosCad(){
- const el=document.getElementById('v11InsumosCadLista');if(!el)return;if(!v11InsumosCad.length){el.innerHTML='<div class="empty">Nenhum insumo personalizado cadastrado ainda.</div>';return}
- el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Insumo</th><th>Categoria</th><th>Unidade</th><th>Mínimo</th><th>Status</th><th>Ações</th></tr></thead><tbody>${v11InsumosCad.map(x=>`<tr><td><b>${v11Esc(x.nome)}</b><div class="sub">${v11Esc(x.obs||'')}</div></td><td>${v11Esc(x.categoria||'—')}</td><td>${v11Esc(x.unidade||'kg')}</td><td>${Number(x.minimo||0).toLocaleString('pt-BR',{maximumFractionDigits:2})}</td><td>${x.ativo==='nao'?'Inativo':'Ativo'}</td><td><div class="actions" style="margin:0"><button class="btn secondary" onclick="v11EditarInsumoCad('${x.id}')">Editar</button><button class="btn secondary" onclick="v11AlternarInsumoCad('${x.id}')">${x.ativo==='nao'?'Ativar':'Desativar'}</button><button class="btn danger" onclick="v11ExcluirInsumoCad('${x.id}')">Excluir</button></div></td></tr>`).join('')}</tbody></table></div>`;
-}
-function v11AdicionarExtraFormula(){const nome=document.getElementById('v11FormulaExtraItem').value,qtd=Math.max(0,Number(document.getElementById('v11FormulaExtraQtd').value||0));if(!nome||qtd<=0)return alert('Selecione o insumo e informe a quantidade.');const ex=v11FormulaExtrasTemp.find(x=>x.nome===nome);if(ex)ex.qtd+=qtd;else v11FormulaExtrasTemp.push({nome,qtd});v11FormulaExtraQtd.value='';v11RenderExtrasFormula();v11FabSomarFormula();}
-function v11RemoverExtraFormula(i){v11FormulaExtrasTemp.splice(i,1);v11RenderExtrasFormula();v11FabSomarFormula();}
-function v11RenderExtrasFormula(){const el=document.getElementById('v11FormulaExtrasLista');if(!el)return;el.innerHTML=v11FormulaExtrasTemp.length?`<div class="table-wrap" style="margin-top:8px"><table><thead><tr><th>Insumo</th><th>Kg / 500 kg</th><th></th></tr></thead><tbody>${v11FormulaExtrasTemp.map((x,i)=>`<tr><td>${v11Esc(x.nome)}</td><td>${Number(x.qtd).toFixed(2)}</td><td><button class="btn danger" onclick="v11RemoverExtraFormula(${i})">×</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="help">Nenhum insumo personalizado adicionado à fórmula.</div>';}
-
-const _v11FabSomarFormulaBase=v11FabSomarFormula;
-v11FabSomarFormula=function(){
- const vals=['v11FabFMilho','v11FabFSoja','v11FabFPremix','v11FabFCalcario','v11FabFSal','v11FabFOleo','v11FabFOutros'].map(id=>Number(document.getElementById(id)?.value||0));
- const total=vals.reduce((a,b)=>a+b,0)+v11FormulaExtrasTemp.reduce((s,x)=>s+Number(x.qtd||0),0);
- if(document.getElementById('v11FabFTotal'))v11FabFTotal.value=total.toFixed(2)+' kg';if(document.getElementById('v11FabFormulaAviso'))v11FabFormulaAviso.innerHTML=Math.abs(total-500)<0.01?'<b>Fórmula fechada em 500 kg.</b>':`Faltam / excedem <b>${(500-total).toFixed(2)} kg</b> para fechar a batida.`;return total;
-}
-v11FabSalvarFormula=function(){
- let nome=v11FabFormulaNome.value==='Outra'?v11FabFormulaOutro.value.trim():v11FabFormulaNome.value;const total=v11FabSomarFormula();if(!nome)return alert('Informe o nome da fórmula.');if(Math.abs(total-500)>0.01)return alert('A formulação precisa fechar exatamente em 500 kg.');
- const premix=Number(v11FabFPremix.value||0),premixTipo=v11FabFPremixTipo.value;if(premix>0&&!premixTipo)return alert('Selecione qual prêmix esta formulação utiliza.');
- const f={id:Date.now(),nome,milho:Number(v11FabFMilho.value||0),soja:Number(v11FabFSoja.value||0),premixTipo,premix,calcario:Number(v11FabFCalcario.value||0),sal:Number(v11FabFSal.value||0),oleo:Number(v11FabFOleo.value||0),outros:Number(v11FabFOutros.value||0),extras:v11FormulaExtrasTemp.map(x=>({nome:x.nome,qtd:Number(x.qtd||0)}))};
- const i=v11FabFormulas.findIndex(x=>x.nome===nome);if(i>=0){f.id=v11FabFormulas[i].id;v11FabFormulas[i]=f}else v11FabFormulas.push(f);v11Set('gsj_v11_fab_formulas',v11FabFormulas);v11FormulaExtrasTemp=[];v11RenderExtrasFormula();v11FabRenderTudo();
-}
-const _v11FabPreviewOrig=v11FabPreviewProducao;
-v11FabPreviewProducao=function(){
- const f=v11FabFormulas.find(x=>x.id===Number(v11FabProdFormula.value)),b=Math.max(1,Number(v11FabProdBatidas.value||1)),kgBatida=v11FabKgPorBatida(),totalKg=kgBatida*b,fator=totalKg/500;if(document.getElementById('v11FabProdKg'))v11FabProdKg.value=totalKg.toLocaleString('pt-BR',{maximumFractionDigits:2})+' kg';if(!f){if(document.getElementById('v11FabProdResumo'))v11FabProdResumo.innerHTML='<div class="help">Selecione uma formulação.</div>';return null}
- const itens=[['Milho',f.milho],['Soja',f.soja],[f.premixTipo||'Premix',f.premix],['Calcário',f.calcario],['Sal',f.sal],['Óleo',f.oleo],['Outros',f.outros],...((f.extras||[]).map(x=>[x.nome,x.qtd]))];let custo=0,linhas='',ok=true;itens.forEach(([nome,q])=>{const req=Number(q||0)*fator,est=v11FabEstoque[v11FabKey(nome)],saldo=Number(est?.saldo||0),cm=v11FabCustoMedio(nome);custo+=req*cm;if(req>saldo+0.0001)ok=false;if(req>0)linhas+=`<div class="v2-dre-linha"><span>${v11Esc(nome)}: <b>${req.toFixed(2)} ${est?.unidade||'kg'}</b></span><span>Estoque: ${saldo.toFixed(2)} ${est?.unidade||'kg'}</span></div>`});const tipoBatida=kgBatida===500?'Batida completa':kgBatida===250?'Meia batida':'Batida personalizada';v11FabProdResumo.innerHTML=`<h3 style="margin-top:0">${v11Esc(f.nome)}</h3><div>${b} × ${kgBatida.toLocaleString('pt-BR',{maximumFractionDigits:2})} kg (${tipoBatida}) = <b>${totalKg.toLocaleString('pt-BR',{maximumFractionDigits:2})} kg</b></div><div class="help">Ingredientes calculados proporcionalmente sobre a formulação-base de 500 kg.</div>${linhas}<div class="v2-dre-linha v2-dre-total"><span>Custo estimado</span><b>${moeda(custo)}</b></div><div class="help">Custo/kg: <b>${moeda(totalKg>0?custo/totalKg:0)}</b> • Estoque: <b>${ok?'SUFICIENTE':'INSUFICIENTE'}</b></div>`;return{f,b,itens,custo,ok,kgBatida,totalKg,fator};
-}
-const _v11FabRenderTudoOrig=v11FabRenderTudo;
-v11FabRenderTudo=function(){
- _v11FabRenderTudoOrig();v11SincronizarInsumosCad();
- const lista=document.getElementById('v11FabFormulasLista');if(lista){lista.innerHTML=`<div class="table-wrap"><table><tr><th>Formulação</th><th>Milho</th><th>Soja</th><th>Prêmix</th><th>Tipo</th><th>Calcário</th><th>Sal</th><th>Óleo</th><th>Outros</th><th>Personalizados</th><th>Total</th></tr>${v11FabFormulas.map(f=>{const extras=(f.extras||[]);const et=extras.map(x=>`${v11Esc(x.nome)}: ${Number(x.qtd||0).toFixed(2)} kg`).join('<br>')||'—';const tot=Number(f.milho||0)+Number(f.soja||0)+Number(f.premix||0)+Number(f.calcario||0)+Number(f.sal||0)+Number(f.oleo||0)+Number(f.outros||0)+extras.reduce((s,x)=>s+Number(x.qtd||0),0);return `<tr><td>${v11Esc(f.nome)}</td><td>${f.milho||0}</td><td>${f.soja||0}</td><td>${f.premix||0}</td><td>${v11Esc(f.premixTipo||'—')}</td><td>${f.calcario||0}</td><td>${f.sal||0}</td><td>${f.oleo||0}</td><td>${f.outros||0}</td><td>${et}</td><td>${tot.toFixed(2)} kg</td></tr>`}).join('')}</table></div>`;}
-}
-window.addEventListener('load',()=>{v11InsumosCad.forEach(v11GarantirEstoqueInsumo);v11SincronizarInsumosCad();v11RenderExtrasFormula();setTimeout(()=>{v11FabRenderTudo();if(typeof smartRender==='function')smartRender();},1100)});
-
-// Mantém o cabeçalho sempre iniciando pela primeira aba ao abrir o arquivo no celular.
-window.addEventListener('load',()=>{
- const nav=document.querySelector('nav'); if(nav) setTimeout(()=>{nav.scrollLeft=0},120);
- const mes=v11MesAtual();if(document.getElementById('v11CFMes'))v11CFMes.value=mes;v11RenderContasFixas();setTimeout(v11AtualizarContasNoPainel,900);
-});
+(function iniciarAjustesSolicitados(){
+ aplicarPrivacidadeFinanceira();
+ const mes=document.getElementById('v11NfMes');if(mes&&!mes.value)mes.value=hojeISO().slice(0,7);
+ v11LimparNotaFiscal();v11RenderNotasFiscais();
+})();
 </script>
-
-
 
 </body>
 </html>
