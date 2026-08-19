@@ -1149,16 +1149,46 @@ body.financeiro-oculto #pcMedVarejo::after{
 
 <section id="producaoV11" class="section">
  <div class="card">
-  <h2>Lotes / Produção</h2>
-  <div class="form-grid">
-   <div><label>Lote</label><input id="v11LoteNome" placeholder="Ex.: Lote 01"></div>
-   <div><label>Aves alojadas</label><input id="v11LoteAves" type="number"></div>
-   <div><label>Idade (semanas)</label><input id="v11LoteSem" type="number"></div>
-   <div><label>Ovos do dia</label><input id="v11LoteOvos" type="number"></div>
-   <div><label>Consumo de ração (kg/dia)</label><input id="v11LoteRacao" type="number" step="0.01"></div>
-   <div><label>Mortalidade do dia</label><input id="v11LoteMort" type="number" value="0"></div>
+  <h2>Registro de Produção de Ovos</h2>
+  <div class="help">Ficha digital por lote. Cadastre os dados fixos uma vez e faça apenas o lançamento diário. Aves vivas, ovos totais, % de postura e consumo por ave são calculados automaticamente.</div>
+  <div class="form-grid" style="margin-top:14px">
+   <div><label>Lote em uso</label><select id="v11LoteSelecionado" onchange="v11CarregarLoteSelecionado()"><option value="">Novo lote</option></select></div>
+   <div><label>Nome / Nº do lote</label><input id="v11LoteNome" placeholder="Ex.: Lote 01"></div>
+   <div><label>Propriedade</label><input id="v11LoteProp" value="BR 262 KM 426 - Conquista"></div>
+   <div><label>Proprietária</label><input id="v11LoteProprietaria" value="Sirlene Arantes Rodrigues Pereira"></div>
+   <div><label>Local</label><input id="v11LoteLocal" value="São Gonçalo do Pará - MG"></div>
+   <div><label>Galpão</label><input id="v11LoteGalpao"></div>
+   <div><label>Data de nascimento</label><input id="v11LoteNascimento" type="date"></div>
+   <div><label>Nº aves iniciadas</label><input id="v11LoteIniciadas" type="number" min="0"></div>
+   <div><label>Nº aves alojadas</label><input id="v11LoteAves" type="number" min="0"></div>
+   <div><label>Linhagem</label><input id="v11LoteLinhagem"></div>
+   <div><label>Procedência</label><input id="v11LoteProcedencia"></div>
+   <div><label>Idade aos 5% de postura (sem.)</label><input id="v11LoteCinco" type="number" min="0" step="0.1"></div>
   </div>
-  <div class="actions"><button class="btn primary" onclick="v11SalvarLote()">Salvar registro</button></div>
+  <div class="actions"><button class="btn primary" onclick="v11SalvarCadastroLote()">Salvar / atualizar lote</button><button class="btn secondary" onclick="v11NovoCadastroLote()">Novo lote</button><button class="btn secondary" onclick="v11DescartarLote()">Descartar / encerrar lote</button><button class="btn secondary" onclick="v11ExcluirLote()">Excluir lote</button></div>
+  <div class="help" style="margin-top:10px">Use <b>Descartar / encerrar lote</b> quando o lote terminar o ciclo: o histórico de produção será preservado. Use <b>Excluir lote</b> apenas para corrigir um cadastro feito por engano.</div>
+ </div>
+
+ <div class="card" style="margin-top:16px">
+  <h2>Histórico de Lotes Encerrados</h2>
+  <div class="help">Lotes descartados permanecem arquivados com seus registros de produção para consulta e controle histórico.</div>
+  <div id="v11LotesEncerrados" style="margin-top:12px"></div>
+ </div>
+
+ <div class="card" style="margin-top:16px">
+  <h2>Controle Diário de Postura</h2>
+  <div class="form-grid">
+   <div><label>Data</label><input id="v11LoteData" type="date"></div>
+   <div><label>Idade (semanas)</label><input id="v11LoteSem" type="number" step="0.1" oninput="v11PreviewLote()"></div>
+   <div><label>Mortalidade do dia</label><input id="v11LoteMort" type="number" min="0" value="0" oninput="v11PreviewLote()"></div>
+   <div><label>Ovos brancos</label><input id="v11LoteOvosBranco" type="number" min="0" value="0" oninput="v11PreviewLote()"></div>
+   <div><label>Ovos vermelhos</label><input id="v11LoteOvosVermelho" type="number" min="0" value="0" oninput="v11PreviewLote()"></div>
+   <div><label>Ração consumida (kg)</label><input id="v11LoteRacao" type="number" min="0" step="0.01" oninput="v11PreviewLote()"></div>
+   <div style="grid-column:1/-1"><label>Observações</label><input id="v11LoteObs" placeholder="Vacinação, manejo, alteração de consumo, ocorrência..."></div>
+  </div>
+  <div id="v11LotePreview" class="backup-box" style="margin-top:12px"></div>
+  <div class="actions"><button class="btn primary" onclick="v11SalvarLote()">Salvar registro diário</button><button class="btn secondary" onclick="v11ImprimirFichaLote()">Imprimir / Gerar PDF</button><button class="btn secondary" onclick="v11CompartilharFichaLote()">Compartilhar</button></div>
+  <div class="form-grid" style="margin-top:14px"><div><label>Mês exibido</label><input id="v11LoteMesFiltro" type="month" onchange="v11RenderLotes()"></div></div>
   <div id="v11LotesHist" style="margin-top:16px"></div>
  </div>
 </section>
@@ -1170,6 +1200,7 @@ body.financeiro-oculto #pcMedVarejo::after{
 <div class="actions"><button class="btn primary" onclick="v11SalvarCliente()">Salvar cliente</button></div>
 <div id="v11CliLista" style="margin-top:16px"></div>
 <div id="v11CliRelatorio" class="client-report" style="margin-top:18px"></div>
+<div id="v11CliFiscalBox" class="card" style="display:none;margin-top:16px;box-shadow:none;border:1px solid #dbe4e7"></div>
 </div></section>
 
 <section id="fornecedoresV11" class="section"><div class="card">
@@ -1233,7 +1264,12 @@ body.financeiro-oculto #pcMedVarejo::after{
   <div class="actions"><button class="btn primary" onclick="v11SalvarNotaFiscal()">Salvar nota fiscal</button><button class="btn secondary" onclick="v11LimparNotaFiscal()">Limpar</button></div>
  </div>
  <div class="card" style="margin-top:16px">
-  <h2>Conferência mensal</h2>
+  <h2>Consolidadas para NF</h2>
+  <div class="help">Agrupamentos preparados a partir das vendas dos clientes. Depois que a contabilidade emitir a NF, informe o número para transferir automaticamente para Notas Fiscais Emitidas.</div>
+  <div id="v11ConsolidadasLista" style="margin-top:12px"></div>
+ </div>
+ <div class="card" style="margin-top:16px">
+  <h2>Conferência mensal • Notas Fiscais Emitidas</h2>
   <div class="filtros">
    <div><label>Mês</label><input id="v11NfMes" type="month" onchange="v11RenderNotasFiscais()"></div>
    <div><label>Mostrar</label><select id="v11NfFiltroTipo" onchange="v11RenderNotasFiscais()"><option value="">Entradas + Saídas</option><option value="entrada">Somente entradas</option><option value="saida">Somente saídas</option></select></div>
@@ -2138,15 +2174,94 @@ function v11RenderFin(){
  h.innerHTML=v11Fin.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Fornecedor</th><th>Descrição</th><th>Total</th><th>Pago</th><th>Saldo</th><th>Renegociado para</th></tr>${v11Fin.slice(0,30).map(x=>`<tr><td>${dataBR(x.data)}</td><td>${x.fornecedor||'—'}</td><td>${x.desc||'—'}</td><td>${moeda(x.total)}</td><td>${moeda(x.pago)}</td><td>${moeda(x.saldo)}</td><td>${x.novaData?dataBR(x.novaData):'—'}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum compromisso lançado.</div>';
 }
 let v11Lotes=v11Get('gsj_v11_lotes',[]);
-function v11SalvarLote(){
- const nome=v11LoteNome.value.trim(),aves=Number(v11LoteAves.value||0),sem=Number(v11LoteSem.value||0),ovos=Number(v11LoteOvos.value||0),racao=Number(v11LoteRacao.value||0),mort=Number(v11LoteMort.value||0);
- if(!nome||aves<=0)return alert('Informe lote e quantidade de aves.');
- v11Lotes.unshift({data:new Date().toISOString().slice(0,10),nome,aves,sem,ovos,racao,mort,postura:aves?ovos/aves*100:0});
- v11Set('gsj_v11_lotes',v11Lotes);v11RenderLotes();
+let v11CadLotes=v11Get('gsj_v11_lotes_cadastro',[]);
+function v11Hoje(){return new Date().toISOString().slice(0,10)}
+function v11MesAtual(){return new Date().toISOString().slice(0,7)}
+function v11Esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function v11CadastroAtual(){const id=Number(document.getElementById('v11LoteSelecionado')?.value||0);return v11CadLotes.find(x=>Number(x.id)===id)||null}
+function v11SalvarCadastroLote(){
+ const id=Number(v11LoteSelecionado.value||0), nome=v11LoteNome.value.trim(), aves=Number(v11LoteAves.value||0);
+ if(!nome||aves<=0)return alert('Informe o nome do lote e o número de aves alojadas.');
+ const anterior=id?v11CadLotes.find(a=>Number(a.id)===id):null;
+ const x={id:id||Date.now(),nome,propriedade:v11LoteProp.value.trim(),proprietaria:v11LoteProprietaria.value.trim(),local:v11LoteLocal.value.trim(),galpao:v11LoteGalpao.value.trim(),nascimento:v11LoteNascimento.value,iniciadas:Number(v11LoteIniciadas.value||0),aves,linhagem:v11LoteLinhagem.value.trim(),procedencia:v11LoteProcedencia.value.trim(),cinco:Number(v11LoteCinco.value||0),status:anterior?.status||'ativo',dataEncerramento:anterior?.dataEncerramento||'',motivoEncerramento:anterior?.motivoEncerramento||'',avesFinais:anterior?.avesFinais??null};
+ const i=v11CadLotes.findIndex(a=>Number(a.id)===Number(x.id)); if(i>=0)v11CadLotes[i]=x;else v11CadLotes.push(x);
+ v11Set('gsj_v11_lotes_cadastro',v11CadLotes);v11RenderCadLotes(x.id);v11RenderLotesEncerrados();v11PreviewLote();alert(i>=0?'Lote atualizado.':'Lote cadastrado.');
 }
+function v11RenderCadLotes(sel){
+ const el=document.getElementById('v11LoteSelecionado');if(!el)return;const atual=sel??Number(el.value||0);
+ const ativos=v11CadLotes.filter(x=>(x.status||'ativo')!=='encerrado');
+ el.innerHTML='<option value="">Novo lote</option>'+ativos.map(x=>`<option value="${x.id}">${v11Esc(x.nome)}${x.galpao?' • '+v11Esc(x.galpao):''}</option>`).join('');if(atual&&ativos.some(x=>Number(x.id)===Number(atual)))el.value=String(atual);
+ v11RenderLotesEncerrados();
+}
+function v11DescartarLote(){
+ const c=v11CadastroAtual();if(!c)return alert('Selecione um lote ativo para encerrar.');
+ const regs=v11RegistrosDoLote(c.id).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+ const ult=regs.at(-1);
+ const mortTotal=regs.reduce((s,r)=>s+Number(r.mort||0),0);
+ const avesPadrao=Number(ult?.aves??Math.max(0,Number(c.aves||0)-mortTotal));
+ const data=prompt('Data do descarte / encerramento (AAAA-MM-DD):',v11Hoje());if(data===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(data.trim()))return alert('Informe a data no formato AAAA-MM-DD.');
+ const motivo=prompt('Motivo do encerramento / descarte:','Fim do ciclo de produção');if(motivo===null)return;
+ const avesTxt=prompt('Quantidade final de aves no lote:',String(avesPadrao));if(avesTxt===null)return;const avesFinais=Math.max(0,Number(String(avesTxt).replace(',','.'))||0);
+ if(!confirm(`Encerrar o lote "${c.nome}"?\n\nOs registros de produção serão preservados no histórico.`))return;
+ const i=v11CadLotes.findIndex(x=>Number(x.id)===Number(c.id));if(i<0)return;
+ v11CadLotes[i]={...v11CadLotes[i],status:'encerrado',dataEncerramento:data.trim(),motivoEncerramento:motivo.trim(),avesFinais};
+ v11Set('gsj_v11_lotes_cadastro',v11CadLotes);v11NovoCadastroLote();v11RenderCadLotes();v11RenderLotes();v11RenderLotesEncerrados();alert('Lote encerrado e arquivado no histórico.');
+}
+function v11ExcluirLote(idInformado){
+ const c=idInformado?v11CadLotes.find(x=>Number(x.id)===Number(idInformado)):v11CadastroAtual();if(!c)return alert('Selecione o lote que deseja excluir.');
+ const qtd=v11RegistrosDoLote(c.id).length;
+ if(!confirm(`ATENÇÃO: excluir definitivamente o lote "${c.nome}"?\n\nTambém serão apagados ${qtd} registro(s) diário(s) vinculados a ele. Esta ação não pode ser desfeita.`))return;
+ v11CadLotes=v11CadLotes.filter(x=>Number(x.id)!==Number(c.id));v11Lotes=v11Lotes.filter(r=>Number(r.loteId||0)!==Number(c.id)&&!(Number(r.loteId||0)===0&&r.nome===c.nome));
+ v11Set('gsj_v11_lotes_cadastro',v11CadLotes);v11Set('gsj_v11_lotes',v11Lotes);v11NovoCadastroLote();v11RenderCadLotes();v11RenderLotes();v11RenderLotesEncerrados();alert('Lote excluído definitivamente.');
+}
+function v11ReativarLote(id){
+ const i=v11CadLotes.findIndex(x=>Number(x.id)===Number(id));if(i<0)return;const c=v11CadLotes[i];if(!confirm(`Reativar o lote "${c.nome}"?`))return;
+ v11CadLotes[i]={...c,status:'ativo',dataEncerramento:'',motivoEncerramento:'',avesFinais:null};v11Set('gsj_v11_lotes_cadastro',v11CadLotes);v11RenderCadLotes(c.id);v11CarregarLoteSelecionado();v11RenderLotesEncerrados();
+}
+function v11RenderLotesEncerrados(){
+ const h=document.getElementById('v11LotesEncerrados');if(!h)return;const encerrados=v11CadLotes.filter(x=>x.status==='encerrado').sort((a,b)=>(b.dataEncerramento||'').localeCompare(a.dataEncerramento||''));
+ h.innerHTML=encerrados.length?`<div class="table-wrap"><table><tr><th>Lote</th><th>Galpão</th><th>Encerramento</th><th>Aves finais</th><th>Motivo</th><th>Registros</th><th>Ações</th></tr>${encerrados.map(c=>`<tr><td>${v11Esc(c.nome)}</td><td>${v11Esc(c.galpao||'—')}</td><td>${c.dataEncerramento?dataBR(c.dataEncerramento):'—'}</td><td>${Number(c.avesFinais??0).toLocaleString('pt-BR')}</td><td>${v11Esc(c.motivoEncerramento||'—')}</td><td>${v11RegistrosDoLote(c.id).length}</td><td style="white-space:nowrap"><button class="btn secondary" onclick="v11ReativarLote(${c.id})">Reativar</button> <button class="btn secondary" onclick="v11ExcluirLote(${c.id})">Excluir</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum lote encerrado.</div>';
+}
+function v11CarregarLoteSelecionado(){
+ const x=v11CadastroAtual();if(!x)return v11NovoCadastroLote(false);
+ v11LoteNome.value=x.nome||'';v11LoteProp.value=x.propriedade||'';v11LoteProprietaria.value=x.proprietaria||'';v11LoteLocal.value=x.local||'';v11LoteGalpao.value=x.galpao||'';v11LoteNascimento.value=x.nascimento||'';v11LoteIniciadas.value=x.iniciadas||'';v11LoteAves.value=x.aves||'';v11LoteLinhagem.value=x.linhagem||'';v11LoteProcedencia.value=x.procedencia||'';v11LoteCinco.value=x.cinco||'';v11PreviewLote();v11RenderLotes();
+}
+function v11NovoCadastroLote(limparSel=true){
+ if(limparSel)v11LoteSelecionado.value='';['v11LoteNome','v11LoteGalpao','v11LoteNascimento','v11LoteIniciadas','v11LoteAves','v11LoteLinhagem','v11LoteProcedencia','v11LoteCinco'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});v11LoteProp.value='BR 262 KM 426 - Conquista';v11LoteProprietaria.value='Sirlene Arantes Rodrigues Pereira';v11LoteLocal.value='São Gonçalo do Pará - MG';v11PreviewLote();
+}
+function v11RegistrosDoLote(id){const cad=v11CadLotes.find(c=>Number(c.id)===Number(id));return v11Lotes.filter(r=>Number(r.loteId||0)===Number(id)||(!r.loteId&&cad&&r.nome===cad.nome))}
+function v11CalcLote(){
+ const c=v11CadastroAtual(), loteId=c?.id||0, regs=v11RegistrosDoLote(loteId);const data=v11LoteData.value||v11Hoje();
+ const mortHoje=Math.max(0,Number(v11LoteMort.value||0));const mortAnt=regs.filter(r=>(r.data||'')<data).reduce((s,r)=>s+Number(r.mort||0),0);const base=Number(c?.aves||v11LoteAves.value||0);const vivas=Math.max(0,base-mortAnt-mortHoje);
+ const branco=Math.max(0,Number(v11LoteOvosBranco.value||0)),vermelho=Math.max(0,Number(v11LoteOvosVermelho.value||0)),ovos=branco+vermelho,racao=Math.max(0,Number(v11LoteRacao.value||0));
+ return {data,mortHoje,vivas,branco,vermelho,ovos,racao,postura:vivas?ovos/vivas*100:0,gAve:vivas?racao*1000/vivas:0};
+}
+function v11PreviewLote(){
+ const h=document.getElementById('v11LotePreview');if(!h)return;const c=v11CadastroAtual(),x=v11CalcLote();h.innerHTML=`<b>${v11Esc(c?.nome||'Selecione/cadastre um lote')}</b><br>Aves vivas: <b>${x.vivas.toLocaleString('pt-BR')}</b> &nbsp;•&nbsp; Ovos totais: <b>${x.ovos.toLocaleString('pt-BR')}</b> &nbsp;•&nbsp; Postura: <b>${x.postura.toFixed(2)}%</b> &nbsp;•&nbsp; Consumo: <b>${x.gAve.toFixed(1)} g/ave/dia</b>`;
+}
+function v11SalvarLote(){
+ const c=v11CadastroAtual();if(!c)return alert('Selecione ou cadastre o lote antes do registro diário.');const x=v11CalcLote(),sem=Number(v11LoteSem.value||0);if(!x.data)return alert('Informe a data.');
+ const existente=v11Lotes.findIndex(r=>Number(r.loteId||0)===Number(c.id)&&r.data===x.data);const reg={id:existente>=0?v11Lotes[existente].id:Date.now(),loteId:c.id,nome:c.nome,data:x.data,sem,mort:x.mortHoje,aves:x.vivas,ovosBranco:x.branco,ovosVermelho:x.vermelho,ovos:x.ovos,racao:x.racao,postura:x.postura,gAve:x.gAve,obs:v11LoteObs.value.trim()};
+ if(existente>=0){if(!confirm('Já existe um registro deste lote nessa data. Deseja substituir?'))return;v11Lotes[existente]=reg}else v11Lotes.unshift(reg);
+ v11Set('gsj_v11_lotes',v11Lotes);v11RenderLotes();v11PreviewLote();['v11LoteMort','v11LoteOvosBranco','v11LoteOvosVermelho','v11LoteRacao','v11LoteObs'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=id==='v11LoteObs'?'':'0'});
+}
+function v11ExcluirRegistroLote(id){if(!confirm('Excluir este registro diário?'))return;v11Lotes=v11Lotes.filter(x=>Number(x.id)!==Number(id));v11Set('gsj_v11_lotes',v11Lotes);v11RenderLotes();v11PreviewLote()}
+function v11EditarRegistroLote(id){const r=v11Lotes.find(x=>Number(x.id)===Number(id));if(!r)return;v11LoteData.value=r.data||v11Hoje();v11LoteSem.value=r.sem||'';v11LoteMort.value=r.mort||0;v11LoteOvosBranco.value=r.ovosBranco??r.ovos??0;v11LoteOvosVermelho.value=r.ovosVermelho||0;v11LoteRacao.value=r.racao||0;v11LoteObs.value=r.obs||'';v11PreviewLote();window.scrollTo({top:document.getElementById('producaoV11').offsetTop,behavior:'smooth'})}
 function v11RenderLotes(){
- const h=document.getElementById('v11LotesHist');if(!h)return;
- h.innerHTML=v11Lotes.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Lote</th><th>Aves</th><th>Semanas</th><th>Ovos</th><th>Postura</th><th>Ração kg/dia</th><th>Mortalidade</th></tr>${v11Lotes.slice(0,30).map(x=>`<tr><td>${dataBR(x.data)}</td><td>${x.nome}</td><td>${x.aves}</td><td>${x.sem}</td><td>${x.ovos}</td><td>${x.postura.toFixed(1)}%</td><td>${x.racao}</td><td>${x.mort}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum lote registrado.</div>';
+ const h=document.getElementById('v11LotesHist');if(!h)return;const c=v11CadastroAtual(),mes=document.getElementById('v11LoteMesFiltro')?.value||v11MesAtual();if(!c){h.innerHTML='<div class="empty">Selecione um lote para visualizar os registros.</div>';return}const regs=v11RegistrosDoLote(c.id).filter(r=>!mes||(r.data||'').slice(0,7)===mes).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+ const ovos=regs.reduce((s,r)=>s+Number(r.ovos||0),0),mort=regs.reduce((s,r)=>s+Number(r.mort||0),0),rac=regs.reduce((s,r)=>s+Number(r.racao||0),0),med=regs.length?regs.reduce((s,r)=>s+Number(r.postura||0),0)/regs.length:0;
+ h.innerHTML=`<div class="backup-box"><b>${v11Esc(c.nome)}</b> • ${mes||'Todos os meses'}<br>Total de ovos: <b>${ovos.toLocaleString('pt-BR')}</b> • Mortalidade: <b>${mort}</b> • Ração: <b>${rac.toLocaleString('pt-BR',{maximumFractionDigits:2})} kg</b> • Postura média: <b>${med.toFixed(2)}%</b></div>`+(regs.length?`<div class="table-wrap" style="margin-top:10px"><table><tr><th>Data</th><th>Idade</th><th>Mortalidade</th><th>Aves vivas</th><th>Ovos total</th><th>Branco</th><th>Vermelho</th><th>% postura</th><th>Ração kg</th><th>Obs.</th><th>Ações</th></tr>${regs.map(r=>`<tr><td>${dataBR(r.data)}</td><td>${r.sem||'—'}</td><td>${r.mort||0}</td><td>${Number(r.aves||0).toLocaleString('pt-BR')}</td><td>${Number(r.ovos||0).toLocaleString('pt-BR')}</td><td>${Number(r.ovosBranco??r.ovos??0).toLocaleString('pt-BR')}</td><td>${Number(r.ovosVermelho||0).toLocaleString('pt-BR')}</td><td>${Number(r.postura||0).toFixed(2)}%</td><td>${Number(r.racao||0).toLocaleString('pt-BR',{maximumFractionDigits:2})}</td><td>${v11Esc(r.obs||'')}</td><td style="white-space:nowrap"><button class="btn secondary" onclick="v11EditarRegistroLote(${r.id})">Editar</button> <button class="btn secondary" onclick="v11ExcluirRegistroLote(${r.id})">Excluir</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum registro neste mês.</div>');
+}
+function v11FichaLoteHTML(){
+ const c=v11CadastroAtual();if(!c)return null;const mes=document.getElementById('v11LoteMesFiltro')?.value||v11MesAtual(),regs=v11RegistrosDoLote(c.id).filter(r=>!mes||(r.data||'').slice(0,7)===mes).sort((a,b)=>(a.data||'').localeCompare(b.data||''));const linhas=regs.map(r=>`<tr><td>${dataBR(r.data)}</td><td>${r.sem||''}</td><td>${r.mort||0}</td><td>${Number(r.aves||0)}</td><td>${Number(r.ovos||0)}</td><td>${Number(r.ovosBranco??r.ovos??0)}</td><td>${Number(r.ovosVermelho||0)}</td><td>${Number(r.postura||0).toFixed(2)}%</td><td>${Number(r.racao||0).toFixed(2)}</td><td>${v11Esc(r.obs||'')}</td></tr>`).join('');
+ return `<!doctype html><html><head><meta charset="utf-8"><title>Registro de Produção - ${v11Esc(c.nome)}</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#000;font-size:11px}h1{font-size:22px;text-align:center;margin:0}.sub{text-align:center;font-size:14px;margin:4px 0 12px}.dados{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #000}.dados div{border:1px solid #000;padding:5px}.lbl{font-size:9px;color:#333;display:block}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #000;padding:5px;text-align:center}th{background:#eaf0fa}.assin{margin-top:30px} @media print{button{display:none}}</style></head><body><h1>REGISTRO DE PRODUÇÃO DE OVOS</h1><div class="sub">Controle Diário de Postura</div><div class="dados"><div><span class="lbl">Propriedade</span><b>${v11Esc(c.propriedade||'')}</b></div><div><span class="lbl">Proprietária</span><b>${v11Esc(c.proprietaria||'')}</b></div><div><span class="lbl">Local</span><b>${v11Esc(c.local||'')}</b></div><div><span class="lbl">Galpão / Lote</span><b>${v11Esc(c.galpao||'')} / ${v11Esc(c.nome)}</b></div><div><span class="lbl">Data de nascimento</span>${c.nascimento?dataBR(c.nascimento):''}</div><div><span class="lbl">Nº aves iniciadas</span>${c.iniciadas||''}</div><div><span class="lbl">Nº aves alojadas</span>${c.aves||''}</div><div><span class="lbl">Idade aos 5% postura</span>${c.cinco||''}</div><div><span class="lbl">Linhagem</span>${v11Esc(c.linhagem||'')}</div><div><span class="lbl">Procedência</span>${v11Esc(c.procedencia||'')}</div><div><span class="lbl">Mês</span>${mes||''}</div><div><span class="lbl">Registros</span>${regs.length}</div></div><table><tr><th>Data</th><th>Idade (sem)</th><th>Mortalidade</th><th>Aves vivas</th><th>Ovos total</th><th>Ovos branco</th><th>Ovos vermelho</th><th>% Postura</th><th>Ração (kg)</th><th>Obs.</th></tr>${linhas||'<tr><td colspan="10">Sem registros no período.</td></tr>'}</table><div class="assin">Assinatura: _______________________________________________</div></body></html>`;
+}
+function v11ImprimirFichaLote(){const c=v11CadastroAtual();if(!c)return alert('Selecione um lote.');const op=prompt('O que deseja imprimir?\n1 = Ficha atual (mês exibido)\n2 = Histórico completo do lote','1');if(op===null)return;if(op.trim()==='2'){const filtro=document.getElementById('v11LoteMesFiltro'),ant=filtro.value;filtro.value='';const html=v11FichaLoteHTML();filtro.value=ant;const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.print(),250);return}const html=v11FichaLoteHTML();const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.print(),250)}
+async function v11CompartilharFichaLote(){
+ const c=v11CadastroAtual();if(!c)return alert('Selecione um lote.');const mes=document.getElementById('v11LoteMesFiltro')?.value||v11MesAtual(),regs=v11RegistrosDoLote(c.id).filter(r=>!mes||(r.data||'').slice(0,7)===mes).sort((a,b)=>(a.data||'').localeCompare(b.data||''));const ult=regs.at(-1),tot=regs.reduce((s,r)=>s+Number(r.ovos||0),0);const texto=`Granja São José\nRegistro de Produção de Ovos\nLote: ${c.nome}${c.galpao?' • Galpão: '+c.galpao:''}\nMês: ${mes}\nRegistros: ${regs.length}\nOvos no período: ${tot.toLocaleString('pt-BR')}${ult?`\nÚltimo registro: ${dataBR(ult.data)} • ${Number(ult.postura||0).toFixed(2)}% postura • ${Number(ult.aves||0).toLocaleString('pt-BR')} aves vivas`:''}`;
+ if(navigator.share){try{await navigator.share({title:`Produção - ${c.nome}`,text:texto});return}catch(e){if(e?.name==='AbortError')return}}
+ const url='https://wa.me/?text='+encodeURIComponent(texto);window.open(url,'_blank');
 }
 function v11AtualizarPainel(){
  const lista=(typeof vendas!=='undefined'?vendas:[]);
@@ -2157,7 +2272,7 @@ function v11AtualizarPainel(){
  if(v11Fat)v11Fat.textContent=moeda(fat);if(v11Rec)v11Rec.textContent=moeda(rec);if(v11Areceber)v11Areceber.textContent=moeda(ar);if(v11Apagar)v11Apagar.textContent=moeda(ap);if(v11ChEmi)v11ChEmi.textContent=moeda(che);
  const chr=vm.reduce((s,v)=>s+Number(v.pagamentos?.cheque||0),0);if(v11ChRec)v11ChRec.textContent=moeda(chr);
 }
-setTimeout(()=>{v11RenderEmb();v11RenderFin();v11RenderLotes();v11AtualizarPainel()},500);
+setTimeout(()=>{v11RenderEmb();v11RenderFin();v11RenderCadLotes();v11RenderLotesEncerrados();if(v11LoteData)v11LoteData.value=v11Hoje();if(v11LoteMesFiltro)v11LoteMesFiltro.value=v11MesAtual();v11RenderLotes();v11PreviewLote();v11AtualizarPainel()},500);
 
 
 // ===== V11 COMPLEMENTOS =====
@@ -2193,7 +2308,7 @@ function v11VerRelatorioCliente(indice){
  <div class="card" style="box-shadow:none;border:1px solid #dbe4e7">
    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
      <div><h2 style="margin:0">Relatório do Cliente</h2><div class="help">${c.nome}</div></div>
-     <button class="btn secondary" onclick="document.getElementById('v11CliRelatorio').innerHTML=''">Fechar</button>
+     <div class="actions" style="margin:0"><button class="btn primary" onclick='v11AbrirConsolidacaoCliente(${JSON.stringify(c.nome)})'>Consolidar para NF</button><button class="btn secondary" onclick="document.getElementById('v11CliRelatorio').innerHTML=''">Fechar</button></div>
    </div>
    <div class="v2-kpi-grid" style="margin-top:12px">
      <div class="v2-card"><h3>Total comprado</h3><div class="big">${moeda(totalGeral)}</div></div>
@@ -2239,6 +2354,7 @@ let v11FabCompras=v11Get('gsj_v11_fab_compras',[]);
 let v11FabEstoque=v11Get('gsj_v11_fab_estoque',{});
 let v11FabFormulas=v11Get('gsj_v11_fab_formulas',[]);
 let v11FabProducoes=v11Get('gsj_v11_fab_producoes',[]);
+let v11FabCompraEditId=null;
 
 if(!v11FabFormulas.length){
  v11FabFormulas=['Ração Inicial','Ração Recria','Ração Pré-Postura','Ração Pico','Ração Postura 1','Ração Postura 2'].map((nome,i)=>({
@@ -2291,16 +2407,42 @@ function v11FabSalvarCompra(){
  const item=sel==='Outro'?(v11FabOutroNome.value.trim()||'Outro'):sel;
  if(!v11FabCompraData.value||c.qtd<=0||c.preco<=0)return alert('Informe data, quantidade/peso e preço.');
  if((c.un==='saco'||c.un==='pacote')&&c.pesoUn<=0)return alert('Informe o peso em kg de cada '+(c.un==='pacote'?'pacote':'saco')+'.');
- const key=v11FabKey(item);
- const unEst=v11FabUnidadeEstoque(c.un);
+ const key=v11FabKey(item),unEst=v11FabUnidadeEstoque(c.un);
+ let antiga=null;
+ if(v11FabCompraEditId!==null){
+  antiga=v11FabCompras.find(x=>x.id===v11FabCompraEditId);
+  if(!antiga){v11FabCompraEditId=null;return alert('Entrada não encontrada.');}
+  const oldKey=v11FabKey(antiga.item),oldEst=v11FabEstoque[oldKey];
+  if(!oldEst||Number(oldEst.saldo||0)+0.000001<Number(antiga.estoqueQtd||antiga.qtd||0))return alert('Esta entrada não pode ser alterada porque parte deste estoque já foi consumida.');
+  oldEst.saldo-=Number(antiga.estoqueQtd||antiga.qtd||0);oldEst.valor=Math.max(0,Number(oldEst.valor||0)-Number(antiga.total||0));
+  if(Math.abs(oldEst.saldo)<0.000001)oldEst.saldo=0;
+ }
  if(!v11FabEstoque[key])v11FabEstoque[key]={nome:item,saldo:0,valor:0,unidade:unEst};
- if(v11FabEstoque[key].unidade!==unEst && v11FabEstoque[key].saldo>0)return alert('Este insumo já possui estoque em outra unidade. Faça um ajuste antes de misturar unidades.');
- v11FabEstoque[key].saldo+=c.estoqueQtd;
- v11FabEstoque[key].valor+=c.total;
- v11FabEstoque[key].unidade=unEst;
- v11FabCompras.unshift({id:Date.now(),data:v11FabCompraData.value,item,fornecedor:v11FabFornecedor.value.trim(),...c});
- v11Set('gsj_v11_fab_estoque',v11FabEstoque);v11Set('gsj_v11_fab_compras',v11FabCompras);
- v11FabRenderTudo();
+ if(v11FabEstoque[key].unidade!==unEst && v11FabEstoque[key].saldo>0){
+  if(antiga){const ok=v11FabKey(antiga.item),oe=v11FabEstoque[ok];oe.saldo+=Number(antiga.estoqueQtd||antiga.qtd||0);oe.valor+=Number(antiga.total||0);}
+  return alert('Este insumo já possui estoque em outra unidade. Faça um ajuste antes de misturar unidades.');
+ }
+ v11FabEstoque[key].saldo+=c.estoqueQtd;v11FabEstoque[key].valor+=c.total;v11FabEstoque[key].unidade=unEst;v11FabEstoque[key].nome=item;
+ const registro={id:antiga?antiga.id:Date.now(),data:v11FabCompraData.value,item,fornecedor:v11FabFornecedor.value.trim(),...c};
+ if(antiga){const i=v11FabCompras.findIndex(x=>x.id===antiga.id);v11FabCompras[i]=registro;}else v11FabCompras.unshift(registro);
+ v11Set('gsj_v11_fab_estoque',v11FabEstoque);v11Set('gsj_v11_fab_compras',v11FabCompras);v11FabCompraEditId=null;v11FabLimparCompra();v11FabRenderTudo();
+}
+function v11FabLimparCompra(){
+ if(!document.getElementById('v11FabCompraData'))return;
+ v11FabCompraData.value=new Date().toISOString().slice(0,10);v11FabCompraItem.value='Milho';v11FabFornecedor.value='';v11FabQtd.value='';v11FabPreco.value='';v11FabFrete.value='';if(document.getElementById('v11FabPesoUn'))v11FabPesoUn.value='';if(document.getElementById('v11FabOutroNome'))v11FabOutroNome.value='';v11FabAtualizarUnidades();
+}
+function v11FabEditarCompra(id){
+ const c=v11FabCompras.find(x=>x.id===id);if(!c)return alert('Entrada não encontrada.');
+ v11FabCompraEditId=id;v11FabCompraData.value=c.data||'';const padrao=[...v11FabCompraItem.options].some(o=>o.value===c.item||o.text===c.item);v11FabCompraItem.value=padrao?c.item:'Outro';v11FabAtualizarUnidades();if(!padrao)v11FabOutroNome.value=c.item||'';
+ v11FabFornecedor.value=c.fornecedor||'';v11FabUnidade.value=c.un||'kg';v11FabAtualizarCampos();v11FabQtd.value=c.qtd||'';v11FabPreco.value=c.preco||'';v11FabFrete.value=c.frete||'';if(document.getElementById('v11FabPesoUn'))v11FabPesoUn.value=c.pesoUn||'';v11FabCalcularCompra();document.getElementById('fabricaV11').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function v11FabExcluirCompra(id){
+ const c=v11FabCompras.find(x=>x.id===id);if(!c)return alert('Entrada não encontrada.');
+ const key=v11FabKey(c.item),e=v11FabEstoque[key],q=Number(c.estoqueQtd||c.qtd||0);
+ if(!e||Number(e.saldo||0)+0.000001<q)return alert('Esta entrada não pode ser excluída porque parte deste estoque já foi consumida.');
+ if(!confirm('Deseja realmente excluir esta entrada? O estoque será atualizado automaticamente.'))return;
+ e.saldo-=q;e.valor=Math.max(0,Number(e.valor||0)-Number(c.total||0));if(Math.abs(e.saldo)<0.000001)e.saldo=0;v11FabCompras=v11FabCompras.filter(x=>x.id!==id);if(v11FabCompraEditId===id){v11FabCompraEditId=null;v11FabLimparCompra();}
+ v11Set('gsj_v11_fab_estoque',v11FabEstoque);v11Set('gsj_v11_fab_compras',v11FabCompras);v11FabRenderTudo();
 }
 function v11FabCustoMedio(nome){
  const e=v11FabEstoque[v11FabKey(nome)];
@@ -2348,7 +2490,7 @@ function v11FabProduzir(){
 function v11FabRenderTudo(){
  const cards=document.getElementById('v11FabEstoqueCards');
  if(cards)cards.innerHTML=Object.keys(v11FabEstoque).length?Object.values(v11FabEstoque).map(e=>`<div class="v2-card"><h3>${e.nome}</h3><div class="big">${Number(e.saldo||0).toLocaleString('pt-BR',{maximumFractionDigits:2})} ${e.unidade||'kg'}</div><div class="sub">Custo médio: ${moeda(e.saldo>0?e.valor/e.saldo:0)}/${e.unidade||'kg'} • Valor: ${moeda(e.valor||0)}</div></div>`).join(''):'<div class="empty">Nenhum insumo em estoque.</div>';
- v11FabComprasLista.innerHTML=v11FabCompras.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Insumo</th><th>Fornecedor</th><th>Quantidade</th><th>Frete</th><th>Total</th><th>Custo unit.</th></tr>${v11FabCompras.slice(0,30).map(c=>`<tr><td>${dataBR(c.data)}</td><td>${c.item}</td><td>${c.fornecedor||'—'}</td><td>${Number(c.qtd).toLocaleString('pt-BR')} ${c.un==='L'?'L':c.un==='saca60'?'kg':c.un}${(c.un==='saco'||c.un==='pacote')&&c.pesoUn?' ('+Number(c.estoqueQtd||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' kg)':''}</td><td>${moeda(c.frete)}</td><td>${moeda(c.total)}</td><td>${moeda(c.custo)}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma compra registrada.</div>';
+ v11FabComprasLista.innerHTML=v11FabCompras.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Insumo</th><th>Fornecedor</th><th>Quantidade</th><th>Frete</th><th>Total</th><th>Custo unit.</th><th>Ações</th></tr>${v11FabCompras.slice(0,30).map(c=>`<tr><td>${dataBR(c.data)}</td><td>${c.item}</td><td>${c.fornecedor||'—'}</td><td>${Number(c.qtd).toLocaleString('pt-BR')} ${c.un==='L'?'L':c.un==='saca60'?'kg':c.un}${(c.un==='saco'||c.un==='pacote')&&c.pesoUn?' ('+Number(c.estoqueQtd||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' kg)':''}</td><td>${moeda(c.frete)}</td><td>${moeda(c.total)}</td><td>${moeda(c.custo)}</td><td style="white-space:nowrap"><button class="btn secondary" onclick="v11FabEditarCompra(${c.id})">Editar</button> <button class="btn secondary" onclick="v11FabExcluirCompra(${c.id})">Excluir</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma compra registrada.</div>';
  const old=v11FabProdFormula.value;v11FabProdFormula.innerHTML='<option value="">Selecione...</option>'+v11FabFormulas.map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');if(old)v11FabProdFormula.value=old;
  v11FabFormulasLista.innerHTML=`<div class="table-wrap"><table><tr><th>Formulação</th><th>Milho</th><th>Soja</th><th>Prêmix</th><th>Tipo</th><th>Calcário</th><th>Sal</th><th>Óleo</th><th>Outros</th><th>Total</th></tr>${v11FabFormulas.map(f=>`<tr><td>${f.nome}</td><td>${f.milho}</td><td>${f.soja}</td><td>${f.premix}</td><td>${f.premixTipo||'—'}</td><td>${f.calcario}</td><td>${f.sal}</td><td>${f.oleo}</td><td>${f.outros}</td><td>${(f.milho+f.soja+f.premix+f.calcario+f.sal+f.oleo+f.outros).toFixed(2)} kg</td></tr>`).join('')}</table></div>`;
  v11FabProducoesLista.innerHTML=v11FabProducoes.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Ração</th><th>Batidas</th><th>Produção</th><th>Custo</th><th>Custo/kg</th></tr>${v11FabProducoes.slice(0,30).map(p=>`<tr><td>${dataBR(p.data)}</td><td>${p.formula}</td><td>${p.batidas}</td><td>${p.totalKg} kg</td><td>${moeda(p.custo)}</td><td>${moeda(p.custoKg)}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma produção registrada.</div>';
@@ -2624,7 +2766,7 @@ function v11SalvarNotaFiscal(){
  if(!data||!numero||valor<=0){alert('Informe a data, o número da nota e um valor maior que zero.');return}
  const nf={id:id||gerarId(),tipo,data,numero,pessoa,valor,descricao,atualizadoEm:new Date().toISOString()};
  v11NotasFiscais=id?v11NotasFiscais.map(x=>x.id===id?nf:x):[nf,...v11NotasFiscais];
- v11Set('gsj_v11_notas_fiscais',v11NotasFiscais);snapshotDados();v11LimparNotaFiscal();v11RenderNotasFiscais();
+ v11Set('gsj_v11_notas_fiscais',v11NotasFiscais);snapshotDados();v11LimparNotaFiscal();v11RenderNotasFiscais();v11RenderConsolidadasNF();
 }
 function v11EditarNotaFiscal(id){
  const n=v11NotasFiscais.find(x=>x.id===id);if(!n)return;
@@ -2646,6 +2788,38 @@ function v11RenderNotasFiscais(){
  const box=document.getElementById('v11NfLista');if(!box)return;
  box.innerHTML=lista.length?`<div class="table-wrap"><table><thead><tr><th>Data</th><th>Tipo</th><th>Nº NF</th><th>Cliente / Fornecedor</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead><tbody>${lista.map(n=>`<tr><td>${dataBR(n.data)}</td><td><span class="nf-tipo ${n.tipo==='entrada'?'nf-entrada':'nf-saida'}">${n.tipo==='entrada'?'Entrada • Compra':'Saída • Venda'}</span></td><td>${n.numero||'—'}</td><td>${n.pessoa||'—'}</td><td>${n.descricao||'—'}</td><td><strong>${moeda(n.valor)}</strong></td><td><button class="btn secondary" onclick="v11EditarNotaFiscal(${n.id})">Editar</button> <button class="btn danger" onclick="v11ExcluirNotaFiscal(${n.id})">Excluir</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma nota fiscal lançada neste mês.</div>';
 }
+
+// ===== CONSOLIDAÇÃO DE VENDAS PARA NOTA FISCAL =====
+let v11ConsolidadasNF=v11Get('gsj_v11_consolidadas_nf',[]);
+let v11ClienteFiscalAtual='';
+function v11VendaConsolidacaoId(v){return String(v.id??v.numero??'')}
+function v11VendaJaConsolidada(v){const id=v11VendaConsolidacaoId(v);return v11ConsolidadasNF.some(c=>c.status!=='cancelada'&&(c.vendasIds||[]).map(String).includes(id))}
+function v11AbrirConsolidacaoCliente(nome){
+ v11ClienteFiscalAtual=nome;const box=document.getElementById('v11CliFiscalBox');if(!box)return;
+ const lista=(typeof vendas!=='undefined'?vendas:[]).filter(v=>(v.cliente||'').trim().toLowerCase()===nome.trim().toLowerCase()).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+ box.style.display='block';box.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><h2 style="margin:0">Consolidar para NF</h2><div class="help">${v11Esc(nome)} • selecione duas ou mais vendas que devem formar uma única nota fiscal.</div></div><button class="btn secondary" onclick="v11FecharConsolidacaoCliente()">Fechar</button></div><div class="actions"><button class="btn secondary" onclick="v11MarcarVendasNF(true)">Selecionar disponíveis</button><button class="btn secondary" onclick="v11MarcarVendasNF(false)">Limpar seleção</button><button class="btn primary" onclick="v11CriarConsolidacaoNF()">Consolidar para NF</button></div><div class="table-wrap"><table><tr><th></th><th>Data</th><th>Nº venda</th><th>Valor</th><th>Situação fiscal</th></tr>${lista.map(v=>{const usado=v11VendaJaConsolidada(v);return `<tr><td><input class="v11-nf-check" type="checkbox" value="${v11Esc(v11VendaConsolidacaoId(v))}" ${usado?'disabled':''}></td><td>${dataBR(v.data)}</td><td>${v.numero||'—'}</td><td>${moeda(v.total)}</td><td>${usado?'<span class="badge ok">Consolidada para NF</span>':'Disponível'}</td></tr>`}).join('')}</table></div>`;
+ box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function v11FecharConsolidacaoCliente(){const b=document.getElementById('v11CliFiscalBox');if(b){b.style.display='none';b.innerHTML=''}v11ClienteFiscalAtual=''}
+function v11MarcarVendasNF(marcar){document.querySelectorAll('.v11-nf-check:not(:disabled)').forEach(x=>x.checked=marcar)}
+function v11CriarConsolidacaoNF(){
+ const ids=[...document.querySelectorAll('.v11-nf-check:checked')].map(x=>String(x.value));if(!ids.length)return alert('Selecione pelo menos uma venda para consolidar.');
+ const vs=(typeof vendas!=='undefined'?vendas:[]).filter(v=>ids.includes(v11VendaConsolidacaoId(v)));if(!vs.length)return alert('Vendas não encontradas.');
+ const total=vs.reduce((s,v)=>s+Number(v.total||0),0),datas=vs.map(v=>v.data).filter(Boolean).sort();
+ if(!confirm(`Consolidar ${vs.length} venda(s) de ${v11ClienteFiscalAtual} para NF?\n\nTotal: ${moeda(total)}`))return;
+ v11ConsolidadasNF.unshift({id:gerarId(),cliente:v11ClienteFiscalAtual,vendasIds:ids,vendasNumeros:vs.map(v=>v.numero||'—'),dataInicio:datas[0]||hojeISO(),dataFim:datas.at(-1)||hojeISO(),criadaEm:new Date().toISOString(),valor:total,status:'consolidada',nfId:null});
+ v11Set('gsj_v11_consolidadas_nf',v11ConsolidadasNF);snapshotDados();v11AbrirConsolidacaoCliente(v11ClienteFiscalAtual);v11RenderConsolidadasNF();alert('Vendas marcadas como “Consolidada para NF”.');
+}
+function v11CancelarConsolidacaoNF(id){const c=v11ConsolidadasNF.find(x=>x.id===id);if(!c||c.status==='emitida')return;if(!confirm('Cancelar esta consolidação? As vendas voltarão a ficar disponíveis para outra NF.'))return;v11ConsolidadasNF=v11ConsolidadasNF.filter(x=>x.id!==id);v11Set('gsj_v11_consolidadas_nf',v11ConsolidadasNF);snapshotDados();v11RenderConsolidadasNF();if(v11ClienteFiscalAtual)v11AbrirConsolidacaoCliente(v11ClienteFiscalAtual)}
+function v11EmitirConsolidacaoNF(id){
+ const c=v11ConsolidadasNF.find(x=>x.id===id);if(!c||c.status==='emitida')return;const numero=prompt('Número da Nota Fiscal emitida:','');if(numero===null)return;if(!numero.trim())return alert('Informe o número da NF.');const data=prompt('Data de emissão (AAAA-MM-DD):',hojeISO());if(data===null)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(data.trim()))return alert('Data inválida.');
+ const desc=`Consolidação de ${c.vendasNumeros.length} venda(s): ${c.vendasNumeros.join(', ')}`;const nf={id:gerarId(),tipo:'saida',data:data.trim(),numero:numero.trim(),pessoa:c.cliente,valor:Number(c.valor||0),descricao:desc,consolidacaoId:c.id,atualizadoEm:new Date().toISOString()};v11NotasFiscais=[nf,...v11NotasFiscais];c.status='emitida';c.nfId=nf.id;c.numeroNF=nf.numero;c.dataEmissao=nf.data;v11Set('gsj_v11_notas_fiscais',v11NotasFiscais);v11Set('gsj_v11_consolidadas_nf',v11ConsolidadasNF);snapshotDados();v11RenderConsolidadasNF();v11RenderNotasFiscais();alert('NF registrada em Notas Fiscais Emitidas.');
+}
+function v11ResumoConsolidacaoHTML(c){return `Granja São José\nRESUMO PARA EMISSÃO FISCAL\nCliente: ${c.cliente}\nPeríodo: ${dataBR(c.dataInicio)} a ${dataBR(c.dataFim)}\nVendas: ${c.vendasNumeros.join(', ')}\nValor total: ${moeda(c.valor)}\nStatus: ${c.status==='emitida'?'NF emitida nº '+c.numeroNF:'Consolidada para NF'}`}
+async function v11CompartilharConsolidacaoNF(id){const c=v11ConsolidadasNF.find(x=>x.id===id);if(!c)return;const texto=v11ResumoConsolidacaoHTML(c);if(navigator.share){try{await navigator.share({title:'Resumo para emissão fiscal',text:texto});return}catch(e){if(e?.name==='AbortError')return}}window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank')}
+function v11ImprimirConsolidacaoNF(id){const c=v11ConsolidadasNF.find(x=>x.id===id);if(!c)return;const vs=(typeof vendas!=='undefined'?vendas:[]).filter(v=>(c.vendasIds||[]).map(String).includes(v11VendaConsolidacaoId(v)));const w=window.open('','_blank');w.document.write(`<html><head><meta charset="utf-8"><title>Resumo Fiscal</title><style>body{font-family:Arial;padding:28px;color:#000}h1,h2{text-align:center}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #000;padding:8px}th{background:#eee}.total{text-align:right;font-size:18px;margin-top:15px}</style></head><body><h1>Granja São José</h1><h2>RESUMO PARA EMISSÃO FISCAL</h2><p><b>Cliente:</b> ${v11Esc(c.cliente)}</p><p><b>Período:</b> ${dataBR(c.dataInicio)} a ${dataBR(c.dataFim)}</p><p><b>Status:</b> ${c.status==='emitida'?'NF emitida nº '+v11Esc(c.numeroNF):'Consolidada para NF'}</p><table><tr><th>Data</th><th>Nº venda</th><th>Valor</th></tr>${vs.map(v=>`<tr><td>${dataBR(v.data)}</td><td>${v.numero||'—'}</td><td>${moeda(v.total)}</td></tr>`).join('')}</table><div class="total"><b>Total: ${moeda(c.valor)}</b></div></body></html>`);w.document.close();setTimeout(()=>w.print(),200)}
+function v11RenderConsolidadasNF(){const box=document.getElementById('v11ConsolidadasLista');if(!box)return;const l=[...v11ConsolidadasNF].sort((a,b)=>(b.criadaEm||'').localeCompare(a.criadaEm||''));box.innerHTML=l.length?`<div class="table-wrap"><table><tr><th>Cliente</th><th>Período</th><th>Vendas</th><th>Valor</th><th>Status</th><th>Ações</th></tr>${l.map(c=>`<tr><td>${v11Esc(c.cliente)}</td><td>${dataBR(c.dataInicio)} a ${dataBR(c.dataFim)}</td><td>${c.vendasNumeros.join(', ')}</td><td><b>${moeda(c.valor)}</b></td><td>${c.status==='emitida'?`NF emitida • ${v11Esc(c.numeroNF||'')}`:'Consolidada para NF'}</td><td style="white-space:nowrap"><button class="btn secondary" onclick="v11ImprimirConsolidacaoNF(${c.id})">Imprimir/PDF</button> <button class="btn secondary" onclick="v11CompartilharConsolidacaoNF(${c.id})">Compartilhar</button> ${c.status==='emitida'?'':`<button class="btn primary" onclick="v11EmitirConsolidacaoNF(${c.id})">Registrar NF emitida</button> <button class="btn danger" onclick="v11CancelarConsolidacaoNF(${c.id})">Cancelar</button>`}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma venda consolidada para NF.</div>'}
+
 (function iniciarAjustesSolicitados(){
  aplicarPrivacidadeFinanceira();
  const mes=document.getElementById('v11NfMes');if(mes&&!mes.value)mes.value=hojeISO().slice(0,7);
