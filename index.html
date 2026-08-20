@@ -462,6 +462,27 @@ body.financeiro-oculto #pcMedVarejo::after{
 .prod-status.ativo{background:#e4f5eb;color:var(--verde)}.prod-status.inativo{background:#eef1f2;color:#59676d}
 @media(max-width:700px){.header-tools{justify-content:flex-start}.privacy-control{width:100%;max-width:230px}.privacy-copy{flex:1}}
 
+
+/* Ajuste final da nota do cliente — modelo compacto para celular/WhatsApp */
+#notaClienteModal.aberto{align-items:flex-start;justify-content:center}
+.nota-cliente-doc{width:min(880px,calc(100vw - 20px));max-width:880px;margin:10px auto;padding:18px;overflow:visible}
+.nc-actions{display:flex;justify-content:flex-end!important;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:#fff;z-index:5}
+.nc-slogan{white-space:normal}
+@media(max-width:650px){
+ #notaClienteModal{padding:4px}
+ .nota-cliente-doc{width:calc(100vw - 8px);padding:8px;margin:4px auto}
+ .nc-actions{position:static;justify-content:center!important}
+ .nc-actions .btn{min-width:0;flex:1 1 31%;font-size:11px;padding:9px 7px}
+ .nc-topo{flex-direction:row;align-items:flex-start}
+ .nc-titulo{text-align:right}
+ .nc-marca{font-size:17px}
+ .nc-slogan{font-size:8px;max-width:280px}
+ .nc-titulo strong{font-size:14px}.nc-titulo span{font-size:9px}
+ .nc-financeiro{grid-template-columns:1fr 1fr;gap:10px}
+ .nc-table th,.nc-table td{font-size:8px;padding:5px 3px}
+ .nc-table th{font-size:7px}
+ .nc-cliente{font-size:10px;padding:7px 8px}
+}
 </style>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2105,7 +2126,7 @@ function abrirNotaCliente(id){
  </tr>`).join('');
  document.getElementById('notaClienteConteudo').innerHTML=`
  <div class="nc-topo">
-   <div><div class="nc-marca">GRANJA SÃO JOSÉ</div><div class="nc-slogan">Qualidade, tradição e confiança em cada ovo.</div></div>
+   <div><div class="nc-marca">GRANJA SÃO JOSÉ</div><div class="nc-slogan">Seguimos produzindo o melhor alimento depois do leite materno.</div></div>
    <div class="nc-titulo"><strong>NOTA DE VENDA</strong><span>Nº ${String(v.numero||'—').padStart(6,'0')} &nbsp; • &nbsp; ${dataBR(v.data)}</span></div>
  </div>
  <div class="nc-cliente"><strong>CLIENTE:</strong> ${v.cliente||'—'}</div>
@@ -2138,38 +2159,53 @@ function v11QuebrarTextoCanvas(ctx,text,maxWidth){
  if(linha)linhas.push(linha);return linhas;
 }
 function v11GerarImagemNota(v){
- const W=1080,M=70,azul='#0b4f73',cinza='#5d6970',linha='#d7dfe3';
- const itens=v.produtos||[];const extra=Math.max(0,itens.length-4)*58;const H=1500+extra;
+ const W=1200,M=62,azul='#124d63',cinza='#65747a',linha='#d7dfe3';
+ const itens=v.produtos||[];
+ const obsLinhas=v.observacoes?Math.min(3,Math.ceil(String(v.observacoes).length/95)):0;
+ const H=Math.max(820,690+(itens.length*56)+(obsLinhas*24));
  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
- x.fillStyle='#fff';x.fillRect(0,0,W,H);x.strokeStyle='#c8d2d6';x.lineWidth=2;x.strokeRect(30,30,W-60,H-60);
- x.textBaseline='top';
- x.fillStyle=azul;x.font='bold 42px Arial';x.fillText('GRANJA SÃO JOSÉ',M,72);
- x.fillStyle=cinza;x.font='20px Arial';x.fillText('Qualidade, tradição e confiança em cada ovo.',M,122);
- x.textAlign='right';x.fillStyle=azul;x.font='bold 34px Arial';x.fillText('NOTA DE VENDA',W-M,72);
- x.fillStyle=cinza;x.font='20px Arial';x.fillText('Nº '+String(v.numero||'—').padStart(6,'0')+'  •  '+dataBR(v.data),W-M,118);x.textAlign='left';
- x.strokeStyle=azul;x.lineWidth=4;x.beginPath();x.moveTo(M,165);x.lineTo(W-M,165);x.stroke();
- x.fillStyle='#f2f5f6';x.fillRect(M,195,W-2*M,58);x.fillStyle='#17252b';x.font='bold 23px Arial';x.fillText('CLIENTE: '+(v.cliente||'—'),M+18,211);
- let y=290;const cols=[M,M+95,M+230,M+650,M+835,W-M];
- x.fillStyle=azul;x.fillRect(M,y,W-2*M,54);x.fillStyle='#fff';x.font='bold 18px Arial';
- ['QTD.','UNIDADE','CLASSIFICAÇÃO / PRODUTO','VALOR UNIT.','TOTAL'].forEach((t,i)=>x.fillText(t,cols[i]+8,y+17));y+=54;
- x.font='19px Arial';
- itens.forEach(p=>{x.fillStyle='#222';x.fillText(String(p.quantidade||0),cols[0]+8,y+17);x.fillText(String(p.unidade||'Caixa'),cols[1]+8,y+17);
-   const linhas=v11QuebrarTextoCanvas(x,p.produto||'',390);linhas.slice(0,2).forEach((t,j)=>x.fillText(t,cols[2]+8,y+10+j*23));
-   x.textAlign='right';x.fillText(moeda(p.valorUnit||0),cols[4]-12,y+17);x.font='bold 19px Arial';x.fillText(moeda(p.total||0),cols[5]-8,y+17);x.font='19px Arial';x.textAlign='left';
-   x.strokeStyle=linha;x.lineWidth=1;x.beginPath();x.moveTo(M,y+58);x.lineTo(W-M,y+58);x.stroke();y+=58;});
- y+=28;const pago=valorPagoVenda(v),saldo=saldoVenda(v),sit=situacaoFinanceira(v);
- x.fillStyle=azul;x.font='bold 19px Arial';x.fillText('INFORMAÇÕES DA VENDA',M,y);x.fillText('RESUMO FINANCEIRO',590,y);y+=40;
- x.fillStyle='#222';x.font='19px Arial';x.fillText('Forma de pagamento',M,y);x.font='bold 19px Arial';x.fillText(v.pagamento||'—',330,y);x.font='19px Arial';
- x.fillText('Vencimento',M,y+42);x.font='bold 19px Arial';x.fillText(dataBR(v.vencimento)||'—',330,y+42);x.font='19px Arial';
- x.fillText('Valor pago',M,y+84);x.font='bold 19px Arial';x.fillText(moeda(pago),330,y+84);x.font='19px Arial';
- x.fillText('Situação',M,y+126);x.font='bold 19px Arial';x.fillText(sit.toUpperCase(),330,y+126);
- const rx=590,rw=W-M-rx;x.font='19px Arial';x.fillText('Subtotal',rx,y);x.textAlign='right';x.font='bold 19px Arial';x.fillText(moeda(v.subtotal||0),W-M,y);x.textAlign='left';
- x.font='19px Arial';x.fillText('Desconto',rx,y+42);x.textAlign='right';x.font='bold 19px Arial';x.fillText(moeda(v.desconto||0),W-M,y+42);x.textAlign='left';
- x.fillStyle=azul;x.fillRect(rx,y+84,rw,58);x.fillStyle='#fff';x.font='bold 22px Arial';x.fillText('TOTAL DA VENDA',rx+14,y+100);x.textAlign='right';x.fillText(moeda(v.total||0),W-M-12,y+100);x.textAlign='left';
- if(saldo>0){x.fillStyle='#8f1f1f';x.font='bold 19px Arial';x.fillText('SALDO A RECEBER',rx,y+162);x.textAlign='right';x.fillText(moeda(saldo),W-M,y+162);x.textAlign='left'}
- y+=235;if(v.observacoes){x.fillStyle=cinza;x.font='18px Arial';const obs=v11QuebrarTextoCanvas(x,'Observações: '+v.observacoes,W-2*M);obs.slice(0,4).forEach((t,j)=>x.fillText(t,M,y+j*25));y+=obs.length*25+20}
- x.strokeStyle='#cbd6da';x.lineWidth=2;x.beginPath();x.moveTo(M,H-150);x.lineTo(W-M,H-150);x.stroke();x.fillStyle=azul;x.textAlign='center';x.font='bold 22px Arial';x.fillText('OBRIGADO PELA PREFERÊNCIA!',W/2,H-115);x.textAlign='left';
- return new Promise(resolve=>c.toBlob(resolve,'image/png',0.95));
+ x.fillStyle='#fff';x.fillRect(0,0,W,H);x.textBaseline='top';
+ // Cabeçalho no mesmo estilo da nota usada anteriormente
+ x.fillStyle=azul;x.font='bold 35px Arial';x.fillText('GRANJA SÃO JOSÉ',M,48);
+ x.fillStyle=cinza;x.font='16px Arial';x.fillText('Seguimos produzindo o melhor alimento depois do leite materno.',M,91);
+ x.textAlign='right';x.fillStyle=azul;x.font='bold 28px Arial';x.fillText('NOTA DE VENDA',W-M,48);
+ x.fillStyle=cinza;x.font='17px Arial';x.fillText('Nº '+String(v.numero||'—').padStart(6,'0')+'  •  '+dataBR(v.data),W-M,88);x.textAlign='left';
+ x.strokeStyle=azul;x.lineWidth=3;x.beginPath();x.moveTo(M,128);x.lineTo(W-M,128);x.stroke();
+ // Cliente
+ x.fillStyle='#f1f4f5';x.fillRect(M,152,W-2*M,50);x.fillStyle=azul;x.fillRect(M,152,5,50);
+ x.fillStyle='#24343a';x.font='bold 16px Arial';x.fillText('CLIENTE:',M+18,169);x.font='16px Arial';x.fillText(v.cliente||'—',M+102,169);
+ // Produtos
+ let y=228;const cols=[M,M+82,M+205,M+710,M+925,W-M];
+ x.fillStyle=azul;x.fillRect(M,y,W-2*M,44);x.fillStyle='#fff';x.font='bold 13px Arial';
+ ['QTD.','UNIDADE','CLASSIFICAÇÃO / PRODUTO','VALOR UNIT.','TOTAL'].forEach((t,i)=>x.fillText(t,cols[i]+7,y+14));y+=44;
+ x.font='16px Arial';
+ itens.forEach(p=>{
+   x.fillStyle='#27343a';x.fillText(String(p.quantidade||0),cols[0]+7,y+15);x.fillText(String(p.unidade||'Caixa'),cols[1]+7,y+15);
+   const ls=v11QuebrarTextoCanvas(x,p.produto||'',470);ls.slice(0,2).forEach((t,j)=>x.fillText(t,cols[2]+7,y+8+j*20));
+   x.textAlign='right';x.fillText(moeda(p.valorUnit||0),cols[4]-12,y+15);x.font='bold 16px Arial';x.fillText(moeda(p.total||0),cols[5]-6,y+15);x.font='16px Arial';x.textAlign='left';
+   x.strokeStyle=linha;x.lineWidth=1;x.beginPath();x.moveTo(M,y+54);x.lineTo(W-M,y+54);x.stroke();y+=54;
+ });
+ y+=25;
+ const pago=valorPagoVenda(v),saldo=saldoVenda(v),sit=situacaoFinanceira(v);
+ // Informações e resumo lado a lado
+ const split=670;
+ x.fillStyle=azul;x.font='bold 15px Arial';x.fillText('INFORMAÇÕES DA VENDA',M,y);x.fillText('RESUMO FINANCEIRO',split,y);y+=32;
+ x.font='15px Arial';x.fillStyle=cinza;
+ const pagTxt=(v.pagamento&&String(v.pagamento).trim())?v.pagamento:'A combinar';
+ const info=[['Forma de pagamento',pagTxt],['Vencimento',dataBR(v.vencimento)||'—'],['Valor pago',moeda(pago)],['Situação',sit.toUpperCase()]];
+ info.forEach((r,i)=>{const yy=y+i*34;x.fillStyle=cinza;x.font='15px Arial';x.fillText(r[0],M,yy);x.textAlign='right';x.fillStyle='#26363c';x.font='bold 15px Arial';x.fillText(r[1],split-42,yy);x.textAlign='left';x.strokeStyle='#e0e6e8';x.beginPath();x.moveTo(M,yy+26);x.lineTo(split-42,yy+26);x.stroke();});
+ const rx=split,rw=W-M-rx;
+ const rows=[['Subtotal',moeda(v.subtotal||0)],['Desconto',moeda(v.desconto||0)]];
+ rows.forEach((r,i)=>{const yy=y+i*34;x.fillStyle=cinza;x.font='15px Arial';x.fillText(r[0],rx,yy);x.textAlign='right';x.fillStyle='#26363c';x.font='bold 15px Arial';x.fillText(r[1],W-M,yy);x.textAlign='left';x.strokeStyle='#e0e6e8';x.beginPath();x.moveTo(rx,yy+26);x.lineTo(W-M,yy+26);x.stroke();});
+ x.fillStyle=azul;x.fillRect(rx,y+68,rw,48);x.fillStyle='#fff';x.font='bold 19px Arial';x.fillText('TOTAL DA VENDA',rx+12,y+82);x.textAlign='right';x.fillText(moeda(v.total||0),W-M-10,y+82);x.textAlign='left';
+ if(saldo>0){x.fillStyle='#9a2626';x.font='bold 15px Arial';x.fillText('SALDO A RECEBER',rx,y+128);x.textAlign='right';x.fillText(moeda(saldo),W-M,y+128);x.textAlign='left'}
+ y+=165;
+ if(v.observacoes){x.fillStyle=cinza;x.font='14px Arial';const obs=v11QuebrarTextoCanvas(x,'Observações: '+v.observacoes,W-2*M);obs.slice(0,3).forEach((t,j)=>x.fillText(t,M,y+j*22));y+=Math.min(3,obs.length)*22+10}
+ // Rodapé acompanha o conteúdo, sem grande espaço vazio
+ const footerY=Math.min(H-60,Math.max(y+28,H-72));
+ x.strokeStyle='#cbd6da';x.lineWidth=1;x.beginPath();x.moveTo(M,footerY-28);x.lineTo(W-M,footerY-28);x.stroke();
+ x.fillStyle=azul;x.textAlign='center';x.font='bold 16px Arial';x.fillText('OBRIGADO PELA PREFERÊNCIA!',W/2,footerY);x.textAlign='left';
+ return new Promise(resolve=>c.toBlob(resolve,'image/png',0.96));
 }
 async function compartilharNotaCliente(){
  const v=vendas.find(x=>x.id===notaClienteVendaAtual);if(!v)return alert('Abra uma nota antes de compartilhar.');
