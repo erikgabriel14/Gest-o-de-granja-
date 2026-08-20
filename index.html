@@ -118,7 +118,7 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
 .linha-vencida{background:#fff0f0}
 
 
-#notaClienteModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;padding:18px;overflow:auto;box-sizing:border-box}
+#notaClienteModal{--azul:#0b2f4a;display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;padding:18px;overflow:auto;box-sizing:border-box}
 #notaClienteModal.aberto{display:flex;align-items:flex-start;justify-content:center}
 .nota-cliente-doc{background:#fff;width:min(790px,100%);max-width:790px;margin:0 auto;border-radius:12px;padding:24px;box-shadow:0 15px 50px rgba(0,0,0,.2);box-sizing:border-box;overflow-x:hidden}
 .nc-actions{position:sticky;top:0;z-index:3;background:#fff;padding:8px 0 12px;margin:0 0 8px!important;border-bottom:1px solid #e4eaec}
@@ -655,13 +655,16 @@ body.financeiro-oculto #pcMedVarejo::after{
 
   <div class="bloco-opcoes">
 <div>
-<h4>PAGAMENTO DIVIDIDO</h4>
-<div class="help print-hide">Pode combinar PIX, dinheiro, cheque e outro na mesma venda.</div>
+<h4>FORMA DE PAGAMENTO</h4>
+<div class="form-grid" style="margin-bottom:10px">
+<div><label>Forma informada ao cliente</label><select id="formaPagamentoVenda" onchange="atualizarFormaPagamentoVenda()"><option value="">Selecione...</option><option value="Pix">Pix</option><option value="Dinheiro">Dinheiro</option><option value="Dividido">Dividido</option><option value="Cheque">Cheque</option><option value="Outro">Outro</option></select></div>
+</div>
+<div class="help print-hide">Escolha a forma correta. Se for dividido, informe abaixo quanto foi recebido em cada forma.</div>
 <div class="form-grid">
-<div><label>PIX (R$)</label><input id="pagPix" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
-<div><label>Dinheiro (R$)</label><input id="pagDinheiro" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
-<div><label>Cheque (R$)</label><input id="pagCheque" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
-<div><label>Cartão / Outro (R$)</label><input id="pagOutro" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
+<div><label>PIX recebido (R$)</label><input id="pagPix" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
+<div><label>Dinheiro recebido (R$)</label><input id="pagDinheiro" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
+<div><label>Cheque recebido (R$)</label><input id="pagCheque" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
+<div><label>Outro recebido (R$)</label><input id="pagOutro" type="number" min="0" step="0.01" value="0" oninput="atualizarPagamentoDividido()"></div>
 </div>
 </div>
 <div>
@@ -1721,6 +1724,42 @@ function situacaoFinanceira(v){
 function totalPagamentoDividido(){
   return ['pagPix','pagDinheiro','pagCheque','pagOutro'].reduce((s,id)=>s+Math.max(0,Number(document.getElementById(id)?.value||0)),0);
 }
+function formaPagamentoExibida(v){
+  const forma=String(v?.pagamento||'').trim();
+  const pg=v?.pagamentos||{};
+  const usadas=[];
+  if(Number(pg.pix||0)>0)usadas.push('Pix');
+  if(Number(pg.dinheiro||0)>0)usadas.push('Dinheiro');
+  if(Number(pg.cheque||0)>0)usadas.push('Cheque');
+  if(Number(pg.outro||0)>0)usadas.push('Outro');
+  // Corrige automaticamente vendas antigas que eram gravadas como “Dividido” mesmo usando só uma forma.
+  if(forma==='Dividido' && usadas.length===1)return usadas[0];
+  if(forma)return forma;
+  if(usadas.length===1)return usadas[0];
+  if(usadas.length>1)return 'Dividido';
+  return '—';
+}
+function detalhesPagamentoDividido(v){
+  const pg=v?.pagamentos||{}, partes=[];
+  if(Number(pg.pix||0)>0)partes.push('Pix '+moeda(pg.pix));
+  if(Number(pg.dinheiro||0)>0)partes.push('Dinheiro '+moeda(pg.dinheiro));
+  if(Number(pg.cheque||0)>0)partes.push('Cheque '+moeda(pg.cheque));
+  if(Number(pg.outro||0)>0)partes.push('Outro '+moeda(pg.outro));
+  return partes.join(' + ');
+}
+function descricaoPagamentoNota(v){
+  const forma=formaPagamentoExibida(v);
+  if(forma==='Dividido'){
+    const detalhe=detalhesPagamentoDividido(v);
+    return detalhe?'Dividido — '+detalhe:'Dividido';
+  }
+  return forma;
+}
+function atualizarFormaPagamentoVenda(){
+  const forma=document.getElementById('formaPagamentoVenda')?.value||'';
+  const ajuda=document.getElementById('ajudaFormaPagamentoVenda');
+  if(ajuda)ajuda.textContent=forma==='Dividido'?'Informe os valores de cada forma usada.':'';
+}
 function atualizarPagamentoDividido(){
   const textoTotal=document.getElementById('totalVenda').textContent||'R$ 0,00';
   const total=Number(textoTotal.replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'))||0;
@@ -1752,6 +1791,7 @@ function limparFormulario(){
   document.getElementById('assinaturaExibida').value='Erik Gabriel';
   document.getElementById('desconto').value=0;
   document.getElementById('observacoes').value='';
+  if(document.getElementById('formaPagamentoVenda'))document.getElementById('formaPagamentoVenda').value='';
   ['pagPix','pagDinheiro','pagCheque','pagOutro'].forEach(id=>document.getElementById(id).value=0);
   document.getElementById('valorPagoVenda').value=moeda(0);
   ['chequeBancoVenda','chequeNumeroVenda','chequeEmitenteVenda','chequeDataVenda'].forEach(id=>document.getElementById(id).value='');
@@ -1780,6 +1820,12 @@ function salvarVenda(){
   }).filter(p=>p.produto&&p.quantidade>0);
   if(!produtos.length){alert('Adicione pelo menos um produto.');return}
   const subtotal=produtos.reduce((s,p)=>s+p.total,0),desconto=Number(document.getElementById('desconto').value||0),total=Math.max(0,subtotal-desconto);
+  const formaPagamento=(document.getElementById('formaPagamentoVenda')?.value||'').trim();
+  if(!formaPagamento){alert('Selecione a forma de pagamento: Pix, Dinheiro, Dividido, Cheque ou Outro.');return}
+  const pagamentosVenda={pix:Math.max(0,Number(document.getElementById('pagPix').value||0)),dinheiro:Math.max(0,Number(document.getElementById('pagDinheiro').value||0)),cheque:Math.max(0,Number(document.getElementById('pagCheque').value||0)),outro:Math.max(0,Number(document.getElementById('pagOutro').value||0))};
+  const usadasPagamento=Object.entries(pagamentosVenda).filter(([,valor])=>Number(valor)>0).map(([chave])=>chave);
+  const chaveEsperada={Pix:'pix',Dinheiro:'dinheiro',Cheque:'cheque',Outro:'outro'}[formaPagamento];
+  if(formaPagamento!=='Dividido' && usadasPagamento.some(chave=>chave!==chaveEsperada)){alert('Há valor lançado em outra forma de pagamento. Corrija os valores ou selecione “Dividido”.');return}
   const editId=Number(document.getElementById('editId').value||0);
   const venda={
     id:editId||gerarId(),numero:Number(document.getElementById('numeroVenda').value||proximoNumero()),cliente,
@@ -1788,8 +1834,8 @@ function salvarVenda(){
     vendedor:document.getElementById('vendedor').value.trim(),responsavel:document.getElementById('responsavelVenda').value.trim(),
     assinatura:document.getElementById('assinaturaExibida').value.trim(),produtos,subtotal,desconto,total,
     custoTotal:produtos.reduce((s,p)=>s+p.custoTotal,0),
-    pagamento:'Dividido',
-    pagamentos:{pix:Math.max(0,Number(document.getElementById('pagPix').value||0)),dinheiro:Math.max(0,Number(document.getElementById('pagDinheiro').value||0)),cheque:Math.max(0,Number(document.getElementById('pagCheque').value||0)),outro:Math.max(0,Number(document.getElementById('pagOutro').value||0))},
+    pagamento:formaPagamento,
+    pagamentos:pagamentosVenda,
     valorPago:Math.min(total,totalPagamentoDividido()),
     cheque:Number(document.getElementById('pagCheque').value||0)>0?{valor:Math.max(0,Number(document.getElementById('pagCheque').value||0)),banco:document.getElementById('chequeBancoVenda').value.trim(),numero:document.getElementById('chequeNumeroVenda').value.trim(),emitente:document.getElementById('chequeEmitenteVenda').value.trim(),data:document.getElementById('chequeDataVenda').value,status:'Em carteira'}:null,
     situacao:'Pendente',
@@ -1822,6 +1868,7 @@ function editarVenda(id){
   document.getElementById('assinaturaExibida').value=v.assinatura||v.responsavel||'Erik Gabriel';
   document.getElementById('desconto').value=v.desconto||0;document.getElementById('observacoes').value=v.observacoes||'';
   const pg=v.pagamentos||{};document.getElementById('pagPix').value=pg.pix||0;document.getElementById('pagDinheiro').value=pg.dinheiro||0;document.getElementById('pagCheque').value=pg.cheque||0;document.getElementById('pagOutro').value=pg.outro||0;
+  if(document.getElementById('formaPagamentoVenda')){const fp=formaPagamentoExibida(v);document.getElementById('formaPagamentoVenda').value=['Pix','Dinheiro','Dividido','Cheque','Outro'].includes(fp)?fp:'';}
   if(v.cheque){document.getElementById('chequeBancoVenda').value=v.cheque.banco||'';document.getElementById('chequeNumeroVenda').value=v.cheque.numero||'';document.getElementById('chequeEmitenteVenda').value=v.cheque.emitente||'';document.getElementById('chequeDataVenda').value=v.cheque.data||'';}
   const sr=document.querySelector(`input[name="situacaoRadio"][value="${v.situacao}"]`);if(sr)sr.checked=true;
   document.getElementById('produtos').innerHTML='';
@@ -2134,7 +2181,7 @@ function abrirNotaCliente(id){
  <div class="nc-financeiro">
    <div class="nc-info-venda">
      <h4>INFORMAÇÕES DA VENDA</h4>
-     <div><span>Forma de pagamento</span><strong>${v.pagamento||'—'}</strong></div>
+     <div><span>Forma de pagamento</span><strong>${descricaoPagamentoNota(v)}</strong></div>
      <div><span>Vencimento</span><strong>${dataBR(v.vencimento)}</strong></div>
      <div><span>Valor pago</span><strong>${moeda(pago)}</strong></div>
      <div><span>Situação</span><span class="nc-status ${classe}">${sit.toUpperCase()}</span></div>
@@ -2159,7 +2206,7 @@ function v11QuebrarTextoCanvas(ctx,text,maxWidth){
  if(linha)linhas.push(linha);return linhas;
 }
 function v11GerarImagemNota(v){
- const W=1200,M=62,azul='#124d63',cinza='#65747a',linha='#d7dfe3';
+ const W=1200,M=62,azul='#0b2f4a',cinza='#65747a',linha='#d7dfe3';
  const itens=v.produtos||[];
  const obsLinhas=v.observacoes?Math.min(3,Math.ceil(String(v.observacoes).length/95)):0;
  const H=Math.max(820,690+(itens.length*56)+(obsLinhas*24));
@@ -2191,7 +2238,7 @@ function v11GerarImagemNota(v){
  const split=670;
  x.fillStyle=azul;x.font='bold 15px Arial';x.fillText('INFORMAÇÕES DA VENDA',M,y);x.fillText('RESUMO FINANCEIRO',split,y);y+=32;
  x.font='15px Arial';x.fillStyle=cinza;
- const pagTxt=(v.pagamento&&String(v.pagamento).trim())?v.pagamento:'A combinar';
+ const pagTxt=descricaoPagamentoNota(v);
  const info=[['Forma de pagamento',pagTxt],['Vencimento',dataBR(v.vencimento)||'—'],['Valor pago',moeda(pago)],['Situação',sit.toUpperCase()]];
  info.forEach((r,i)=>{const yy=y+i*34;x.fillStyle=cinza;x.font='15px Arial';x.fillText(r[0],M,yy);x.textAlign='right';x.fillStyle='#26363c';x.font='bold 15px Arial';x.fillText(r[1],split-42,yy);x.textAlign='left';x.strokeStyle='#e0e6e8';x.beginPath();x.moveTo(M,yy+26);x.lineTo(split-42,yy+26);x.stroke();});
  const rx=split,rw=W-M-rx;
