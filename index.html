@@ -118,9 +118,11 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
 .linha-vencida{background:#fff0f0}
 
 
-#notaClienteModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;padding:18px;overflow:auto}
-#notaClienteModal.aberto{display:block}
-.nota-cliente-doc{background:#fff;max-width:790px;margin:auto;border-radius:12px;padding:24px;box-shadow:0 15px 50px rgba(0,0,0,.2)}
+#notaClienteModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;padding:18px;overflow:auto;box-sizing:border-box}
+#notaClienteModal.aberto{display:flex;align-items:flex-start;justify-content:center}
+.nota-cliente-doc{background:#fff;width:min(790px,100%);max-width:790px;margin:0 auto;border-radius:12px;padding:24px;box-shadow:0 15px 50px rgba(0,0,0,.2);box-sizing:border-box;overflow-x:hidden}
+.nc-actions{position:sticky;top:0;z-index:3;background:#fff;padding:8px 0 12px;margin:0 0 8px!important;border-bottom:1px solid #e4eaec}
+#notaClienteConteudo{width:100%;min-width:0;overflow:hidden}
 .nc-topo{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:2px solid var(--azul);padding-bottom:12px;margin-bottom:12px}
 .nc-marca{font-size:25px;font-weight:900;letter-spacing:.5px;color:var(--azul)}
 .nc-slogan{font-size:10px;color:#52656d;margin-top:4px;letter-spacing:.2px}
@@ -137,7 +139,7 @@ th{background:var(--azul);color:#fff}.table-wrap{overflow:auto}
 .nc-status{display:inline-block;border-radius:999px;padding:4px 9px;font-weight:900;font-size:10px}
 .nc-status.pago{background:#e4f5eb;color:var(--verde)}.nc-status.parcial{background:#e8f0fa;color:#315d8a}.nc-status.pendente{background:#fff1d6;color:#8a5a00}
 .nc-rodape{text-align:center;border-top:1px solid #cbd6da;margin-top:22px;padding-top:12px;color:var(--azul);font-weight:900;font-size:12px;letter-spacing:.3px}
-@media(max-width:650px){.nc-financeiro{grid-template-columns:1fr}.nota-cliente-doc{padding:16px}.nc-topo{gap:10px}.nc-marca{font-size:20px}}
+@media(max-width:650px){#notaClienteModal{padding:8px}.nc-financeiro{grid-template-columns:1fr}.nota-cliente-doc{padding:12px;border-radius:10px}.nc-topo{gap:10px;flex-direction:column}.nc-titulo{text-align:left}.nc-marca{font-size:20px}.nc-table{display:table;table-layout:fixed}.nc-table th,.nc-table td{padding:6px 4px;font-size:10px;word-break:break-word}.nc-actions{justify-content:center!important}.nc-actions .btn{flex:1 1 auto;min-width:130px}}
 @media print{
  body.print-nota-cliente > *:not(#notaClienteModal){display:none!important}
  body.print-nota-cliente #notaClienteModal{display:block!important;position:static;background:#fff;padding:0}
@@ -2091,8 +2093,10 @@ let mudouV9=false;
 classificacoesPadraoV9.forEach(nome=>{if(!produtosCad.some(p=>p.nome===nome)&&!produtosExcluidosV11.includes(nome)){produtosCad.push({id:gerarId(),nome,preco:0,custo:0,margemMin:10,ativo:'sim'});mudouV9=true}});
 if(mudouV9)localStorage.setItem('granja_produtos',JSON.stringify(produtosCad));
 
+let notaClienteVendaAtual=null;
 function abrirNotaCliente(id){
  const v=vendas.find(x=>x.id===id);if(!v)return;
+ notaClienteVendaAtual=id;
  const pago=valorPagoVenda(v),saldo=saldoVenda(v),sit=situacaoFinanceira(v);
  const classe=sit==='Pago'?'pago':sit==='Parcial'?'parcial':'pendente';
  const linhas=(v.produtos||[]).map(p=>`<tr>
@@ -2126,8 +2130,59 @@ function abrirNotaCliente(id){
  <div class="nc-rodape">OBRIGADO PELA PREFERÊNCIA!</div>`;
  document.getElementById('notaClienteModal').classList.add('aberto');
 }
-function fecharNotaCliente(){document.getElementById('notaClienteModal').classList.remove('aberto')}
+function fecharNotaCliente(){document.getElementById('notaClienteModal').classList.remove('aberto');notaClienteVendaAtual=null}
 function imprimirNotaCliente(){document.body.classList.add('print-nota-cliente');window.print();setTimeout(()=>document.body.classList.remove('print-nota-cliente'),400)}
+function v11QuebrarTextoCanvas(ctx,text,maxWidth){
+ const palavras=String(text||'').split(/\s+/),linhas=[];let linha='';
+ palavras.forEach(p=>{const teste=linha?linha+' '+p:p;if(ctx.measureText(teste).width>maxWidth&&linha){linhas.push(linha);linha=p}else linha=teste});
+ if(linha)linhas.push(linha);return linhas;
+}
+function v11GerarImagemNota(v){
+ const W=1080,M=70,azul='#0b4f73',cinza='#5d6970',linha='#d7dfe3';
+ const itens=v.produtos||[];const extra=Math.max(0,itens.length-4)*58;const H=1500+extra;
+ const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ x.fillStyle='#fff';x.fillRect(0,0,W,H);x.strokeStyle='#c8d2d6';x.lineWidth=2;x.strokeRect(30,30,W-60,H-60);
+ x.textBaseline='top';
+ x.fillStyle=azul;x.font='bold 42px Arial';x.fillText('GRANJA SÃO JOSÉ',M,72);
+ x.fillStyle=cinza;x.font='20px Arial';x.fillText('Qualidade, tradição e confiança em cada ovo.',M,122);
+ x.textAlign='right';x.fillStyle=azul;x.font='bold 34px Arial';x.fillText('NOTA DE VENDA',W-M,72);
+ x.fillStyle=cinza;x.font='20px Arial';x.fillText('Nº '+String(v.numero||'—').padStart(6,'0')+'  •  '+dataBR(v.data),W-M,118);x.textAlign='left';
+ x.strokeStyle=azul;x.lineWidth=4;x.beginPath();x.moveTo(M,165);x.lineTo(W-M,165);x.stroke();
+ x.fillStyle='#f2f5f6';x.fillRect(M,195,W-2*M,58);x.fillStyle='#17252b';x.font='bold 23px Arial';x.fillText('CLIENTE: '+(v.cliente||'—'),M+18,211);
+ let y=290;const cols=[M,M+95,M+230,M+650,M+835,W-M];
+ x.fillStyle=azul;x.fillRect(M,y,W-2*M,54);x.fillStyle='#fff';x.font='bold 18px Arial';
+ ['QTD.','UNIDADE','CLASSIFICAÇÃO / PRODUTO','VALOR UNIT.','TOTAL'].forEach((t,i)=>x.fillText(t,cols[i]+8,y+17));y+=54;
+ x.font='19px Arial';
+ itens.forEach(p=>{x.fillStyle='#222';x.fillText(String(p.quantidade||0),cols[0]+8,y+17);x.fillText(String(p.unidade||'Caixa'),cols[1]+8,y+17);
+   const linhas=v11QuebrarTextoCanvas(x,p.produto||'',390);linhas.slice(0,2).forEach((t,j)=>x.fillText(t,cols[2]+8,y+10+j*23));
+   x.textAlign='right';x.fillText(moeda(p.valorUnit||0),cols[4]-12,y+17);x.font='bold 19px Arial';x.fillText(moeda(p.total||0),cols[5]-8,y+17);x.font='19px Arial';x.textAlign='left';
+   x.strokeStyle=linha;x.lineWidth=1;x.beginPath();x.moveTo(M,y+58);x.lineTo(W-M,y+58);x.stroke();y+=58;});
+ y+=28;const pago=valorPagoVenda(v),saldo=saldoVenda(v),sit=situacaoFinanceira(v);
+ x.fillStyle=azul;x.font='bold 19px Arial';x.fillText('INFORMAÇÕES DA VENDA',M,y);x.fillText('RESUMO FINANCEIRO',590,y);y+=40;
+ x.fillStyle='#222';x.font='19px Arial';x.fillText('Forma de pagamento',M,y);x.font='bold 19px Arial';x.fillText(v.pagamento||'—',330,y);x.font='19px Arial';
+ x.fillText('Vencimento',M,y+42);x.font='bold 19px Arial';x.fillText(dataBR(v.vencimento)||'—',330,y+42);x.font='19px Arial';
+ x.fillText('Valor pago',M,y+84);x.font='bold 19px Arial';x.fillText(moeda(pago),330,y+84);x.font='19px Arial';
+ x.fillText('Situação',M,y+126);x.font='bold 19px Arial';x.fillText(sit.toUpperCase(),330,y+126);
+ const rx=590,rw=W-M-rx;x.font='19px Arial';x.fillText('Subtotal',rx,y);x.textAlign='right';x.font='bold 19px Arial';x.fillText(moeda(v.subtotal||0),W-M,y);x.textAlign='left';
+ x.font='19px Arial';x.fillText('Desconto',rx,y+42);x.textAlign='right';x.font='bold 19px Arial';x.fillText(moeda(v.desconto||0),W-M,y+42);x.textAlign='left';
+ x.fillStyle=azul;x.fillRect(rx,y+84,rw,58);x.fillStyle='#fff';x.font='bold 22px Arial';x.fillText('TOTAL DA VENDA',rx+14,y+100);x.textAlign='right';x.fillText(moeda(v.total||0),W-M-12,y+100);x.textAlign='left';
+ if(saldo>0){x.fillStyle='#8f1f1f';x.font='bold 19px Arial';x.fillText('SALDO A RECEBER',rx,y+162);x.textAlign='right';x.fillText(moeda(saldo),W-M,y+162);x.textAlign='left'}
+ y+=235;if(v.observacoes){x.fillStyle=cinza;x.font='18px Arial';const obs=v11QuebrarTextoCanvas(x,'Observações: '+v.observacoes,W-2*M);obs.slice(0,4).forEach((t,j)=>x.fillText(t,M,y+j*25));y+=obs.length*25+20}
+ x.strokeStyle='#cbd6da';x.lineWidth=2;x.beginPath();x.moveTo(M,H-150);x.lineTo(W-M,H-150);x.stroke();x.fillStyle=azul;x.textAlign='center';x.font='bold 22px Arial';x.fillText('OBRIGADO PELA PREFERÊNCIA!',W/2,H-115);x.textAlign='left';
+ return new Promise(resolve=>c.toBlob(resolve,'image/png',0.95));
+}
+async function compartilharNotaCliente(){
+ const v=vendas.find(x=>x.id===notaClienteVendaAtual);if(!v)return alert('Abra uma nota antes de compartilhar.');
+ try{
+  const blob=await v11GerarImagemNota(v);if(!blob)throw new Error('Falha ao gerar imagem');
+  const nome='Nota_'+String(v.numero||'venda')+'_'+String(v.cliente||'cliente').replace(/[^a-z0-9]+/gi,'_')+'.png';
+  const arq=new File([blob],nome,{type:'image/png'});
+  const texto='Granja São José — Nota de venda nº '+String(v.numero||'')+' — '+(v.cliente||'');
+  if(navigator.share && (!navigator.canShare || navigator.canShare({files:[arq]}))){await navigator.share({title:'Nota de Venda — Granja São José',text:texto,files:[arq]});return}
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=nome;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  alert('A imagem da nota foi gerada. Abra o WhatsApp e envie o arquivo baixado.');
+ }catch(e){if(e&&e.name==='AbortError')return;console.error(e);alert('Não foi possível compartilhar a nota neste navegador. Use “Gerar PDF / Imprimir” ou tente pelo navegador padrão do aparelho.');}
+}
 
 
 /* ===== SINCRONIZAÇÃO ONLINE V10 ===== */
@@ -2868,7 +2923,7 @@ setTimeout(()=>{ enterpriseRender(); },1300);
 
 <div id="notaClienteModal">
  <div class="nota-cliente-doc">
-  <div class="nc-actions actions" style="justify-content:flex-end;margin-top:0"><button class="btn primary" onclick="imprimirNotaCliente()">Gerar PDF / Imprimir</button><button class="btn secondary" onclick="fecharNotaCliente()">Fechar</button></div>
+  <div class="nc-actions actions" style="justify-content:flex-end;margin-top:0"><button class="btn success" onclick="compartilharNotaCliente()">Compartilhar / WhatsApp</button><button class="btn primary" onclick="imprimirNotaCliente()">Gerar PDF / Imprimir</button><button class="btn secondary" onclick="fecharNotaCliente()">Fechar</button></div>
   <div id="notaClienteConteudo"></div>
  </div>
 </div>
