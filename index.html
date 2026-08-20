@@ -551,6 +551,8 @@ body.financeiro-oculto #pcMedVarejo::after{
   <button data-section="custosV11">Custos e DRE</button>
   <button data-section="fechamentoV11">Fechamento Mensal</button>
   <button data-section="backupV11">Backup</button>
+
+  <button data-section="gestaoAvancadaV11">Gestão / Segurança</button>
 </nav>
 
 <main>
@@ -1289,6 +1291,218 @@ body.financeiro-oculto #pcMedVarejo::after{
 <h2>Backup / Segurança</h2><div class="help">Exporte os dados do painel antes de trocar de aparelho ou fazer grandes alterações.</div>
 <div class="actions"><button class="btn primary" onclick="v11ExportarBackup()">Gerar backup JSON</button><button class="btn" onclick="document.getElementById('v11BackupFile').click()">Restaurar backup</button><input id="v11BackupFile" type="file" accept=".json" style="display:none" onchange="v11ImportarBackup(event)"></div>
 </div></section>
+
+<!-- V11 GESTAO AVANCADA START -->
+<section id="gestaoAvancadaV11" class="section">
+  <div class="card">
+    <h2>Gestão, Segurança e Indicadores</h2>
+    <div class="help">Central de conferência da V11: fechamento diário, histórico de alterações, lixeira de segurança, resumo mensal, desempenho dos lotes, custo estimado do ovo, alertas e backup.</div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Fechamento diário</h2>
+    <div class="form-grid">
+      <div><label>Data</label><input id="v11SegFechData" type="date"></div>
+      <div><label>Status</label><input id="v11SegFechStatus" readonly></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="v11SegFecharDia()">Fechar dia</button>
+      <button class="btn secondary" onclick="v11SegReabrirDia()">Reabrir dia</button>
+    </div>
+    <div class="help" style="margin-top:10px">Quando um dia estiver fechado, novos lançamentos de venda, produção do lote e compra de insumos naquela data serão bloqueados até a reabertura.</div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Resumo mensal automático</h2>
+    <div class="form-grid">
+      <div><label>Mês</label><input id="v11SegMes" type="month" onchange="v11SegRenderResumo()"></div>
+    </div>
+    <div id="v11SegResumo" class="v2-kpi-grid" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Custo estimado do ovo</h2>
+    <div class="help">Use os custos mensais para estimar o custo por ovo, dúzia, pente e caixa. O cálculo usa a produção registrada nos lotes no mês selecionado.</div>
+    <div class="form-grid">
+      <div><label>Mão de obra do mês (R$)</label><input id="v11SegCustoMao" type="number" step="0.01" oninput="v11SegSalvarCustos()"></div>
+      <div><label>Outros custos do mês (R$)</label><input id="v11SegCustoOutros" type="number" step="0.01" oninput="v11SegSalvarCustos()"></div>
+      <div><label>Custo médio da ração (R$/kg)</label><input id="v11SegCustoRacaoKg" type="number" step="0.0001" oninput="v11SegSalvarCustos()"></div>
+      <div><label>Embalagens do mês (R$)</label><input id="v11SegCustoEmb" type="number" step="0.01" oninput="v11SegSalvarCustos()"></div>
+    </div>
+    <div id="v11SegCustoResultado" class="v2-kpi-grid" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Desempenho por lote</h2>
+    <div id="v11SegLotes"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Alertas inteligentes</h2>
+    <div id="v11SegAlertas"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Log de alterações</h2>
+    <div class="actions"><button class="btn secondary" onclick="v11SegLimparLog()">Limpar log</button></div>
+    <div id="v11SegLog" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Lixeira de segurança</h2>
+    <div class="help">Registros excluídos de vendas, lotes e entradas de insumos ficam guardados temporariamente aqui para recuperação.</div>
+    <div id="v11SegLixeira" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Backup</h2>
+    <div class="actions">
+      <button class="btn primary" onclick="if(typeof baixarBackup==='function')baixarBackup()">Exportar backup</button>
+      <button class="btn secondary" onclick="document.getElementById('arquivoBackup')?.click()">Restaurar backup</button>
+    </div>
+    <div id="v11SegBackupInfo" class="help" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const KLOG='gsj_v11_log_alteracoes', KLIX='gsj_v11_lixeira', KFECH='gsj_v11_dias_fechados', KCUST='gsj_v11_custos_mensais';
+  const get=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}};
+  const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const hoje=()=>new Date().toISOString().slice(0,10);
+  const mesAtual=()=>hoje().slice(0,7);
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  window.v11SegLog=function(acao,modulo,detalhe){
+    const l=get(KLOG,[]); l.unshift({id:Date.now()+Math.random(),dataHora:new Date().toISOString(),acao,modulo,detalhe:String(detalhe||'')});
+    if(l.length>500) l.length=500; set(KLOG,l); window.v11SegRenderLog?.();
+  };
+  window.v11SegDiaFechado=function(data){return !!get(KFECH,{})[data]};
+  window.v11SegAtualizarFechStatus=function(){
+    const d=document.getElementById('v11SegFechData'); const s=document.getElementById('v11SegFechStatus'); if(!d||!s)return;
+    s.value=v11SegDiaFechado(d.value)?'FECHADO':'ABERTO';
+  };
+  window.v11SegFecharDia=function(){
+    const d=document.getElementById('v11SegFechData')?.value; if(!d)return alert('Informe a data.');
+    const x=get(KFECH,{}); x[d]={fechadoEm:new Date().toISOString()}; set(KFECH,x); v11SegLog('Fechamento','Fechamento diário',d); v11SegAtualizarFechStatus();
+  };
+  window.v11SegReabrirDia=function(){
+    const d=document.getElementById('v11SegFechData')?.value; if(!d)return alert('Informe a data.');
+    const x=get(KFECH,{}); if(!x[d])return; if(!confirm('Reabrir o dia '+d+' para alterações?'))return;
+    delete x[d]; set(KFECH,x); v11SegLog('Reabertura','Fechamento diário',d); v11SegAtualizarFechStatus();
+  };
+
+  function addLixeira(tipo,id,registro,chave){
+    if(!registro)return; const l=get(KLIX,[]); l.unshift({lid:Date.now()+Math.random(),tipo,id,registro,chave,excluidoEm:new Date().toISOString()}); if(l.length>300)l.length=300; set(KLIX,l); v11SegRenderLixeira();
+  }
+  window.v11SegRestaurar=function(lid){
+    const l=get(KLIX,[]), item=l.find(x=>String(x.lid)===String(lid)); if(!item)return;
+    if(!confirm('Restaurar este registro?'))return;
+    let arr=get(item.chave,[]); if(!Array.isArray(arr))arr=[];
+    if(!arr.some(x=>String(x.id)===String(item.registro.id)))arr.push(item.registro);
+    set(item.chave,arr);
+    // synchronize known globals
+    if(item.chave==='granja_vendas' && typeof vendas!=='undefined') vendas=arr;
+    if(item.chave==='gsj_v11_lotes_cadastro' && typeof v11CadLotes!=='undefined') v11CadLotes=arr;
+    if(item.chave==='gsj_v11_fab_compras' && typeof v11FabCompras!=='undefined') v11FabCompras=arr;
+    set(KLIX,l.filter(x=>String(x.lid)!==String(lid)));
+    v11SegLog('Restauração',item.tipo,'Registro restaurado da lixeira');
+    try{renderTudo?.()}catch(e){} try{v11RenderCadLotes?.()}catch(e){} try{v11FabRenderTudo?.()}catch(e){}
+    v11SegRenderTudo();
+  };
+  window.v11SegEsvaziarItem=function(lid){const l=get(KLIX,[]);set(KLIX,l.filter(x=>String(x.lid)!==String(lid)));v11SegRenderLixeira()};
+
+  window.v11SegRenderLog=function(){
+    const el=document.getElementById('v11SegLog'); if(!el)return; const l=get(KLOG,[]);
+    if(!l.length){el.innerHTML='<div class="help">Nenhuma alteração registrada ainda.</div>';return}
+    el.innerHTML='<div class="table-wrap"><table><tr><th>Data/hora</th><th>Ação</th><th>Módulo</th><th>Detalhe</th></tr>'+l.slice(0,100).map(x=>`<tr><td>${new Date(x.dataHora).toLocaleString('pt-BR')}</td><td>${esc(x.acao)}</td><td>${esc(x.modulo)}</td><td>${esc(x.detalhe)}</td></tr>`).join('')+'</table></div>';
+  };
+  window.v11SegLimparLog=function(){if(confirm('Limpar todo o log de alterações?')){set(KLOG,[]);v11SegRenderLog()}};
+  window.v11SegRenderLixeira=function(){
+    const el=document.getElementById('v11SegLixeira'); if(!el)return; const l=get(KLIX,[]);
+    if(!l.length){el.innerHTML='<div class="help">A lixeira está vazia.</div>';return}
+    el.innerHTML='<div class="table-wrap"><table><tr><th>Excluído em</th><th>Tipo</th><th>Identificação</th><th>Ações</th></tr>'+l.map(x=>`<tr><td>${new Date(x.excluidoEm).toLocaleString('pt-BR')}</td><td>${esc(x.tipo)}</td><td>${esc(x.registro?.cliente||x.registro?.nome||x.registro?.item||x.registro?.numero||x.id||'Registro')}</td><td><button class="btn" onclick="v11SegRestaurar('${x.lid}')">Restaurar</button> <button class="btn secondary" onclick="v11SegEsvaziarItem('${x.lid}')">Excluir definitivo</button></td></tr>`).join('')+'</table></div>';
+  };
+
+  function dadosMes(){
+    const m=document.getElementById('v11SegMes')?.value||mesAtual();
+    const vs=get('granja_vendas',[]).filter(v=>(v.data||'').slice(0,7)===m);
+    const lotes=get('gsj_v11_lotes',[]).filter(r=>(r.data||'').slice(0,7)===m);
+    const compras=get('gsj_v11_fab_compras',[]).filter(r=>(r.data||'').slice(0,7)===m);
+    const fin=get('gsj_v11_fin',[]).filter(r=>(r.data||r.vencimento||'').slice(0,7)===m);
+    const fat=vs.reduce((s,v)=>s+Number(v.total||0),0);
+    const rec=vs.reduce((s,v)=>s+Number(v.valorPago||v.pago||0),0);
+    const ovos=lotes.reduce((s,r)=>s+Number(r.ovosBranco||r.ovosBrancos||0)+Number(r.ovosVermelho||r.ovosVermelhos||0)+Number(r.ovos||0),0);
+    const racao=lotes.reduce((s,r)=>s+Number(r.racao||r.racaoKg||0),0);
+    const mort=lotes.reduce((s,r)=>s+Number(r.mortalidade||r.mort||0),0);
+    const comprasV=compras.reduce((s,r)=>s+Number(r.total||r.valorTotal||0),0);
+    const despesas=fin.filter(x=>String(x.tipo||'').toLowerCase().includes('pagar')||String(x.natureza||'').toLowerCase().includes('sa')).reduce((s,x)=>s+Number(x.total||x.valor||0),0);
+    return {m,vs,lotes,compras,fin,fat,rec,ovos,racao,mort,comprasV,despesas};
+  }
+  window.v11SegRenderResumo=function(){
+    const el=document.getElementById('v11SegResumo'); if(!el)return; const d=dadosMes();
+    el.innerHTML=`<div class="v2-card"><h3>Faturamento</h3><div class="big">${money(d.fat)}</div><div class="sub">${d.vs.length} vendas</div></div><div class="v2-card"><h3>Produção de ovos</h3><div class="big">${d.ovos.toLocaleString('pt-BR')}</div><div class="sub">ovos registrados</div></div><div class="v2-card"><h3>Ração consumida</h3><div class="big">${d.racao.toLocaleString('pt-BR',{maximumFractionDigits:1})} kg</div><div class="sub">nos lotes</div></div><div class="v2-card"><h3>Mortalidade</h3><div class="big">${d.mort.toLocaleString('pt-BR')}</div><div class="sub">aves no mês</div></div><div class="v2-card"><h3>Compras de insumos</h3><div class="big">${money(d.comprasV)}</div><div class="sub">fábrica</div></div><div class="v2-card"><h3>Resultado bruto vendas - despesas</h3><div class="big">${money(d.fat-d.despesas)}</div><div class="sub">estimativa gerencial</div></div>`;
+    v11SegCarregarCustos(); v11SegRenderCusto(); v11SegRenderLotes();
+  };
+  window.v11SegSalvarCustos=function(){
+    const m=document.getElementById('v11SegMes')?.value||mesAtual(), all=get(KCUST,{});
+    all[m]={mao:Number(v11SegCustoMao.value||0),outros:Number(v11SegCustoOutros.value||0),racaoKg:Number(v11SegCustoRacaoKg.value||0),emb:Number(v11SegCustoEmb.value||0)}; set(KCUST,all); v11SegRenderCusto();
+  };
+  window.v11SegCarregarCustos=function(){
+    const m=document.getElementById('v11SegMes')?.value||mesAtual(), c=get(KCUST,{})[m]||{};
+    if(document.getElementById('v11SegCustoMao'))v11SegCustoMao.value=c.mao||'';
+    if(document.getElementById('v11SegCustoOutros'))v11SegCustoOutros.value=c.outros||'';
+    if(document.getElementById('v11SegCustoRacaoKg'))v11SegCustoRacaoKg.value=c.racaoKg||'';
+    if(document.getElementById('v11SegCustoEmb'))v11SegCustoEmb.value=c.emb||'';
+  };
+  window.v11SegRenderCusto=function(){
+    const el=document.getElementById('v11SegCustoResultado'); if(!el)return; const d=dadosMes(), c=get(KCUST,{})[d.m]||{};
+    const custoRacao=d.racao*Number(c.racaoKg||0), total=custoRacao+Number(c.mao||0)+Number(c.outros||0)+Number(c.emb||0), unit=d.ovos?total/d.ovos:0;
+    el.innerHTML=`<div class="v2-card"><h3>Custo total estimado</h3><div class="big">${money(total)}</div><div class="sub">mês selecionado</div></div><div class="v2-card"><h3>Por ovo</h3><div class="big">${money(unit)}</div></div><div class="v2-card"><h3>Por dúzia</h3><div class="big">${money(unit*12)}</div></div><div class="v2-card"><h3>Por pente (30)</h3><div class="big">${money(unit*30)}</div></div><div class="v2-card"><h3>Por caixa (360)</h3><div class="big">${money(unit*360)}</div></div>`;
+  };
+  window.v11SegRenderLotes=function(){
+    const el=document.getElementById('v11SegLotes'); if(!el)return; const d=dadosMes(), cad=get('gsj_v11_lotes_cadastro',[]);
+    if(!cad.length){el.innerHTML='<div class="help">Nenhum lote cadastrado.</div>';return}
+    el.innerHTML='<div class="table-wrap"><table><tr><th>Lote</th><th>Ovos no mês</th><th>Ração kg</th><th>Mortalidade</th><th>Média postura</th></tr>'+cad.map(c=>{
+      const id=c.id, rs=d.lotes.filter(r=>String(r.loteId||r.idLote||r.lote||'')===String(id)||String(r.loteNome||'')===String(c.nome||''));
+      const ovos=rs.reduce((s,r)=>s+Number(r.ovosBranco||r.ovosBrancos||0)+Number(r.ovosVermelho||r.ovosVermelhos||0)+Number(r.ovos||0),0), rac=rs.reduce((s,r)=>s+Number(r.racao||r.racaoKg||0),0), mort=rs.reduce((s,r)=>s+Number(r.mortalidade||r.mort||0),0);
+      const posts=rs.map(r=>Number(r.postura||r.percentualPostura||r.pctPostura||0)).filter(x=>x>0), med=posts.length?posts.reduce((a,b)=>a+b,0)/posts.length:0;
+      return `<tr><td>${esc(c.nome||c.numero||c.id)}</td><td>${ovos.toLocaleString('pt-BR')}</td><td>${rac.toLocaleString('pt-BR',{maximumFractionDigits:1})}</td><td>${mort}</td><td>${med.toLocaleString('pt-BR',{maximumFractionDigits:1})}%</td></tr>`;
+    }).join('')+'</table></div>';
+  };
+  window.v11SegRenderAlertas=function(){
+    const el=document.getElementById('v11SegAlertas'); if(!el)return; let a=[];
+    const est=get('gsj_v11_fab_estoque',{}); Object.entries(est).forEach(([k,v])=>{const saldo=Number(v?.saldo??v??0), min=Number(v?.min??v?.minimo??0); if(min>0&&saldo<=min)a.push(`Estoque baixo: ${k} — ${saldo.toLocaleString('pt-BR')} (mínimo ${min.toLocaleString('pt-BR')})`)});
+    const emb=get('gsj_v11_emb',{}); Object.entries(emb).forEach(([k,v])=>{const saldo=Number(v?.saldo||0),min=Number(v?.min||0);if(min>0&&saldo<=min)a.push(`Embalagem baixa: ${k} — ${saldo}`)});
+    const vs=get('granja_vendas',[]); const hj=hoje(); vs.forEach(v=>{const saldo=Math.max(0,Number(v.total||0)-Number(v.valorPago||v.pago||0)); if(saldo>0&&v.vencimento&&v.vencimento<hj)a.push(`Cliente em atraso: ${v.cliente||'Cliente'} — ${money(saldo)} — venc. ${v.vencimento}`)});
+    const d=dadosMes(); const by={}; d.lotes.forEach(r=>{const k=r.loteId||r.idLote||r.loteNome||r.lote;if(!k)return;(by[k]||(by[k]=[])).push(r)}); Object.entries(by).forEach(([k,rs])=>{rs.sort((a,b)=>(a.data||'').localeCompare(b.data||''));if(rs.length>=6){const last=rs.slice(-3).map(r=>Number(r.postura||r.percentualPostura||r.pctPostura||0)), prev=rs.slice(-6,-3).map(r=>Number(r.postura||r.percentualPostura||r.pctPostura||0)); const ml=last.reduce((a,b)=>a+b,0)/3, mp=prev.reduce((a,b)=>a+b,0)/3; if(mp>0&&ml<mp-5)a.push(`Queda de postura no lote ${k}: média recente ${ml.toFixed(1)}% vs ${mp.toFixed(1)}% anterior`)}});
+    el.innerHTML=a.length?'<div class="v11-alert-stack">'+a.slice(0,30).map(x=>`<div class="smart-alert warn">${esc(x)}</div>`).join('')+'</div>':'<div class="help ok-box">Nenhum alerta crítico encontrado agora.</div>';
+  };
+  window.v11SegRenderTudo=function(){v11SegAtualizarFechStatus();v11SegRenderResumo();v11SegRenderAlertas();v11SegRenderLog();v11SegRenderLixeira(); const b=document.getElementById('v11SegBackupInfo');if(b){const u=localStorage.getItem('granja_ultimo_salvamento');b.textContent='Último salvamento interno: '+(u?new Date(u).toLocaleString('pt-BR'):'ainda não registrado')+'. Recomenda-se exportar um backup regularmente.'}};
+
+  // protections and audit wrappers
+  function wrap(name, before, after){const orig=window[name]; if(typeof orig!=='function'||orig.__segWrapped)return; const fn=function(...args){if(before){const r=before.apply(this,args);if(r===false)return} const out=orig.apply(this,args); try{after&&after.apply(this,args)}catch(e){} return out}; fn.__segWrapped=true; window[name]=fn}
+  setTimeout(()=>{
+    wrap('salvarVenda',function(){const d=document.getElementById('dataVenda')?.value;if(d&&v11SegDiaFechado(d)){alert('Este dia está fechado. Reabra o dia em Gestão / Segurança para alterar.');return false}},function(){v11SegLog('Salvar/Editar','Vendas',document.getElementById('cliente')?.value||'Venda')});
+    wrap('v11SalvarLote',function(){const d=document.getElementById('v11LoteData')?.value;if(d&&v11SegDiaFechado(d)){alert('Este dia está fechado. Reabra o dia em Gestão / Segurança para alterar.');return false}},function(){v11SegLog('Salvar/Editar','Lotes / Produção',document.getElementById('v11LoteData')?.value||'Registro diário')});
+    wrap('v11FabSalvarCompra',function(){const d=document.getElementById('v11FabCompraData')?.value;if(d&&v11SegDiaFechado(d)){alert('Este dia está fechado. Reabra o dia em Gestão / Segurança para alterar.');return false}},function(){v11SegLog('Salvar/Editar','Fábrica / Insumos',document.getElementById('v11FabCompraItem')?.value||'Entrada')});
+    wrap('excluirVenda',function(id){const arr=get('granja_vendas',[]),r=arr.find(x=>String(x.id)===String(id));addLixeira('Venda',id,r,'granja_vendas')},function(id){v11SegLog('Exclusão','Vendas','ID '+id)});
+    wrap('v11ExcluirLote',function(id){const arr=get('gsj_v11_lotes_cadastro',[]),r=arr.find(x=>String(x.id)===String(id));addLixeira('Lote',id,r,'gsj_v11_lotes_cadastro')},function(id){v11SegLog('Exclusão','Lotes','ID '+id)});
+    wrap('v11FabExcluirCompra',function(id){const arr=get('gsj_v11_fab_compras',[]),r=arr.find(x=>String(x.id)===String(id));addLixeira('Entrada de insumo',id,r,'gsj_v11_fab_compras')},function(id){v11SegLog('Exclusão','Fábrica / Insumos','ID '+id)});
+    wrap('v11DescartarLote',null,function(id){v11SegLog('Descarte/Encerramento','Lotes','ID '+id)});
+    wrap('v11SalvarConsolidacaoCliente',null,function(){v11SegLog('Consolidação','Nota Fiscal','Vendas consolidadas para NF')});
+  },0);
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    const fd=document.getElementById('v11SegFechData');if(fd){fd.value=hoje();fd.addEventListener('change',v11SegAtualizarFechStatus)}
+    const mm=document.getElementById('v11SegMes');if(mm)mm.value=mesAtual();
+    v11SegRenderTudo();
+  });
+})();
+</script>
+<!-- V11 GESTAO AVANCADA END -->
+
 </main>
 
 <script>
