@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>GRANJA SÃO JOSÉ</title>
+<!-- V11 corrigida: integração automática de embalagens + estorno de produção da fábrica + meia batida 250 kg -->
 <style>
 :root{
   --azul:#123f52;--azul2:#1b5a72;--claro:#eef4f6;--cinza:#66757b;
@@ -1131,7 +1132,7 @@ body.financeiro-oculto #pcMedVarejo::after{
 
  <div class="card" style="margin-top:16px">
   <h2>2. Formulações</h2>
-  <div class="help">Batida padrão da fábrica: <b>500 kg</b>. A soma dos ingredientes precisa fechar em 500 kg.</div>
+  <div class="help">Batida padrão da fábrica: <b>500 kg</b>. A soma dos ingredientes precisa fechar em 500 kg. Na produção, <b>0,5 batida = 250 kg</b> e o consumo dos ingredientes é reduzido pela metade automaticamente.</div>
   <div class="form-grid">
    <div><label>Nome da formulação</label>
     <select id="v11FabFormulaNome">
@@ -1165,7 +1166,7 @@ body.financeiro-oculto #pcMedVarejo::after{
   <div class="form-grid">
    <div><label>Data</label><input id="v11FabProdData" type="date"></div>
    <div><label>Formulação</label><select id="v11FabProdFormula" onchange="v11FabPreviewProducao()"></select></div>
-   <div><label>Número de batidas</label><input id="v11FabProdBatidas" type="number" min="1" step="1" value="1" oninput="v11FabPreviewProducao()"></div>
+   <div><label>Número de batidas <small>(0,5 = 250 kg)</small></label><input id="v11FabProdBatidas" type="number" min="0.5" step="0.5" value="1" oninput="v11FabPreviewProducao()"></div>
    <div><label>Produção total</label><input id="v11FabProdKg" disabled></div>
   </div>
   <div id="v11FabProdResumo" class="backup-box"></div>
@@ -1206,7 +1207,7 @@ body.financeiro-oculto #pcMedVarejo::after{
  <div class="card" style="margin-top:16px">
   <h2>Controle Diário de Postura</h2>
   <div class="form-grid">
-   <div><label>Data</label><input id="v11LoteData" type="date"></div>
+   <div><label>Data</label><input id="v11LoteData" type="date" onchange="v11AtualizarIdadeAutomatica();v11PreviewLote()"></div>
    <div><label>Idade (semanas)</label><input id="v11LoteSem" type="number" step="0.1" oninput="v11PreviewLote()"></div>
    <div><label>Mortalidade do dia</label><input id="v11LoteMort" type="number" min="0" value="0" oninput="v11PreviewLote()"></div>
    <div><label>Ovos brancos</label><input id="v11LoteOvosBranco" type="number" min="0" value="0" oninput="v11PreviewLote()"></div>
@@ -1845,6 +1846,8 @@ function salvarVenda(){
   if(editId){vendas=vendas.map(v=>v.id===editId?venda:v)}
   else vendas.unshift(venda);
   localStorage.setItem('granja_vendas',JSON.stringify(vendas));
+  // V11: venda de ovos baixa automaticamente caixas e pentes. Em edição, a baixa anterior é revertida antes da nova.
+  if(typeof v11AplicarBaixaAutomaticaVenda==='function')v11AplicarBaixaAutomaticaVenda(venda);
   snapshotDados();
   if(!clientesCad.some(c=>c.nome.toLowerCase()===cliente.toLowerCase())){
     clientesCad.push({id:gerarId(),nome:cliente,telefone:'',documento:'',prazo:0,obs:''});
@@ -1882,7 +1885,11 @@ function editarVenda(id){
 }
 
 function excluirVenda(id){
-  if(confirm('Excluir esta venda?')){vendas=vendas.filter(v=>v.id!==id);localStorage.setItem('granja_vendas',JSON.stringify(vendas));snapshotDados();renderTudo()}
+  if(confirm('Excluir esta venda?')){
+    // V11: devolve ao estoque as embalagens que haviam sido baixadas automaticamente nesta venda.
+    if(typeof v11RemoverBaixaAutomaticaVenda==='function')v11RemoverBaixaAutomaticaVenda(id);
+    vendas=vendas.filter(v=>v.id!==id);localStorage.setItem('granja_vendas',JSON.stringify(vendas));snapshotDados();renderTudo();
+  }
 }
 function marcarPago(id){const v=vendas.find(x=>x.id===id);if(v){v.valorPago=Number(v.total||0);v.situacao='Pago';localStorage.setItem('granja_vendas',JSON.stringify(vendas));snapshotDados();renderTudo()}}
 function statusReceber(v){
@@ -2497,6 +2504,58 @@ function v11Ir(id){
 }
 let v11Emb=v11Get('gsj_v11_emb',{Caixas:{saldo:0,min:0},Pentes:{saldo:0,min:0},'Adesivos de marcação':{saldo:0,min:0},'Fitas adesivas':{saldo:0,min:0}});
 let v11EmbHist=v11Get('gsj_v11_emb_hist',[]);
+
+// ===== V11 INTEGRAÇÃO AUTOMÁTICA: VENDA DE OVOS -> EMBALAGENS =====
+// Regra: cada caixa vendida consome 1 caixa + 14 pentes (12 com ovos + 2 tampas).
+// Pentes avulsos consomem a quantidade vendida + 1 pente de tampa por venda que contenha avulsos.
+function v11ConsumoEmbalagensVenda(v){
+ const c={caixas:0,pentesAvulsos:0,pentes:0};
+ (v?.produtos||[]).forEach(p=>{
+  const q=Math.max(0,Number(p.quantidade||0));
+  if((p.unidade||'Caixa')==='Pente')c.pentesAvulsos+=q;else c.caixas+=q;
+ });
+ c.pentes=c.caixas*14+c.pentesAvulsos+(c.pentesAvulsos>0?1:0);
+ return c;
+}
+function v11EmbGarantirItem(item){
+ if(!v11Emb[item])v11Emb[item]={saldo:0,min:0};
+ return v11Emb[item];
+}
+function v11RemoverBaixaAutomaticaVenda(vendaId){
+ const regs=v11EmbHist.filter(x=>x.origem==='venda_ovos'&&String(x.vendaId)===String(vendaId));
+ if(!regs.length)return false;
+ regs.forEach(x=>{const e=v11EmbGarantirItem(x.item);e.saldo=Number(e.saldo||0)+Number(x.q||0)});
+ v11EmbHist=v11EmbHist.filter(x=>!(x.origem==='venda_ovos'&&String(x.vendaId)===String(vendaId)));
+ v11Set('gsj_v11_emb',v11Emb);v11Set('gsj_v11_emb_hist',v11EmbHist);
+ return true;
+}
+function v11AplicarBaixaAutomaticaVenda(v){
+ if(!v||v.id===undefined||v.id===null)return;
+ // Torna a operação idempotente e permite editar uma venda sem duplicar a baixa.
+ v11RemoverBaixaAutomaticaVenda(v.id);
+ const c=v11ConsumoEmbalagensVenda(v),data=v.data||new Date().toISOString().slice(0,10),pessoa=v.cliente||'';
+ const regs=[];
+ if(c.caixas>0)regs.push({item:'Caixas',q:c.caixas});
+ if(c.pentes>0)regs.push({item:'Pentes',q:c.pentes});
+ regs.forEach(r=>{
+  const e=v11EmbGarantirItem(r.item);e.saldo=Number(e.saldo||0)-Number(r.q||0);
+  v11EmbHist.unshift({data,item:r.item,mov:'uso',q:r.q,preco:0,pessoa,origem:'venda_ovos',vendaId:v.id,numeroVenda:v.numero||'',detalhe:'Baixa automática da venda de ovos'});
+ });
+ v11Set('gsj_v11_emb',v11Emb);v11Set('gsj_v11_emb_hist',v11EmbHist);
+ if(typeof v11RenderEmb==='function')v11RenderEmb();
+}
+function v11SincronizarVendasEmbalagensExistentes(){
+ // Só retroage até a primeira movimentação manual de embalagens, evitando descontar vendas antigas feitas antes do controle de estoque começar.
+ const manuais=v11EmbHist.filter(x=>x.origem!=='venda_ovos'&&x.data);
+ if(!manuais.length||typeof vendas==='undefined'||!Array.isArray(vendas))return;
+ const inicio=manuais.map(x=>x.data).sort()[0];
+ let alterou=false;
+ vendas.filter(v=>v.data&&v.data>=inicio).forEach(v=>{
+  const ja=v11EmbHist.some(x=>x.origem==='venda_ovos'&&String(x.vendaId)===String(v.id));
+  if(!ja){v11AplicarBaixaAutomaticaVenda(v);alterou=true;}
+ });
+ if(alterou&&typeof v11RenderEmb==='function')v11RenderEmb();
+}
 function v11SalvarEmb(){
  const item=v11EmbItem.value,mov=v11EmbMov.value,q=Number(v11EmbQtd.value||0),preco=Number(v11EmbPreco.value||0),min=Number(v11EmbMin.value||0);
  if(q<0||(!q&&mov!=='ajuste'))return alert('Informe a quantidade.');
@@ -2507,8 +2566,10 @@ function v11SalvarEmb(){
 }
 function v11RenderEmb(){
  const c=document.getElementById('v11EmbCards');if(c)c.innerHTML=Object.entries(v11Emb).map(([k,e])=>`<div class="v2-card"><h3>${k}</h3><div class="big">${Number(e.saldo||0).toLocaleString('pt-BR')}</div><div class="sub">Mínimo: ${Number(e.min||0).toLocaleString('pt-BR')}</div></div>`).join('');
- const h=document.getElementById('v11EmbHist');if(h)h.innerHTML=v11EmbHist.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Item</th><th>Movimento</th><th>Qtd.</th><th>Pessoa</th><th>Valor venda</th></tr>${v11EmbHist.slice(0,30).map(x=>`<tr><td>${dataBR(x.data)}</td><td>${x.item}</td><td>${x.mov}</td><td>${x.q}</td><td>${x.pessoa||'—'}</td><td>${x.mov==='venda'?moeda(x.q*x.preco):'—'}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum movimento.</div>';
+ const h=document.getElementById('v11EmbHist');if(h)h.innerHTML=v11EmbHist.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Item</th><th>Movimento</th><th>Qtd.</th><th>Pessoa</th><th>Valor venda</th></tr>${v11EmbHist.slice(0,30).map(x=>`<tr><td>${dataBR(x.data)}</td><td>${x.item}</td><td>${x.origem==='venda_ovos'?'Venda de ovos • automático':x.mov}</td><td>${x.q}</td><td>${x.pessoa||'—'}</td><td>${x.mov==='venda'?moeda(x.q*x.preco):'—'}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum movimento.</div>';
 }
+// Ao abrir a versão corrigida, acerta automaticamente vendas já lançadas desde o início do controle de embalagens.
+setTimeout(()=>{try{v11SincronizarVendasEmbalagensExistentes()}catch(e){console.warn('Falha ao sincronizar embalagens:',e)}},1200);
 let v11Fin=v11Get('gsj_v11_fin',[]);
 function v11CalcFin(){
  const total=Number(v11FinTotal.value||0),pix=Number(v11FinPix.value||0),din=Number(v11FinDin.value||0),ch=Number(v11FinCh.value||0),out=Number(v11FinOut.value||0);
@@ -2537,7 +2598,7 @@ function v11SalvarCadastroLote(){
  const anterior=id?v11CadLotes.find(a=>Number(a.id)===id):null;
  const x={id:id||Date.now(),nome,propriedade:v11LoteProp.value.trim(),proprietaria:v11LoteProprietaria.value.trim(),local:v11LoteLocal.value.trim(),galpao:v11LoteGalpao.value.trim(),nascimento:v11LoteNascimento.value,iniciadas:Number(v11LoteIniciadas.value||0),aves,linhagem:v11LoteLinhagem.value.trim(),procedencia:v11LoteProcedencia.value.trim(),cinco:Number(v11LoteCinco.value||0),status:anterior?.status||'ativo',dataEncerramento:anterior?.dataEncerramento||'',motivoEncerramento:anterior?.motivoEncerramento||'',avesFinais:anterior?.avesFinais??null};
  const i=v11CadLotes.findIndex(a=>Number(a.id)===Number(x.id)); if(i>=0)v11CadLotes[i]=x;else v11CadLotes.push(x);
- v11Set('gsj_v11_lotes_cadastro',v11CadLotes);v11RenderCadLotes(x.id);v11RenderLotesEncerrados();v11PreviewLote();alert(i>=0?'Lote atualizado.':'Lote cadastrado.');
+ v11Set('gsj_v11_lotes_cadastro',v11CadLotes);v11RenderCadLotes(x.id);v11RenderLotesEncerrados();v11AtualizarIdadeAutomatica();v11PreviewLote();alert(i>=0?'Lote atualizado.':'Lote cadastrado.');
 }
 function v11RenderCadLotes(sel){
  const el=document.getElementById('v11LoteSelecionado');if(!el)return;const atual=sel??Number(el.value||0);
@@ -2577,12 +2638,42 @@ function v11RenderLotesEncerrados(){
 }
 function v11CarregarLoteSelecionado(){
  const x=v11CadastroAtual();if(!x)return v11NovoCadastroLote(false);
- v11LoteNome.value=x.nome||'';v11LoteProp.value=x.propriedade||'';v11LoteProprietaria.value=x.proprietaria||'';v11LoteLocal.value=x.local||'';v11LoteGalpao.value=x.galpao||'';v11LoteNascimento.value=x.nascimento||'';v11LoteIniciadas.value=x.iniciadas||'';v11LoteAves.value=x.aves||'';v11LoteLinhagem.value=x.linhagem||'';v11LoteProcedencia.value=x.procedencia||'';v11LoteCinco.value=x.cinco||'';v11PreviewLote();v11RenderLotes();
+ v11LoteNome.value=x.nome||'';v11LoteProp.value=x.propriedade||'';v11LoteProprietaria.value=x.proprietaria||'';v11LoteLocal.value=x.local||'';v11LoteGalpao.value=x.galpao||'';v11LoteNascimento.value=x.nascimento||'';v11LoteIniciadas.value=x.iniciadas||'';v11LoteAves.value=x.aves||'';v11LoteLinhagem.value=x.linhagem||'';v11LoteProcedencia.value=x.procedencia||'';v11LoteCinco.value=x.cinco||'';v11AtualizarIdadeAutomatica();v11PreviewLote();v11RenderLotes();
 }
 function v11NovoCadastroLote(limparSel=true){
  if(limparSel)v11LoteSelecionado.value='';['v11LoteNome','v11LoteGalpao','v11LoteNascimento','v11LoteIniciadas','v11LoteAves','v11LoteLinhagem','v11LoteProcedencia','v11LoteCinco'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});v11LoteProp.value='BR 262 KM 426 - Conquista';v11LoteProprietaria.value='Sirlene Arantes Rodrigues Pereira';v11LoteLocal.value='São Gonçalo do Pará - MG';v11PreviewLote();
 }
 function v11RegistrosDoLote(id){const cad=v11CadLotes.find(c=>Number(c.id)===Number(id));return v11Lotes.filter(r=>Number(r.loteId||0)===Number(id)||(!r.loteId&&cad&&r.nome===cad.nome))}
+function v11DataUTC(data){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(data||'')))return null;
+ const [a,m,d]=String(data).split('-').map(Number),dt=new Date(Date.UTC(a,m-1,d));
+ return Number.isNaN(dt.getTime())?null:dt;
+}
+function v11SomarDiasData(data,dias){
+ const dt=v11DataUTC(data);if(!dt)return '';
+ dt.setUTCDate(dt.getUTCDate()+Number(dias||0));return dt.toISOString().slice(0,10);
+}
+function v11CalcularIdadeAutomatica(data){
+ const c=v11CadastroAtual(),alvo=v11DataUTC(data);if(!c||!alvo)return null;
+ const nasc=v11DataUTC(c.nascimento);
+ if(nasc&&alvo>=nasc)return Math.floor((alvo-nasc)/(7*24*60*60*1000));
+ const refs=v11RegistrosDoLote(c.id).filter(r=>v11DataUTC(r.data)&&Number(r.sem)>=0&&String(r.sem??'')!=='');
+ if(!refs.length)return null;
+ refs.sort((a,b)=>Math.abs(v11DataUTC(a.data)-alvo)-Math.abs(v11DataUTC(b.data)-alvo));
+ const ref=refs[0],difDias=Math.trunc((alvo-v11DataUTC(ref.data))/(24*60*60*1000));
+ return Math.max(0,Number(ref.sem||0)+Math.trunc(difDias/7));
+}
+function v11AtualizarIdadeAutomatica(){
+ const campo=document.getElementById('v11LoteSem'),data=document.getElementById('v11LoteData')?.value;if(!campo||!data)return null;
+ const sem=v11CalcularIdadeAutomatica(data);if(sem!==null&&Number.isFinite(sem))campo.value=String(sem);return sem;
+}
+function v11AvancarRegistroDiario(dataSalva){
+ const proxima=v11SomarDiasData(dataSalva,1);if(!proxima)return;
+ const campoData=document.getElementById('v11LoteData');if(campoData)campoData.value=proxima;
+ v11AtualizarIdadeAutomatica();
+ const filtro=document.getElementById('v11LoteMesFiltro');if(filtro)filtro.value=proxima.slice(0,7);
+ v11RenderLotes();v11PreviewLote();
+}
 function v11CalcLote(){
  const c=v11CadastroAtual(), loteId=c?.id||0, regs=v11RegistrosDoLote(loteId);const data=v11LoteData.value||v11Hoje();
  const mortHoje=Math.max(0,Number(v11LoteMort.value||0));const mortAnt=regs.filter(r=>(r.data||'')<data).reduce((s,r)=>s+Number(r.mort||0),0);const base=Number(c?.aves||v11LoteAves.value||0);const vivas=Math.max(0,base-mortAnt-mortHoje);
@@ -2597,6 +2688,7 @@ function v11SalvarLote(){
  const existente=v11Lotes.findIndex(r=>Number(r.loteId||0)===Number(c.id)&&r.data===x.data);const reg={id:existente>=0?v11Lotes[existente].id:Date.now(),loteId:c.id,nome:c.nome,data:x.data,sem,mort:x.mortHoje,aves:x.vivas,ovosBranco:x.branco,ovosVermelho:x.vermelho,ovos:x.ovos,racao:x.racao,postura:x.postura,gAve:x.gAve,obs:v11LoteObs.value.trim()};
  if(existente>=0){if(!confirm('Já existe um registro deste lote nessa data. Deseja substituir?'))return;v11Lotes[existente]=reg}else v11Lotes.unshift(reg);
  v11Set('gsj_v11_lotes',v11Lotes);v11RenderLotes();v11PreviewLote();['v11LoteMort','v11LoteOvosBranco','v11LoteOvosVermelho','v11LoteRacao','v11LoteObs'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=id==='v11LoteObs'?'':'0'});
+ setTimeout(()=>v11AvancarRegistroDiario(x.data),0);
 }
 function v11ExcluirRegistroLote(id){if(!confirm('Excluir este registro diário?'))return;v11Lotes=v11Lotes.filter(x=>Number(x.id)!==Number(id));v11Set('gsj_v11_lotes',v11Lotes);v11RenderLotes();v11PreviewLote()}
 function v11EditarRegistroLote(id){const r=v11Lotes.find(x=>Number(x.id)===Number(id));if(!r)return;v11LoteData.value=r.data||v11Hoje();v11LoteSem.value=r.sem||'';v11LoteMort.value=r.mort||0;v11LoteOvosBranco.value=r.ovosBranco??r.ovos??0;v11LoteOvosVermelho.value=r.ovosVermelho||0;v11LoteRacao.value=r.racao||0;v11LoteObs.value=r.obs||'';v11PreviewLote();window.scrollTo({top:document.getElementById('producaoV11').offsetTop,behavior:'smooth'})}
@@ -2624,7 +2716,7 @@ function v11AtualizarPainel(){
  if(v11Fat)v11Fat.textContent=moeda(fat);if(v11Rec)v11Rec.textContent=moeda(rec);if(v11Areceber)v11Areceber.textContent=moeda(ar);if(v11Apagar)v11Apagar.textContent=moeda(ap);if(v11ChEmi)v11ChEmi.textContent=moeda(che);
  const chr=vm.reduce((s,v)=>s+Number(v.pagamentos?.cheque||0),0);if(v11ChRec)v11ChRec.textContent=moeda(chr);
 }
-setTimeout(()=>{v11RenderEmb();v11RenderFin();v11RenderCadLotes();v11RenderLotesEncerrados();if(v11LoteData)v11LoteData.value=v11Hoje();if(v11LoteMesFiltro)v11LoteMesFiltro.value=v11MesAtual();v11RenderLotes();v11PreviewLote();v11AtualizarPainel()},500);
+setTimeout(()=>{v11RenderEmb();v11RenderFin();v11RenderCadLotes();v11RenderLotesEncerrados();if(v11LoteData)v11LoteData.value=v11Hoje();if(v11LoteMesFiltro)v11LoteMesFiltro.value=v11MesAtual();v11AtualizarIdadeAutomatica();v11RenderLotes();v11PreviewLote();v11AtualizarPainel()},500);
 
 
 // ===== V11 COMPLEMENTOS =====
@@ -2816,7 +2908,7 @@ function v11FabSalvarFormula(){
  v11Set('gsj_v11_fab_formulas',v11FabFormulas);v11FabRenderTudo();
 }
 function v11FabPreviewProducao(){
- const f=v11FabFormulas.find(x=>x.id===Number(v11FabProdFormula.value)),b=Math.max(1,Number(v11FabProdBatidas.value||1));
+ const f=v11FabFormulas.find(x=>x.id===Number(v11FabProdFormula.value)),b=Math.max(0.5,Math.round(Number(v11FabProdBatidas.value||1)*2)/2);
  v11FabProdKg.value=(500*b).toLocaleString('pt-BR')+' kg';
  if(!f){v11FabProdResumo.innerHTML='<div class="help">Selecione uma formulação.</div>';return null}
  const itens=[['Milho',f.milho],['Soja',f.soja],[f.premixTipo||'Premix',f.premix],['Calcário',f.calcario],['Sal',f.sal],['Óleo',f.oleo],['Outros',f.outros]];
@@ -2831,12 +2923,31 @@ function v11FabPreviewProducao(){
 }
 function v11FabProduzir(){
  const p=v11FabPreviewProducao();if(!p||!v11FabProdData.value)return alert('Selecione data e formulação.');if(!p.ok)return alert('Estoque insuficiente para produzir esta quantidade.');
+ const consumos={},valoresConsumidos={},custosUnitarios={};
  p.itens.forEach(([nome,q])=>{
-  const req=Number(q||0)*p.b,key=v11FabKey(nome),e=v11FabEstoque[key];if(!e)return;
-  const cm=e.saldo>0?e.valor/e.saldo:0;e.saldo-=req;e.valor=Math.max(0,e.valor-req*cm);
+  const req=Number(q||0)*p.b,key=v11FabKey(nome),e=v11FabEstoque[key];
+  consumos[nome]=req;
+  if(req<=0)return;
+  if(!e)return;
+  const cm=e.saldo>0?e.valor/e.saldo:0,valorConsumido=req*cm;
+  custosUnitarios[nome]=cm;valoresConsumidos[nome]=valorConsumido;
+  e.saldo-=req;e.valor=Math.max(0,e.valor-valorConsumido);
  });
- const consumos={};p.itens.forEach(([nome,q])=>consumos[nome]=Number(q||0)*p.b);
- v11FabProducoes.unshift({id:Date.now(),data:v11FabProdData.value,formula:p.f.nome,batidas:p.b,totalKg:500*p.b,custo:p.custo,custoKg:p.custo/(500*p.b),consumos});
+ v11FabProducoes.unshift({id:Date.now(),data:v11FabProdData.value,formula:p.f.nome,batidas:p.b,totalKg:500*p.b,custo:p.custo,custoKg:p.custo/(500*p.b),consumos,valoresConsumidos,custosUnitarios});
+ v11Set('gsj_v11_fab_estoque',v11FabEstoque);v11Set('gsj_v11_fab_producoes',v11FabProducoes);v11FabRenderTudo();
+}
+function v11FabExcluirProducao(id){
+ const p=v11FabProducoes.find(x=>x.id===id);if(!p)return alert('Produção não encontrada.');
+ if(!confirm('Excluir esta produção? Os ingredientes consumidos serão devolvidos ao estoque.'))return;
+ Object.entries(p.consumos||{}).forEach(([nome,qtd])=>{
+  const q=Math.max(0,Number(qtd||0));if(q<=0)return;
+  const key=v11FabKey(nome),e=v11FabEstoque[key]||(v11FabEstoque[key]={nome,saldo:0,valor:0,unidade:'kg'});
+  const cmAtual=Number(e.saldo||0)>0?Number(e.valor||0)/Number(e.saldo||0):0;
+  let valor=Number(p.valoresConsumidos?.[nome]);
+  if(!Number.isFinite(valor))valor=Number(p.custosUnitarios?.[nome]||cmAtual)*q;
+  e.saldo=Number(e.saldo||0)+q;e.valor=Number(e.valor||0)+Math.max(0,valor||0);
+ });
+ v11FabProducoes=v11FabProducoes.filter(x=>x.id!==id);
  v11Set('gsj_v11_fab_estoque',v11FabEstoque);v11Set('gsj_v11_fab_producoes',v11FabProducoes);v11FabRenderTudo();
 }
 function v11FabRenderTudo(){
@@ -2845,7 +2956,7 @@ function v11FabRenderTudo(){
  v11FabComprasLista.innerHTML=v11FabCompras.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Insumo</th><th>Fornecedor</th><th>Quantidade</th><th>Frete</th><th>Total</th><th>Custo unit.</th><th>Ações</th></tr>${v11FabCompras.slice(0,30).map(c=>`<tr><td>${dataBR(c.data)}</td><td>${c.item}</td><td>${c.fornecedor||'—'}</td><td>${Number(c.qtd).toLocaleString('pt-BR')} ${c.un==='L'?'L':c.un==='saca60'?'kg':c.un}${(c.un==='saco'||c.un==='pacote')&&c.pesoUn?' ('+Number(c.estoqueQtd||0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' kg)':''}</td><td>${moeda(c.frete)}</td><td>${moeda(c.total)}</td><td>${moeda(c.custo)}</td><td style="white-space:nowrap"><button class="btn secondary" onclick="v11FabEditarCompra(${c.id})">Editar</button> <button class="btn secondary" onclick="v11FabExcluirCompra(${c.id})">Excluir</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma compra registrada.</div>';
  const old=v11FabProdFormula.value;v11FabProdFormula.innerHTML='<option value="">Selecione...</option>'+v11FabFormulas.map(f=>`<option value="${f.id}">${f.nome}</option>`).join('');if(old)v11FabProdFormula.value=old;
  v11FabFormulasLista.innerHTML=`<div class="table-wrap"><table><tr><th>Formulação</th><th>Milho</th><th>Soja</th><th>Prêmix</th><th>Tipo</th><th>Calcário</th><th>Sal</th><th>Óleo</th><th>Outros</th><th>Total</th></tr>${v11FabFormulas.map(f=>`<tr><td>${f.nome}</td><td>${f.milho}</td><td>${f.soja}</td><td>${f.premix}</td><td>${f.premixTipo||'—'}</td><td>${f.calcario}</td><td>${f.sal}</td><td>${f.oleo}</td><td>${f.outros}</td><td>${(f.milho+f.soja+f.premix+f.calcario+f.sal+f.oleo+f.outros).toFixed(2)} kg</td></tr>`).join('')}</table></div>`;
- v11FabProducoesLista.innerHTML=v11FabProducoes.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Ração</th><th>Batidas</th><th>Produção</th><th>Custo</th><th>Custo/kg</th></tr>${v11FabProducoes.slice(0,30).map(p=>`<tr><td>${dataBR(p.data)}</td><td>${p.formula}</td><td>${p.batidas}</td><td>${p.totalKg} kg</td><td>${moeda(p.custo)}</td><td>${moeda(p.custoKg)}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma produção registrada.</div>';
+ v11FabProducoesLista.innerHTML=v11FabProducoes.length?`<div class="table-wrap"><table><tr><th>Data</th><th>Ração</th><th>Batidas</th><th>Produção</th><th>Custo</th><th>Custo/kg</th><th>Ações</th></tr>${v11FabProducoes.slice(0,30).map(p=>`<tr><td>${dataBR(p.data)}</td><td>${p.formula}</td><td>${p.batidas}</td><td>${p.totalKg} kg</td><td>${moeda(p.custo)}</td><td>${moeda(p.custoKg)}</td><td><button class="btn secondary" onclick="v11FabExcluirProducao(${p.id})">Excluir / estornar</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhuma produção registrada.</div>';
  v11FabPreviewProducao();
 }
 setTimeout(()=>{
