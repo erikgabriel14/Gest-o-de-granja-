@@ -1207,12 +1207,11 @@ body.financeiro-oculto #pcMedVarejo::after{
  <div class="card" style="margin-top:16px">
   <h2>Controle Diário de Postura</h2>
   <div class="form-grid">
-   <div><label>Data</label><input id="v11LoteData" type="date" onchange="v11AtualizarIdadeAutomatica();v11PreviewLote()"></div>
+   <div><label>Data</label><input id="v11LoteData" type="date"></div>
    <div><label>Idade (semanas)</label><input id="v11LoteSem" type="number" step="0.1" oninput="v11PreviewLote()"></div>
    <div><label>Mortalidade do dia</label><input id="v11LoteMort" type="number" min="0" value="0" oninput="v11PreviewLote()"></div>
    <div><label>Ovos brancos</label><input id="v11LoteOvosBranco" type="number" min="0" value="0" oninput="v11PreviewLote()"></div>
    <div><label>Ovos vermelhos</label><input id="v11LoteOvosVermelho" type="number" min="0" value="0" oninput="v11PreviewLote()"></div>
-   <div><label>Ovos Gramados</label><input id="v11LoteOvosGramados" type="number" min="0" value="0" oninput="v11PreviewLote()"></div>
    <div><label>Ração consumida (kg)</label><input id="v11LoteRacao" type="number" min="0" step="0.01" oninput="v11PreviewLote()"></div>
    <div style="grid-column:1/-1"><label>Observações</label><input id="v11LoteObs" placeholder="Vacinação, manejo, alteração de consumo, ocorrência..."></div>
   </div>
@@ -1461,7 +1460,7 @@ body.financeiro-oculto #pcMedVarejo::after{
     const fin=get('gsj_v11_fin',[]).filter(r=>(r.data||r.vencimento||'').slice(0,7)===m);
     const fat=vs.reduce((s,v)=>s+Number(v.total||0),0);
     const rec=vs.reduce((s,v)=>s+Number(v.valorPago||v.pago||0),0);
-    const ovos=lotes.reduce((s,r)=>s+Number(r.ovosBranco||r.ovosBrancos||0)+Number(r.ovosVermelho||r.ovosVermelhos||0)+Number(r.ovosGramados||0)+Number(r.ovos||0),0);
+    const ovos=lotes.reduce((s,r)=>s+Number(r.ovosBranco||r.ovosBrancos||0)+Number(r.ovosVermelho||r.ovosVermelhos||0)+Number(r.ovos||0),0);
     const racao=lotes.reduce((s,r)=>s+Number(r.racao||r.racaoKg||0),0);
     const mort=lotes.reduce((s,r)=>s+Number(r.mortalidade||r.mort||0),0);
     const comprasV=compras.reduce((s,r)=>s+Number(r.total||r.valorTotal||0),0);
@@ -1494,7 +1493,7 @@ body.financeiro-oculto #pcMedVarejo::after{
     if(!cad.length){el.innerHTML='<div class="help">Nenhum lote cadastrado.</div>';return}
     el.innerHTML='<div class="table-wrap"><table><tr><th>Lote</th><th>Ovos no mês</th><th>Ração kg</th><th>Mortalidade</th><th>Média postura</th></tr>'+cad.map(c=>{
       const id=c.id, rs=d.lotes.filter(r=>String(r.loteId||r.idLote||r.lote||'')===String(id)||String(r.loteNome||'')===String(c.nome||''));
-      const ovos=rs.reduce((s,r)=>s+Number(r.ovosBranco||r.ovosBrancos||0)+Number(r.ovosVermelho||r.ovosVermelhos||0)+Number(r.ovosGramados||0)+Number(r.ovos||0),0), rac=rs.reduce((s,r)=>s+Number(r.racao||r.racaoKg||0),0), mort=rs.reduce((s,r)=>s+Number(r.mortalidade||r.mort||0),0);
+      const ovos=rs.reduce((s,r)=>s+Number(r.ovosBranco||r.ovosBrancos||0)+Number(r.ovosVermelho||r.ovosVermelhos||0)+Number(r.ovos||0),0), rac=rs.reduce((s,r)=>s+Number(r.racao||r.racaoKg||0),0), mort=rs.reduce((s,r)=>s+Number(r.mortalidade||r.mort||0),0);
       const posts=rs.map(r=>Number(r.postura||r.percentualPostura||r.pctPostura||0)).filter(x=>x>0), med=posts.length?posts.reduce((a,b)=>a+b,0)/posts.length:0;
       return `<tr><td>${esc(c.nome||c.numero||c.id)}</td><td>${ovos.toLocaleString('pt-BR')}</td><td>${rac.toLocaleString('pt-BR',{maximumFractionDigits:1})}</td><td>${mort}</td><td>${med.toLocaleString('pt-BR',{maximumFractionDigits:1})}%</td></tr>`;
     }).join('')+'</table></div>';
@@ -1542,6 +1541,19 @@ const gerarId=()=>Date.now()+Math.floor(Math.random()*1000);
 
 
 function snapshotDados(){
+  const lotesCadastro = JSON.parse(localStorage.getItem('gsj_v11_lotes_cadastro') || '[]');
+  const lotesRegistros = JSON.parse(localStorage.getItem('gsj_v11_lotes') || '[]');
+
+  // Cópia completa de todas as chaves locais da V11.
+  // Mantemos também os campos antigos do backup para compatibilidade.
+  const v11Extras = {};
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k !== 'granja_snapshot_interno'){
+      v11Extras[k] = localStorage.getItem(k);
+    }
+  }
+
   const dados = {
     versao: 11,
     gerado_em: new Date().toISOString(),
@@ -1550,7 +1562,14 @@ function snapshotDados(){
     produtos: JSON.parse(localStorage.getItem('granja_produtos') || '[]'),
     producoes: JSON.parse(localStorage.getItem('granja_producoes') || '[]'),
     notasFiscais: JSON.parse(localStorage.getItem('gsj_v11_notas_fiscais') || '[]'),
-    produtosExcluidos: JSON.parse(localStorage.getItem('gsj_v11_produtos_excluidos') || '[]')
+    produtosExcluidos: JSON.parse(localStorage.getItem('gsj_v11_produtos_excluidos') || '[]'),
+
+    // Produção / lotes incluídos explicitamente para o sistema de fichas.
+    gsj_v11_lotes_cadastro: lotesCadastro,
+    gsj_v11_lotes: lotesRegistros,
+
+    // Demais módulos da V11, preservados no mesmo arquivo.
+    v11Extras
   };
   localStorage.setItem('granja_snapshot_interno', JSON.stringify(dados));
   localStorage.setItem('granja_ultimo_salvamento', new Date().toISOString());
@@ -2599,7 +2618,7 @@ function v11SalvarCadastroLote(){
  const anterior=id?v11CadLotes.find(a=>Number(a.id)===id):null;
  const x={id:id||Date.now(),nome,propriedade:v11LoteProp.value.trim(),proprietaria:v11LoteProprietaria.value.trim(),local:v11LoteLocal.value.trim(),galpao:v11LoteGalpao.value.trim(),nascimento:v11LoteNascimento.value,iniciadas:Number(v11LoteIniciadas.value||0),aves,linhagem:v11LoteLinhagem.value.trim(),procedencia:v11LoteProcedencia.value.trim(),cinco:Number(v11LoteCinco.value||0),status:anterior?.status||'ativo',dataEncerramento:anterior?.dataEncerramento||'',motivoEncerramento:anterior?.motivoEncerramento||'',avesFinais:anterior?.avesFinais??null};
  const i=v11CadLotes.findIndex(a=>Number(a.id)===Number(x.id)); if(i>=0)v11CadLotes[i]=x;else v11CadLotes.push(x);
- v11Set('gsj_v11_lotes_cadastro',v11CadLotes);v11RenderCadLotes(x.id);v11RenderLotesEncerrados();v11AtualizarIdadeAutomatica();v11PreviewLote();alert(i>=0?'Lote atualizado.':'Lote cadastrado.');
+ v11Set('gsj_v11_lotes_cadastro',v11CadLotes);v11RenderCadLotes(x.id);v11RenderLotesEncerrados();v11PreviewLote();alert(i>=0?'Lote atualizado.':'Lote cadastrado.');
 }
 function v11RenderCadLotes(sel){
  const el=document.getElementById('v11LoteSelecionado');if(!el)return;const atual=sel??Number(el.value||0);
@@ -2639,68 +2658,37 @@ function v11RenderLotesEncerrados(){
 }
 function v11CarregarLoteSelecionado(){
  const x=v11CadastroAtual();if(!x)return v11NovoCadastroLote(false);
- v11LoteNome.value=x.nome||'';v11LoteProp.value=x.propriedade||'';v11LoteProprietaria.value=x.proprietaria||'';v11LoteLocal.value=x.local||'';v11LoteGalpao.value=x.galpao||'';v11LoteNascimento.value=x.nascimento||'';v11LoteIniciadas.value=x.iniciadas||'';v11LoteAves.value=x.aves||'';v11LoteLinhagem.value=x.linhagem||'';v11LoteProcedencia.value=x.procedencia||'';v11LoteCinco.value=x.cinco||'';v11AtualizarIdadeAutomatica();v11PreviewLote();v11RenderLotes();
+ v11LoteNome.value=x.nome||'';v11LoteProp.value=x.propriedade||'';v11LoteProprietaria.value=x.proprietaria||'';v11LoteLocal.value=x.local||'';v11LoteGalpao.value=x.galpao||'';v11LoteNascimento.value=x.nascimento||'';v11LoteIniciadas.value=x.iniciadas||'';v11LoteAves.value=x.aves||'';v11LoteLinhagem.value=x.linhagem||'';v11LoteProcedencia.value=x.procedencia||'';v11LoteCinco.value=x.cinco||'';v11PreviewLote();v11RenderLotes();
 }
 function v11NovoCadastroLote(limparSel=true){
  if(limparSel)v11LoteSelecionado.value='';['v11LoteNome','v11LoteGalpao','v11LoteNascimento','v11LoteIniciadas','v11LoteAves','v11LoteLinhagem','v11LoteProcedencia','v11LoteCinco'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});v11LoteProp.value='BR 262 KM 426 - Conquista';v11LoteProprietaria.value='Sirlene Arantes Rodrigues Pereira';v11LoteLocal.value='São Gonçalo do Pará - MG';v11PreviewLote();
 }
 function v11RegistrosDoLote(id){const cad=v11CadLotes.find(c=>Number(c.id)===Number(id));return v11Lotes.filter(r=>Number(r.loteId||0)===Number(id)||(!r.loteId&&cad&&r.nome===cad.nome))}
-function v11DataUTC(data){
- if(!/^\d{4}-\d{2}-\d{2}$/.test(String(data||'')))return null;
- const [a,m,d]=String(data).split('-').map(Number),dt=new Date(Date.UTC(a,m-1,d));
- return Number.isNaN(dt.getTime())?null:dt;
-}
-function v11SomarDiasData(data,dias){
- const dt=v11DataUTC(data);if(!dt)return '';
- dt.setUTCDate(dt.getUTCDate()+Number(dias||0));return dt.toISOString().slice(0,10);
-}
-function v11CalcularIdadeAutomatica(data){
- const c=v11CadastroAtual(),alvo=v11DataUTC(data);if(!c||!alvo)return null;
- const nasc=v11DataUTC(c.nascimento);
- if(nasc&&alvo>=nasc)return Math.floor((alvo-nasc)/(7*24*60*60*1000));
- const refs=v11RegistrosDoLote(c.id).filter(r=>v11DataUTC(r.data)&&Number(r.sem)>=0&&String(r.sem??'')!=='');
- if(!refs.length)return null;
- refs.sort((a,b)=>Math.abs(v11DataUTC(a.data)-alvo)-Math.abs(v11DataUTC(b.data)-alvo));
- const ref=refs[0],difDias=Math.trunc((alvo-v11DataUTC(ref.data))/(24*60*60*1000));
- return Math.max(0,Number(ref.sem||0)+Math.trunc(difDias/7));
-}
-function v11AtualizarIdadeAutomatica(){
- const campo=document.getElementById('v11LoteSem'),data=document.getElementById('v11LoteData')?.value;if(!campo||!data)return null;
- const sem=v11CalcularIdadeAutomatica(data);if(sem!==null&&Number.isFinite(sem))campo.value=String(sem);return sem;
-}
-function v11AvancarRegistroDiario(dataSalva){
- const proxima=v11SomarDiasData(dataSalva,1);if(!proxima)return;
- const campoData=document.getElementById('v11LoteData');if(campoData)campoData.value=proxima;
- v11AtualizarIdadeAutomatica();
- const filtro=document.getElementById('v11LoteMesFiltro');if(filtro)filtro.value=proxima.slice(0,7);
- v11RenderLotes();v11PreviewLote();
-}
 function v11CalcLote(){
  const c=v11CadastroAtual(), loteId=c?.id||0, regs=v11RegistrosDoLote(loteId);const data=v11LoteData.value||v11Hoje();
  const mortHoje=Math.max(0,Number(v11LoteMort.value||0));const mortAnt=regs.filter(r=>(r.data||'')<data).reduce((s,r)=>s+Number(r.mort||0),0);const base=Number(c?.aves||v11LoteAves.value||0);const vivas=Math.max(0,base-mortAnt-mortHoje);
- const branco=Math.max(0,Number(v11LoteOvosBranco.value||0)),vermelho=Math.max(0,Number(v11LoteOvosVermelho.value||0)),gramados=Math.max(0,Number(v11LoteOvosGramados.value||0)),ovos=branco+vermelho+gramados,racao=Math.max(0,Number(v11LoteRacao.value||0));
- return {data,mortHoje,vivas,branco,vermelho,gramados,ovos,racao,postura:vivas?ovos/vivas*100:0,gAve:vivas?racao*1000/vivas:0};
+ const branco=Math.max(0,Number(v11LoteOvosBranco.value||0)),vermelho=Math.max(0,Number(v11LoteOvosVermelho.value||0)),ovos=branco+vermelho,racao=Math.max(0,Number(v11LoteRacao.value||0));
+ return {data,mortHoje,vivas,branco,vermelho,ovos,racao,postura:vivas?ovos/vivas*100:0,gAve:vivas?racao*1000/vivas:0};
 }
 function v11PreviewLote(){
  const h=document.getElementById('v11LotePreview');if(!h)return;const c=v11CadastroAtual(),x=v11CalcLote();h.innerHTML=`<b>${v11Esc(c?.nome||'Selecione/cadastre um lote')}</b><br>Aves vivas: <b>${x.vivas.toLocaleString('pt-BR')}</b> &nbsp;•&nbsp; Ovos totais: <b>${x.ovos.toLocaleString('pt-BR')}</b> &nbsp;•&nbsp; Postura: <b>${x.postura.toFixed(2)}%</b> &nbsp;•&nbsp; Consumo: <b>${x.gAve.toFixed(1)} g/ave/dia</b>`;
 }
 function v11SalvarLote(){
  const c=v11CadastroAtual();if(!c)return alert('Selecione ou cadastre o lote antes do registro diário.');const x=v11CalcLote(),sem=Number(v11LoteSem.value||0);if(!x.data)return alert('Informe a data.');
- const existente=v11Lotes.findIndex(r=>Number(r.loteId||0)===Number(c.id)&&r.data===x.data);const reg={id:existente>=0?v11Lotes[existente].id:Date.now(),loteId:c.id,nome:c.nome,data:x.data,sem,mort:x.mortHoje,aves:x.vivas,ovosBranco:x.branco,ovosVermelho:x.vermelho,ovosGramados:x.gramados,ovos:x.ovos,racao:x.racao,postura:x.postura,gAve:x.gAve,obs:v11LoteObs.value.trim()};
+ const existente=v11Lotes.findIndex(r=>Number(r.loteId||0)===Number(c.id)&&r.data===x.data);const reg={id:existente>=0?v11Lotes[existente].id:Date.now(),loteId:c.id,nome:c.nome,data:x.data,sem,mort:x.mortHoje,aves:x.vivas,ovosBranco:x.branco,ovosVermelho:x.vermelho,ovos:x.ovos,racao:x.racao,postura:x.postura,gAve:x.gAve,obs:v11LoteObs.value.trim()};
  if(existente>=0){if(!confirm('Já existe um registro deste lote nessa data. Deseja substituir?'))return;v11Lotes[existente]=reg}else v11Lotes.unshift(reg);
- v11Set('gsj_v11_lotes',v11Lotes);v11RenderLotes();v11PreviewLote();['v11LoteMort','v11LoteOvosBranco','v11LoteOvosVermelho','v11LoteOvosGramados','v11LoteRacao','v11LoteObs'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=id==='v11LoteObs'?'':'0'});
- setTimeout(()=>v11AvancarRegistroDiario(x.data),0);
+ v11Set('gsj_v11_lotes',v11Lotes);v11RenderLotes();v11PreviewLote();['v11LoteMort','v11LoteOvosBranco','v11LoteOvosVermelho','v11LoteRacao','v11LoteObs'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=id==='v11LoteObs'?'':'0'});
 }
 function v11ExcluirRegistroLote(id){if(!confirm('Excluir este registro diário?'))return;v11Lotes=v11Lotes.filter(x=>Number(x.id)!==Number(id));v11Set('gsj_v11_lotes',v11Lotes);v11RenderLotes();v11PreviewLote()}
-function v11EditarRegistroLote(id){const r=v11Lotes.find(x=>Number(x.id)===Number(id));if(!r)return;v11LoteData.value=r.data||v11Hoje();v11LoteSem.value=r.sem||'';v11LoteMort.value=r.mort||0;v11LoteOvosBranco.value=r.ovosBranco??r.ovos??0;v11LoteOvosVermelho.value=r.ovosVermelho||0;v11LoteOvosGramados.value=r.ovosGramados||0;v11LoteRacao.value=r.racao||0;v11LoteObs.value=r.obs||'';v11PreviewLote();window.scrollTo({top:document.getElementById('producaoV11').offsetTop,behavior:'smooth'})}
+function v11EditarRegistroLote(id){const r=v11Lotes.find(x=>Number(x.id)===Number(id));if(!r)return;v11LoteData.value=r.data||v11Hoje();v11LoteSem.value=r.sem||'';v11LoteMort.value=r.mort||0;v11LoteOvosBranco.value=r.ovosBranco??r.ovos??0;v11LoteOvosVermelho.value=r.ovosVermelho||0;v11LoteRacao.value=r.racao||0;v11LoteObs.value=r.obs||'';v11PreviewLote();window.scrollTo({top:document.getElementById('producaoV11').offsetTop,behavior:'smooth'})}
 function v11RenderLotes(){
  const h=document.getElementById('v11LotesHist');if(!h)return;const c=v11CadastroAtual(),mes=document.getElementById('v11LoteMesFiltro')?.value||v11MesAtual();if(!c){h.innerHTML='<div class="empty">Selecione um lote para visualizar os registros.</div>';return}const regs=v11RegistrosDoLote(c.id).filter(r=>!mes||(r.data||'').slice(0,7)===mes).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
  const ovos=regs.reduce((s,r)=>s+Number(r.ovos||0),0),mort=regs.reduce((s,r)=>s+Number(r.mort||0),0),rac=regs.reduce((s,r)=>s+Number(r.racao||0),0),med=regs.length?regs.reduce((s,r)=>s+Number(r.postura||0),0)/regs.length:0;
- h.innerHTML=`<div class="backup-box"><b>${v11Esc(c.nome)}</b> • ${mes||'Todos os meses'}<br>Total de ovos: <b>${ovos.toLocaleString('pt-BR')}</b> • Mortalidade: <b>${mort}</b> • Ração: <b>${rac.toLocaleString('pt-BR',{maximumFractionDigits:2})} kg</b> • Postura média: <b>${med.toFixed(2)}%</b></div>`+(regs.length?`<div class="table-wrap" style="margin-top:10px"><table><tr><th>Data</th><th>Idade</th><th>Mortalidade</th><th>Aves vivas</th><th>Ovos total</th><th>Branco</th><th>Vermelho</th><th>Gramados</th><th>% postura</th><th>Ração kg</th><th>Obs.</th><th>Ações</th></tr>${regs.map(r=>`<tr><td>${dataBR(r.data)}</td><td>${r.sem||'—'}</td><td>${r.mort||0}</td><td>${Number(r.aves||0).toLocaleString('pt-BR')}</td><td>${Number(r.ovos||0).toLocaleString('pt-BR')}</td><td>${Number(r.ovosBranco??r.ovos??0).toLocaleString('pt-BR')}</td><td>${Number(r.ovosVermelho||0).toLocaleString('pt-BR')}</td><td>${Number(r.ovosGramados||0).toLocaleString('pt-BR')}</td><td>${Number(r.postura||0).toFixed(2)}%</td><td>${Number(r.racao||0).toLocaleString('pt-BR',{maximumFractionDigits:2})}</td><td>${v11Esc(r.obs||'')}</td><td style="white-space:nowrap"><button class="btn secondary" onclick="v11EditarRegistroLote(${r.id})">Editar</button> <button class="btn secondary" onclick="v11ExcluirRegistroLote(${r.id})">Excluir</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum registro neste mês.</div>');
+ h.innerHTML=`<div class="backup-box"><b>${v11Esc(c.nome)}</b> • ${mes||'Todos os meses'}<br>Total de ovos: <b>${ovos.toLocaleString('pt-BR')}</b> • Mortalidade: <b>${mort}</b> • Ração: <b>${rac.toLocaleString('pt-BR',{maximumFractionDigits:2})} kg</b> • Postura média: <b>${med.toFixed(2)}%</b></div>`+(regs.length?`<div class="table-wrap" style="margin-top:10px"><table><tr><th>Data</th><th>Idade</th><th>Mortalidade</th><th>Aves vivas</th><th>Ovos total</th><th>Branco</th><th>Vermelho</th><th>% postura</th><th>Ração kg</th><th>Obs.</th><th>Ações</th></tr>${regs.map(r=>`<tr><td>${dataBR(r.data)}</td><td>${r.sem||'—'}</td><td>${r.mort||0}</td><td>${Number(r.aves||0).toLocaleString('pt-BR')}</td><td>${Number(r.ovos||0).toLocaleString('pt-BR')}</td><td>${Number(r.ovosBranco??r.ovos??0).toLocaleString('pt-BR')}</td><td>${Number(r.ovosVermelho||0).toLocaleString('pt-BR')}</td><td>${Number(r.postura||0).toFixed(2)}%</td><td>${Number(r.racao||0).toLocaleString('pt-BR',{maximumFractionDigits:2})}</td><td>${v11Esc(r.obs||'')}</td><td style="white-space:nowrap"><button class="btn secondary" onclick="v11EditarRegistroLote(${r.id})">Editar</button> <button class="btn secondary" onclick="v11ExcluirRegistroLote(${r.id})">Excluir</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum registro neste mês.</div>');
 }
 function v11FichaLoteHTML(){
- const c=v11CadastroAtual();if(!c)return null;const mes=document.getElementById('v11LoteMesFiltro')?.value||v11MesAtual(),regs=v11RegistrosDoLote(c.id).filter(r=>!mes||(r.data||'').slice(0,7)===mes).sort((a,b)=>(a.data||'').localeCompare(b.data||''));const linhas=regs.map(r=>`<tr><td>${dataBR(r.data)}</td><td>${r.sem||''}</td><td>${r.mort||0}</td><td>${Number(r.aves||0)}</td><td>${Number(r.ovos||0)}</td><td>${Number(r.ovosBranco??r.ovos??0)}</td><td>${Number(r.ovosVermelho||0)}</td><td>${Number(r.ovosGramados||0)}</td><td>${Number(r.postura||0).toFixed(2)}%</td><td>${Number(r.racao||0).toFixed(2)}</td><td>${v11Esc(r.obs||'')}</td></tr>`).join('');
- return `<!doctype html><html><head><meta charset="utf-8"><title>Registro de Produção - ${v11Esc(c.nome)}</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#000;font-size:11px}h1{font-size:22px;text-align:center;margin:0}.sub{text-align:center;font-size:14px;margin:4px 0 12px}.dados{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #000}.dados div{border:1px solid #000;padding:5px}.lbl{font-size:9px;color:#333;display:block}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #000;padding:5px;text-align:center}th{background:#eaf0fa}.assin{margin-top:30px} @media print{button{display:none}}</style></head><body><h1>REGISTRO DE PRODUÇÃO DE OVOS</h1><div class="sub">Controle Diário de Postura</div><div class="dados"><div><span class="lbl">Propriedade</span><b>${v11Esc(c.propriedade||'')}</b></div><div><span class="lbl">Proprietária</span><b>${v11Esc(c.proprietaria||'')}</b></div><div><span class="lbl">Local</span><b>${v11Esc(c.local||'')}</b></div><div><span class="lbl">Galpão / Lote</span><b>${v11Esc(c.galpao||'')} / ${v11Esc(c.nome)}</b></div><div><span class="lbl">Data de nascimento</span>${c.nascimento?dataBR(c.nascimento):''}</div><div><span class="lbl">Nº aves iniciadas</span>${c.iniciadas||''}</div><div><span class="lbl">Nº aves alojadas</span>${c.aves||''}</div><div><span class="lbl">Idade aos 5% postura</span>${c.cinco||''}</div><div><span class="lbl">Linhagem</span>${v11Esc(c.linhagem||'')}</div><div><span class="lbl">Procedência</span>${v11Esc(c.procedencia||'')}</div><div><span class="lbl">Mês</span>${mes||''}</div><div><span class="lbl">Registros</span>${regs.length}</div></div><table><tr><th>Data</th><th>Idade (sem)</th><th>Mortalidade</th><th>Aves vivas</th><th>Ovos total</th><th>Ovos branco</th><th>Ovos vermelho</th><th>Ovos Gramados</th><th>% Postura</th><th>Ração (kg)</th><th>Obs.</th></tr>${linhas||'<tr><td colspan="11">Sem registros no período.</td></tr>'}</table><div class="assin">Assinatura: _______________________________________________</div></body></html>`;
+ const c=v11CadastroAtual();if(!c)return null;const mes=document.getElementById('v11LoteMesFiltro')?.value||v11MesAtual(),regs=v11RegistrosDoLote(c.id).filter(r=>!mes||(r.data||'').slice(0,7)===mes).sort((a,b)=>(a.data||'').localeCompare(b.data||''));const linhas=regs.map(r=>`<tr><td>${dataBR(r.data)}</td><td>${r.sem||''}</td><td>${r.mort||0}</td><td>${Number(r.aves||0)}</td><td>${Number(r.ovos||0)}</td><td>${Number(r.ovosBranco??r.ovos??0)}</td><td>${Number(r.ovosVermelho||0)}</td><td>${Number(r.postura||0).toFixed(2)}%</td><td>${Number(r.racao||0).toFixed(2)}</td><td>${v11Esc(r.obs||'')}</td></tr>`).join('');
+ return `<!doctype html><html><head><meta charset="utf-8"><title>Registro de Produção - ${v11Esc(c.nome)}</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#000;font-size:11px}h1{font-size:22px;text-align:center;margin:0}.sub{text-align:center;font-size:14px;margin:4px 0 12px}.dados{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #000}.dados div{border:1px solid #000;padding:5px}.lbl{font-size:9px;color:#333;display:block}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #000;padding:5px;text-align:center}th{background:#eaf0fa}.assin{margin-top:30px} @media print{button{display:none}}</style></head><body><h1>REGISTRO DE PRODUÇÃO DE OVOS</h1><div class="sub">Controle Diário de Postura</div><div class="dados"><div><span class="lbl">Propriedade</span><b>${v11Esc(c.propriedade||'')}</b></div><div><span class="lbl">Proprietária</span><b>${v11Esc(c.proprietaria||'')}</b></div><div><span class="lbl">Local</span><b>${v11Esc(c.local||'')}</b></div><div><span class="lbl">Galpão / Lote</span><b>${v11Esc(c.galpao||'')} / ${v11Esc(c.nome)}</b></div><div><span class="lbl">Data de nascimento</span>${c.nascimento?dataBR(c.nascimento):''}</div><div><span class="lbl">Nº aves iniciadas</span>${c.iniciadas||''}</div><div><span class="lbl">Nº aves alojadas</span>${c.aves||''}</div><div><span class="lbl">Idade aos 5% postura</span>${c.cinco||''}</div><div><span class="lbl">Linhagem</span>${v11Esc(c.linhagem||'')}</div><div><span class="lbl">Procedência</span>${v11Esc(c.procedencia||'')}</div><div><span class="lbl">Mês</span>${mes||''}</div><div><span class="lbl">Registros</span>${regs.length}</div></div><table><tr><th>Data</th><th>Idade (sem)</th><th>Mortalidade</th><th>Aves vivas</th><th>Ovos total</th><th>Ovos branco</th><th>Ovos vermelho</th><th>% Postura</th><th>Ração (kg)</th><th>Obs.</th></tr>${linhas||'<tr><td colspan="10">Sem registros no período.</td></tr>'}</table><div class="assin">Assinatura: _______________________________________________</div></body></html>`;
 }
 function v11ImprimirFichaLote(){const c=v11CadastroAtual();if(!c)return alert('Selecione um lote.');const op=prompt('O que deseja imprimir?\n1 = Ficha atual (mês exibido)\n2 = Histórico completo do lote','1');if(op===null)return;if(op.trim()==='2'){const filtro=document.getElementById('v11LoteMesFiltro'),ant=filtro.value;filtro.value='';const html=v11FichaLoteHTML();filtro.value=ant;const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.print(),250);return}const html=v11FichaLoteHTML();const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.print(),250)}
 async function v11CompartilharFichaLote(){
@@ -2717,7 +2705,7 @@ function v11AtualizarPainel(){
  if(v11Fat)v11Fat.textContent=moeda(fat);if(v11Rec)v11Rec.textContent=moeda(rec);if(v11Areceber)v11Areceber.textContent=moeda(ar);if(v11Apagar)v11Apagar.textContent=moeda(ap);if(v11ChEmi)v11ChEmi.textContent=moeda(che);
  const chr=vm.reduce((s,v)=>s+Number(v.pagamentos?.cheque||0),0);if(v11ChRec)v11ChRec.textContent=moeda(chr);
 }
-setTimeout(()=>{v11RenderEmb();v11RenderFin();v11RenderCadLotes();v11RenderLotesEncerrados();if(v11LoteData)v11LoteData.value=v11Hoje();if(v11LoteMesFiltro)v11LoteMesFiltro.value=v11MesAtual();v11AtualizarIdadeAutomatica();v11RenderLotes();v11PreviewLote();v11AtualizarPainel()},500);
+setTimeout(()=>{v11RenderEmb();v11RenderFin();v11RenderCadLotes();v11RenderLotesEncerrados();if(v11LoteData)v11LoteData.value=v11Hoje();if(v11LoteMesFiltro)v11LoteMesFiltro.value=v11MesAtual();v11RenderLotes();v11PreviewLote();v11AtualizarPainel()},500);
 
 
 // ===== V11 COMPLEMENTOS =====
